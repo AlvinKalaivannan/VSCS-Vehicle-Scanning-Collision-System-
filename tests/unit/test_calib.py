@@ -302,7 +302,10 @@ def test_config_block_is_json_safe(calibrated):
 
 
 def test_replace_block_rejects_a_missing_key(tmp_path):
+    """The YAML block writer now lives in common/config.py and is shared with ingest."""
+    from vscs.common.config import replace_top_level_block
+
     p = tmp_path / "c.yaml"
     p.write_text("other: 1\n", encoding="utf-8")
     with pytest.raises(ValueError, match="no top-level"):
-        calib._replace_yaml_block(p, "intrinsics", {"a": 1})
+        replace_top_level_block(p, "intrinsics", {"a": 1})

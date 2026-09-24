@@ -126,3 +126,34 @@ def dump_config(cfg: dict[str, Any], path: Path) -> Path:
     with path.open("w", encoding="utf-8") as fh:
         yaml.safe_dump(cfg, fh, sort_keys=False, default_flow_style=False, allow_unicode=True)
     return path
+
+
+def replace_top_level_block(path: Path, top_key: str, block: Any) -> Path:
+    """Replace one top-level mapping in a YAML file in place, keeping every other line.
+
+    Deliberately a text operation rather than a load/dump round-trip. ``yaml.safe_dump``
+    discards all comments, and the comments in ``configs/*.yaml`` carry the capture rules
+    and the reasoning behind the numbers - losing them would be a real loss.
+
+    Used by the calibration writer (``intrinsics``) and by ingest (``splits``).
+    """
+    path = Path(path)
+    lines = path.read_text(encoding="utf-8").splitlines()
+    start = next((i for i, ln in enumerate(lines) if ln.startswith(f"{top_key}:")), None)
+    if start is None:
+        raise ValueError(f"{path} has no top-level '{top_key}:' key")
+
+    end = len(lines)
+    for i in range(start + 1, len(lines)):
+        line = lines[i]
+        # The block ends at the next line starting in column 0 that is not a comment.
+        if line and not line[0].isspace() and not line.startswith("#"):
+            end = i
+            break
+
+    rendered = yaml.safe_dump(
+        {top_key: block}, sort_keys=False, default_flow_style=False, allow_unicode=True
+    )
+    new_lines = lines[:start] + rendered.rstrip("\n").splitlines() + lines[end:]
+    path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+    return path
