@@ -1,0 +1,130 @@
+# Synthetic fixture world (P0-T4).
+#
+# A box "vehicle" with labelled sub-boxes as components, a thin pole, a kerb, and a
+# short camera trajectory with known poses. Every geometric answer here is
+# analytically computable, which is the point: module tests assert against exact
+# numbers rather than against whatever the code happened to produce
+# (CLAUDE.md section 5).
+#
+# Frame: veh. x forward, y left, z up. Origin on the ground plane directly below the
+# centre of the rear axle (CLAUDE.md section 4.1).
+#
+# Component names here are FIXTURE PLACEHOLDERS. They are not the component
+# vocabulary, which is task P2-T1 and needs the developer's approval.
+schema_version: 1
+
+vehicle:
+  # Rear axle at x = 0 by definition of the frame origin.
+  # Rear bumper 1.0 m behind it, front 4.0 m ahead -> overall length 5.0 m.
+  length_m: 5.0
+  width_m: 2.0
+  height_m: 2.2
+  wheelbase_m: 3.0
+  bounds:          # [xmin, ymin, zmin, xmax, ymax, zmax] of the body shell
+    [-1.0, -1.0, 0.0, 4.0, 1.0, 2.2]
+
+# --- Components: non-overlapping axis-aligned sub-boxes ----------------------
+# 12 components, comfortably over the >= 8 that P2-T1 requires of the real list.
+components:
+  rear_bumper:
+    bounds: [-1.00, -0.70, 0.40, -0.85, 0.70, 0.75]
+    severity: 1.2
+    display_name: "rear bumper"
+  rear_right_bumper_corner:
+    # The reference component for the known-distance test.
+    bounds: [-1.00, -1.00, 0.40, -0.85, -0.70, 0.75]
+    severity: 1.5
+    display_name: "rear right corner"
+  rear_left_bumper_corner:
+    bounds: [-1.00, 0.70, 0.40, -0.85, 1.00, 0.75]
+    severity: 1.5
+    display_name: "rear left corner"
+  front_bumper:
+    bounds: [3.85, -1.00, 0.40, 4.00, 1.00, 0.75]
+    severity: 1.2
+    display_name: "front bumper"
+  right_mirror:
+    # Protrudes 0.25 m beyond the body shell - the reason per-component geometry
+    # matters at all, since a single bounding box cannot distinguish it.
+    bounds: [2.40, -1.25, 1.40, 2.60, -1.00, 1.60]
+    severity: 2.0
+    display_name: "right mirror"
+  left_mirror:
+    bounds: [2.40, 1.00, 1.40, 2.60, 1.25, 1.60]
+    severity: 2.0
+    display_name: "left mirror"
+  wheel_rear_right:
+    bounds: [-0.35, -1.00, 0.00, 0.35, -0.80, 0.70]
+    severity: 0.6
+    display_name: "rear right wheel"
+  wheel_rear_left:
+    bounds: [-0.35, 0.80, 0.00, 0.35, 1.00, 0.70]
+    severity: 0.6
+    display_name: "rear left wheel"
+  wheel_front_right:
+    bounds: [2.65, -1.00, 0.00, 3.35, -0.80, 0.70]
+    severity: 0.6
+    display_name: "front right wheel"
+  wheel_front_left:
+    bounds: [2.65, 0.80, 0.00, 3.35, 1.00, 0.70]
+    severity: 0.6
+    display_name: "front left wheel"
+  sliding_door_right:
+    bounds: [1.00, -1.00, 0.50, 2.60, -0.95, 1.90]
+    severity: 2.5
+    display_name: "sliding door"
+  underbody:
+    # min_z = 0.25 m: the clearance figure the kerb case is checked against (P4-T6).
+    # Spans y in [-0.78, 0.78], stopping short of the wheels at |y| = 0.80 so no two
+    # components share volume (enforced by test_components_do_not_overlap).
+    bounds: [0.00, -0.78, 0.25, 3.00, 0.78, 0.30]
+    severity: 3.0
+    display_name: "underbody"
+
+# --- Obstacles ---------------------------------------------------------------
+obstacles:
+  pole:
+    # A thin vertical pole. Its axis sits exactly 0.500 m behind the rear right
+    # bumper corner, in line with it in y, so the known-answer test is an exact
+    # 0.5 with no floating-point slack:
+    #     corner box nearest point (x=-1.00, y=-1.00)
+    #     pole axis               (x=-1.50, y=-1.00)
+    kind: "static_geom"
+    axis_xy: [-1.50, -1.00]
+    radius_m: 0.03
+    height_m: 1.20
+  curb:
+    # Low kerb behind the vehicle. Nearest face at x = -2.0, i.e. exactly 1.000 m
+    # behind the rear bumper face at x = -1.0.
+    kind: "static_geom"
+    bounds: [-3.00, -2.00, 0.00, -2.00, 2.00, 0.12]
+  box:
+    # A cardboard box, off to the right, for detector/recall cases.
+    kind: "static_geom"
+    bounds: [0.50, -2.00, 0.00, 0.90, -1.60, 0.40]
+
+# --- Camera trajectory -------------------------------------------------------
+trajectory:
+  # A scan loop: 20 poses on a circle around the vehicle, looking at its centre.
+  # Poses are analytically known (frames.look_at_T_world_cam), so projection and
+  # label-fusion tests have ground truth.
+  n_frames: 20
+  radius_m: 6.0
+  height_m: 1.5
+  center_xy: [1.5, 0.0]
+  look_at: [1.5, 0.0, 1.1]
+  nominal_fps: 30
+  # Deliberate timestamp jitter, so anything that assumes a constant frame interval
+  # fails here rather than on real phone footage (R-03).
+  jitter_fraction: 0.25
+  seed: 20260924
+
+# --- Camera intrinsics used by fixture tests ---------------------------------
+camera:
+  image_size: [1280, 720]
+  # fx = fy = 900 px, principal point at the image centre. Round numbers so
+  # projection round-trips are exact.
+  fx: 900.0
+  fy: 900.0
+  cx: 639.5
+  cy: 359.5
