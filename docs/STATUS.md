@@ -1,11 +1,35 @@
 # VSCS Status — updated 2026-09-24
 mode: pair            # pair | build
 phase: P1
-current_task: P1-T4 built but unverifiable without real footage (needs ffmpeg + a real clip)
+current_task: P3-T4 risk/sweep.py - developer's first draft (pair mode), tests waiting on branch p3-t4-sweep
+#             P1-T4 built but unverifiable without real footage (needs ffmpeg + a real clip)
 #             P2-T1 approved 2026-09-24 - vocabulary and severity are now frozen
 health: ON TRACK
 
 ## Done since last update
+
+**Phase 3 risk engine started early on the synthetic fixture** (developer's go-ahead,
+2026-09-24; §6 requires it for next-phase core work). Motivation: Phase 3 is the MVP, it
+needs only the fixture world, and building it now protects it from the December exam gap.
+
+- **P3-T3** [done] `risk/motion.py` — constant-curvature path fan. Straight paths are
+  `x = v t` exactly, a quarter turn at kappa 0.2 lands at (5, 5) facing pi/2, every point
+  lies on the turning circle to 1e-9. 37 tests, 100% coverage.
+- **P3-T4** [pending, developer's draft] `risk/sweep.py` is a **core module**, so per pair
+  mode the developer writes it. The contract (signatures + docstrings, every function
+  `NotImplementedError`) and the known-answer tests are on branch `p3-t4-sweep`, deliberately
+  red and unmerged. Headline target: TTC = 0.37 s for the rear-right corner against the
+  fixture pole. Every number in those tests was checked against a brute-force oracle first,
+  so the target is achievable. Agreed design: clearance and TTC from the estimated-curvature
+  path; the whole fan is still swept for P4-T7.
+- **P3-T5** [done] `risk/aggregate.py` + `risk/alerts.py`. Acceptance met: parked on the
+  0.50 m warning line with 4 cm noise for 10 s, the raw level changes 150 times and the
+  filtered level twice, never more than twice in a second (R-10). With hysteresis disabled
+  the same input gives 150 transitions at up to 21/s, so the test genuinely discriminates.
+- v0.1 uses a deterministic 0/1 contact indicator until P4-T7 (§6 cut-order fallback #3),
+  and `alerts.use_p_contact: false` stops that indicator making every predicted contact
+  "critical".
+
 
 Second session today. Phase 0 is complete except for the three tasks that need captures
 (see Blockers). Phase 1's buildable half is now done.
@@ -91,12 +115,14 @@ None triggered. Two worth noting:
 
 ## Next 3 tasks
 
-1. **You review the checklist and answer the two open questions**, so a capture day can
-   be booked. October is the whole capture window.
-2. **P1-T5 scaffolding** — COLMAP wrappers, once ffmpeg/COLMAP are installed. Not
-   started: it would be untestable and unrunnable today.
-3. **P2-T2 prep** — unblocked by the P2-T1 approval, but it is a GPU stage, so it needs
-   the Colab template proven (P0-T5) and a scan to segment (P1-T2) first.
+1. **You: first draft of `risk/sweep.py`** on branch `p3-t4-sweep`. Run
+   `pytest tests/unit/test_sweep.py` until it is green; `tests/test_pipeline_smoke.py` on
+   the same branch then checks the whole fixture pipeline end to end. I review and harden
+   it after.
+2. **You: the at-home capture work** — ffmpeg + COLMAP, the pre-flight test
+   (`scripts/check_capture.py`), checkerboard calibration, marker printing. This is still
+   the critical path: October is the whole capture window.
+3. **Me: P1-T5/T6** — COLMAP wrapper, then the pair-mode walkthrough of `recon/scale.py`.
 
 ## GPU usage this month (approx compute units)
 
