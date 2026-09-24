@@ -27,6 +27,11 @@ sweep:
   obstacle_margin_m: 0.05
   # A component is only reported if something comes within this distance.
   report_distance_m: 2.0
+  # Time-to-contact is refined inside the swept segment where contact first occurs,
+  # using the continuous motion model, until the bracket is narrower than this.
+  # Without refinement TTC is quantised to motion.dt_s (0.1 s) - a 10-20% error on a
+  # half-second warning.
+  ttc_tolerance_s: 0.005
   # Joint states used for the sweep. Manual per run in v0.1 (R-15).
   # sliding_door_right is a VARIANT SELECTOR ("closed" / "open"), not a displacement:
   # the door is two scanned collision models rather than a joint (ADR 0004). The rest
