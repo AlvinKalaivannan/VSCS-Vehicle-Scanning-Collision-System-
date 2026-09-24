@@ -4,10 +4,16 @@
 schema_version: 1
 
 # =============================================================================
-# PLACEHOLDER - component names must match the vocabulary approved at P2-T1, and
-# the weights themselves need the developer's sign-off. Proposal only.
+# APPROVED by the developer on 2026-09-24 (task P2-T1), as proposed.
+#
+# These weights decide WHICH COMPONENT a warning names, so they are worth arguing
+# about: a likely cheap wheel scuff must not outrank a less likely but costly
+# mirror strike. That ordering is asserted in tests.
+#
+# Component names here must stay in step with configs/seg.yaml - enforced by
+# tests/unit/test_config.py::test_severity_covers_exactly_the_approved_vocabulary.
 # =============================================================================
-status: "PROPOSED_AWAITING_P2_T1_APPROVAL"
+status: "APPROVED_2026-09-24"
 
 # Scale anchor: 1.0 = a scuff needing a panel repaint. Higher = worse.
 default: 1.0

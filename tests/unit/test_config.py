@@ -187,10 +187,46 @@ def test_capture_never_uses_frame_index_as_time():
     assert C.get(cfg, "ingest.require_monotonic_timestamps") is True
 
 
-def test_placeholder_configs_are_flagged_as_unapproved():
-    """seg.yaml and severity.yaml hold proposals until P2-T1 sign-off."""
-    assert "AWAITING_P2_T1" in C.load_config("seg")["vocabulary_status"]
-    assert "AWAITING_P2_T1" in C.load_config("severity")["status"]
+def test_component_vocabulary_is_approved():
+    """P2-T1 acceptance: developer-approved list of at least 8 components."""
+    seg = C.load_config("seg")
+    assert seg["vocabulary_status"].startswith("APPROVED_"), (
+        "the component vocabulary needs the developer's approval before it is used (P2-T1)"
+    )
+    assert C.load_config("severity")["status"].startswith("APPROVED_")
+    assert len(seg["components"]) >= 8, "P2-T1 requires at least 8 components"
+
+
+def test_severity_covers_exactly_the_approved_vocabulary():
+    """The two files must not drift apart.
+
+    A component with no severity would silently fall back to the default cost, and a
+    severity for a component that no longer exists is dead weight that hides a rename.
+    Either way the risk ranking would be quietly wrong rather than loudly broken.
+    """
+    vocabulary = set(C.load_config("seg")["components"])
+    weighted = set(C.load_config("severity")["components"])
+    assert weighted == vocabulary, (
+        f"missing a severity: {sorted(vocabulary - weighted)}; "
+        f"severity for an unknown component: {sorted(weighted - vocabulary)}"
+    )
+
+
+def test_every_component_has_a_text_prompt():
+    """The prompt is what Grounding DINO is given at P2-T2; an empty one is useless."""
+    for name, prompt in C.load_config("seg")["components"].items():
+        assert isinstance(prompt, str) and len(prompt.strip()) > 3, name
+
+
+def test_rear_geometry_is_finer_than_front():
+    """This is a reversing system, so the rear carries the component resolution.
+
+    Recorded as a test because it is a deliberate asymmetry, not an oversight: the
+    rear bumper is split into corners and the front is not.
+    """
+    vocabulary = set(C.load_config("seg")["components"])
+    assert {"rear_left_bumper_corner", "rear_right_bumper_corner"} <= vocabulary
+    assert "rear_bumper" in vocabulary and "front_bumper" in vocabulary
 
 
 def test_severity_ranks_a_person_far_above_any_panel():

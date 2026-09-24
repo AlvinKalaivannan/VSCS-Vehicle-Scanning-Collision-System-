@@ -2,11 +2,24 @@
 schema_version: 1
 
 # =============================================================================
-# PLACEHOLDER - the component vocabulary is task P2-T1 and needs the developer's
-# approval (>= 8 components) before any of it is used. The list below is a
-# starting proposal only. Do not treat it as approved.
+# APPROVED by the developer on 2026-09-24 (task P2-T1). 13 components, against a
+# requirement of >= 8.
+#
+# Reviewed at approval time: the list originally split the REAR bumper into
+# corners but contained nothing for rear protrusions. On many vans a tow bar is
+# the actual first-contact point when reversing - low, rigid, and well behind the
+# bumper. The developer confirmed this van has NO tow bar, rear step, spare wheel
+# carrier or ladder: the rear end is plain, so the rear bumper and its two corners
+# genuinely are the rearmost points. Nothing was added.
+#
+# Front corners are deliberately NOT split while rear corners are. That asymmetry
+# is intentional: this is a reversing/low-speed manoeuvring system, so rear
+# geometry carries the resolution. Revisit if forward manoeuvring becomes a focus.
+#
+# Changing this list after P2-T3 has run invalidates the per-component IoU
+# measurements, so treat it as frozen for the phase.
 # =============================================================================
-vocabulary_status: "PROPOSED_AWAITING_P2_T1_APPROVAL"
+vocabulary_status: "APPROVED_2026-09-24"
 
 components:
   # machine_name: text prompt fed to the open-vocabulary detector
