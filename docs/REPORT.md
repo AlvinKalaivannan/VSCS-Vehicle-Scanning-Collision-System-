@@ -4,7 +4,7 @@
      will be overwritten. Edit the metrics by appending to
      metrics/results.jsonl, or change the gates in configs/eval.yaml. -->
 
-Generated 2026-09-24 17:57 UTC at commit `nogit` (working tree dirty).
+Generated 2026-09-24 18:01 UTC at commit `2accace`.
 
 Source: `metrics/results.jsonl`, 0 measurements recorded.
 
