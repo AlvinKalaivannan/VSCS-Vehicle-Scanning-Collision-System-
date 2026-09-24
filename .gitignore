@@ -1,0 +1,43 @@
+# --- Data: never commit anything under data/ except the manifest (CLAUDE.md 4.4) ---
+data/*
+!data/MANIFEST.md
+
+# --- Environments ---
+.venv/
+venv/
+env/
+.conda/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# --- Notebooks ---
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# --- Secrets (CLAUDE.md 4.4: never commit API keys, tokens, .env) ---
+.env
+.env.*
+*.key
+*.pem
+secrets.yaml
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/*
+!.vscode/settings.json.example
+
+# --- Rerun recordings (can be large, may contain footage) ---
+*.rrd

@@ -1,0 +1,54 @@
+# VSCS laptop environment as a conda spec.
+#
+#   conda env create -f envs/core.yml
+#   conda activate vscs
+#
+# This is the environment CLAUDE.md section 4.3 specifies. It is NOT the environment
+# currently in use on the development laptop: conda is not installed there, so a venv
+# from the system Python 3.11.9 is used instead, with the same pins in
+# envs/requirements-core.txt. See docs/decisions/0001-venv-instead-of-conda.md.
+#
+# Kept here so that a machine with conda reproduces the intended setup, and because
+# conda-forge is the cleanest route to COLMAP (a native binary, not a wheel - ADR 0003).
+name: vscs
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+
+  # --- core numerics and schemas ---------------------------------------------
+  - numpy=2.4.6
+  - scipy=1.17.1
+  - pyyaml=6.0.3
+  - pydantic=2.13.5
+
+  # --- geometry --------------------------------------------------------------
+  - shapely=2.1.2
+  - trimesh=5.1.0
+
+  # --- CLI -------------------------------------------------------------------
+  - typer=0.27.2
+
+  # --- dev -------------------------------------------------------------------
+  - pytest=9.1.1
+  - pytest-cov=7.1.0
+  - coverage=7.16.1
+  - ruff=0.16.8
+  - nbformat=5.11.1
+
+  # --- native binaries conda handles better than pip -------------------------
+  # COLMAP is BSD (section 10). Uncomment when P0-T6 starts; on the current
+  # venv-based setup the prebuilt Windows no-CUDA binary is used instead (ADR 0003).
+  # - colmap
+
+  - pip
+  - pip:
+      # opencv from pip rather than conda: the conda-forge build has occasionally
+      # lagged, and the pip wheel bundles the contrib modules including ArUco.
+      - opencv-python==5.0.0.93
+
+      # Deferred until the tasks that need them (ADR 0001):
+      #   open3d     -> P1-T6, P1-T7
+      #   rerun-sdk  -> P1-T7, P3-T1
+      # - open3d
+      # - rerun-sdk

@@ -1,0 +1,49 @@
+# Convex decomposition, joints, URDF export. Phase 2 (P2-T6..T8).
+schema_version: 1
+
+decompose:
+  engine: "coacd"           # coacd | vhacd | obb  (fallback ladder, §8.2)
+  threshold: 0.05           # CoACD concavity threshold
+  max_convex_hulls: 16
+  preprocess_resolution: 50
+  seed: 20260924
+  # P2-T6 acceptance: hull volume within +/- 15% of the point-cloud-derived volume.
+  max_volume_error_fraction: 0.15
+
+urdf:
+  robot_name: "vscs_van"
+  # The root link sits at the veh frame origin (ground, below rear axle centre).
+  base_link: "base_link"
+  mesh_format: "obj"
+  mesh_dir: "meshes"
+
+joints:
+  # Axes are set manually in v0.1 (R-15); auto-detection from open/closed scans is a
+  # stretch goal. Values below are structural placeholders - measured on the real van
+  # at P2-T7 and then committed with the scan they came from.
+  status: "PLACEHOLDER_MEASURE_AT_P2_T7"
+  sliding_door_right:
+    type: "prismatic"
+    axis: [1.0, 0.0, 0.0]
+    limit_lower: 0.0
+    limit_upper: 1.0
+  rear_door_left:
+    type: "revolute"
+    axis: [0.0, 0.0, 1.0]
+    limit_lower: 0.0
+    limit_upper: 2.44     # ~140 deg
+  rear_door_right:
+    type: "revolute"
+    axis: [0.0, 0.0, 1.0]
+    limit_lower: -2.44
+    limit_upper: 0.0
+  left_mirror:
+    type: "revolute"
+    axis: [0.0, 0.0, 1.0]
+    limit_lower: -1.57
+    limit_upper: 0.0
+  right_mirror:
+    type: "revolute"
+    axis: [0.0, 0.0, 1.0]
+    limit_lower: 0.0
+    limit_upper: 1.57

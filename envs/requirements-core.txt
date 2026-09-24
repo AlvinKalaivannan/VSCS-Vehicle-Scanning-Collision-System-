@@ -1,0 +1,44 @@
+# VSCS laptop (CPU) environment. Windows 11, Python 3.11.9, no NVIDIA GPU.
+#
+#   python -m venv .venv
+#   .venv\Scripts\activate
+#   pip install -r envs/requirements-core.txt
+#
+# Versions are the ones actually verified on 2026-09-24 (238 passed, 1 skipped,
+# ruff clean). See docs/decisions/0001-venv-instead-of-conda.md for why this is a
+# venv rather than the conda env named in CLAUDE.md section 4.3; envs/core.yml
+# carries the same pins for machines that have conda.
+#
+# NOTE: no torch here. GPU stages run on Colab from envs/colab_requirements.txt.
+
+# --- core numerics and schemas -----------------------------------------------
+numpy==2.4.6
+scipy==1.17.1
+PyYAML==6.0.3
+pydantic==2.13.5
+
+# --- geometry -----------------------------------------------------------------
+opencv-python==5.0.0.93     # calibration, ArUco markers, image I/O
+shapely==2.1.2              # 2D component footprints (P3-T4)
+trimesh==5.1.0              # meshes, proximity queries
+
+# --- CLI ----------------------------------------------------------------------
+typer==0.27.2
+
+# --- dev ----------------------------------------------------------------------
+pytest==9.1.1
+pytest-cov==7.1.0
+coverage==7.16.1
+ruff==0.16.8
+nbformat==5.11.1            # notebook validity checks
+
+# --- deferred: install when the task that needs them starts -------------------
+# Left out on purpose (ADR 0001): both are large, the connection here is slow, and
+# resolving open3d alongside everything else sent pip into long backtracking.
+# Install each on its own, then pin the version that resolved.
+#
+#   open3d       point clouds, RANSAC ground plane   -> needed at P1-T6/P1-T7
+#   rerun-sdk    visualisation                       -> needed at P1-T7, P3-T1
+#
+# open3d==
+# rerun-sdk==

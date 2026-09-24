@@ -1,0 +1,43 @@
+# Structure-from-motion, scale, ground plane, vehicle frame. P1-T5, P1-T6.
+schema_version: 1
+
+sfm:
+  engine: "colmap"          # colmap | glomap | hloc  (fallback ladder, §8.2)
+  matcher: "exhaustive"     # exhaustive for a few hundred scan frames
+  camera_model: "OPENCV"
+  # Reuse the calibrated intrinsics rather than letting COLMAP re-solve them (R-04).
+  use_prior_intrinsics: true
+  refine_intrinsics: false
+  # P1-T5 acceptance gates.
+  min_registered_frame_fraction: 0.90
+  max_mean_reprojection_error_px: 1.5
+
+scale:
+  method: "markers"         # markers | known_dimension | spec_sheet  (§8.2)
+  marker:
+    dictionary: "DICT_4X4_50"
+    side_length_m: 0.150    # measure the printed marker, do not trust the PDF
+    min_markers_detected: 3
+    min_detection_frame_fraction: 0.50   # below this, R-02 fallback triggers
+  # P1-T6 acceptance: length, width, height, wheelbase each within +/- 2 cm.
+  max_dimension_error_m: 0.02
+  validate_against: ["length", "width", "height", "wheelbase"]
+
+ground_plane:
+  method: "ransac"
+  distance_threshold_m: 0.02
+  ransac_n: 3
+  num_iterations: 2000
+  seed: 20260924           # CLAUDE.md §4.3: seed every random process
+
+vehicle_frame:
+  # veh: x forward, y left, z up. Origin on the ground plane directly below the
+  # centre of the rear axle (CLAUDE.md §4.1 - do not change without an ADR).
+  origin: "ground_below_rear_axle_centre"
+  # Forward axis is taken from the long axis of the body point cloud, then
+  # disambiguated by which end the rear axle markers sit at.
+  forward_from: "body_principal_axis"
+
+dense:
+  engine: "colmap_patch_match"   # colmap_patch_match | openmvs | splat_points (§8.2)
+  max_image_size: 1600

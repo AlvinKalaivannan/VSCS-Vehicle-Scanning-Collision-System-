@@ -1,0 +1,47 @@
+# Per-component severity costs and the component x obstacle modifier table.
+# Severity is UNITLESS (CLAUDE.md §4.1) - it is a relative repair/consequence cost,
+# deliberately NOT dollars, so it is never mistaken for a real estimate.
+schema_version: 1
+
+# =============================================================================
+# PLACEHOLDER - component names must match the vocabulary approved at P2-T1, and
+# the weights themselves need the developer's sign-off. Proposal only.
+# =============================================================================
+status: "PROPOSED_AWAITING_P2_T1_APPROVAL"
+
+# Scale anchor: 1.0 = a scuff needing a panel repaint. Higher = worse.
+default: 1.0
+
+components:
+  front_bumper: 1.2
+  rear_bumper: 1.2
+  rear_left_bumper_corner: 1.5    # corners take the impact and are awkward to repair
+  rear_right_bumper_corner: 1.5
+  left_mirror: 2.0                # cheap part, but protrudes and breaks outright
+  right_mirror: 2.0
+  sliding_door_right: 2.5         # large panel, mechanism damage possible
+  rear_doors: 2.5
+  wheel_front_left: 0.6           # kerbing a tyre/rim is common and cheap
+  wheel_front_right: 0.6
+  wheel_rear_left: 0.6
+  wheel_rear_right: 0.6
+  underbody: 3.0                  # can hit brake lines, exhaust, fuel tank
+
+# Multiplier applied on top of the component cost, by what is being hit.
+# A person is not a repair cost; the weight simply dominates so that any contact
+# involving a person is always the worst-ranked risk in the frame.
+obstacle_multiplier:
+  person: 50.0
+  cyclist: 40.0
+  vehicle: 3.0
+  static_geom: 1.0
+  unknown: 1.5
+
+# Specific pairs that break the simple product rule.
+overrides:
+  # A kerb against the underbody is much worse than a kerb against a tyre.
+  underbody__static_geom: 4.0
+  wheel_front_left__static_geom: 0.4
+  wheel_front_right__static_geom: 0.4
+  wheel_rear_left__static_geom: 0.4
+  wheel_rear_right__static_geom: 0.4

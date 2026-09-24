@@ -1,0 +1,43 @@
+# Capture + ingest configuration. CLAUDE.md §4.1 (units, timestamps), R-03, R-04.
+schema_version: 1
+
+# --- Camera intrinsics -------------------------------------------------------
+# Written by scripts/calibrate.py (P0-T7). The script REFUSES to write unless the
+# mean reprojection error is < 0.5 px. Do not hand-edit these numbers.
+intrinsics:
+  calibrated: false
+  device: null            # e.g. "pixel_8_main_lens"
+  image_size: [null, null]  # [width, height] px
+  K: null                 # 3x3 row-major, px
+  dist: null              # OpenCV distortion coefficients
+  model: "opencv_pinhole" # opencv_pinhole | opencv_fisheye
+  mean_reprojection_error_px: null
+  calibrated_at: null
+  notes: "Lock focus and exposure, main lens only, no zoom (R-04)."
+
+checkerboard:
+  # Inner corner counts, NOT square counts.
+  pattern_size: [9, 6]
+  square_size_m: 0.025
+  min_images: 15
+  max_reprojection_error_px: 0.5   # P0-T7 acceptance gate
+
+# --- Video ingest ------------------------------------------------------------
+ingest:
+  # Phones record variable frame rate. Always take presentation timestamps from the
+  # container; never infer time from frame index (R-03, CLAUDE.md §4.1).
+  timestamp_source: "container_pts"
+  require_monotonic_timestamps: true
+  # Resampling to constant frame rate is for downstream tools that demand it; the
+  # true timestamp is always carried alongside.
+  target_fps: 30
+  resample_to_cfr: false
+  frame_format: "png"
+  # Drop frames whose inter-frame gap deviates this much from the median (jitter guard).
+  max_timestamp_jitter_ratio: 0.5
+
+imu:
+  expected_rate_hz: 200
+  # Video/IMU sync offset, estimated at P1-T4 and logged per raw id.
+  sync_offset_ns: null
+  sync_method: "cross_correlate_angular_rate"

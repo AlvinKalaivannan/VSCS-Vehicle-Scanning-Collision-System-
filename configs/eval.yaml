@@ -1,0 +1,52 @@
+# Evaluation protocol: splits, metrics, acceptance thresholds. CLAUDE.md §11.
+schema_version: 1
+
+# --- Splits ------------------------------------------------------------------
+# Assigned at ingest, roughly 70/30, stratified so both splits contain pole, kerb and
+# box cases. R-09: `test` is touched exactly ONCE, at P5-T2. Never re-tune after
+# looking at it.
+splits:
+  ratio_dev: 0.70
+  stratify_by: ["pole", "curb", "box"]
+  seed: 20260924
+  test_split_used: false        # set true, with the date, the day P5-T2 runs
+  test_split_used_date: null
+  dev: []                       # filled at P1-T3/P1-T4 ingest
+  test: []
+
+# --- Acceptance thresholds ---------------------------------------------------
+# Transcribed from CLAUDE.md §6 acceptance criteria. scripts/report.py compares the
+# latest value of each metric in metrics/results.jsonl against these and prints
+# pass/fail. `direction` says which way is good.
+thresholds:
+  reprojection_error_px:        { task: P0-T7, limit: 0.5,   direction: below }
+  frames_registered_frac:       { task: P1-T5, limit: 0.90,  direction: above }
+  sfm_reprojection_error_px:    { task: P1-T5, limit: 1.5,   direction: below }
+  scale_error_m:                { task: P1-T6, limit: 0.02,  direction: below }
+  component_iou_mean:           { task: P2-T3, limit: 0.70,  direction: above }
+  labeled_points_count:         { task: P2-T4, limit: 2000,  direction: above }
+  hull_volume_error_frac:       { task: P2-T6, limit: 0.15,  direction: below }
+  cone_position_error_m:        { task: P3-T2, limit: 0.25,  direction: below }
+  component_flagged_frac:       { task: P3-T6, limit: 0.80,  direction: above }
+  depth_error_m_at_3m:          { task: P4-T1, limit: 0.25,  direction: below }
+  egomotion_drift_frac:         { task: P4-T2, limit: 0.05,  direction: below }
+  pipeline_smoke_seconds:       { task: P0-T4, limit: 60.0,  direction: below }
+
+# --- Metrics reported at P5-T2 ----------------------------------------------
+# Definitions live in src/vscs/eval/metrics.py. Every one of these is reported for
+# BOTH VSCS and the single-bounding-box baseline (P5-T1) - the comparison is the
+# core result and is never cut (CLAUDE.md §6 cut order).
+report_metrics:
+  - component_attribution_accuracy   # flagged component == component that actually passes closest
+  - ttc_error_s
+  - false_alarms_per_min
+  - lead_time_s                      # first warning before closest approach
+  - recall_thin_pole
+  - recall_low_curb
+  - depth_error_by_range
+  - egomotion_drift_frac
+
+baseline:
+  # Identical pipeline, vehicle modelled as ONE oriented bounding box.
+  name: "single_obb"
+  severity: 1.0

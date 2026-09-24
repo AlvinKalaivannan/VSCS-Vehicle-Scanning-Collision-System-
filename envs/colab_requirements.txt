@@ -1,0 +1,41 @@
+# VSCS - GPU stage dependencies. Installed ONLY inside Colab, never on the laptop.
+#
+# Colab ships its own torch/CUDA build matched to the runtime. Do NOT pin torch here:
+# overriding Colab's torch is the most common cause of a broken runtime (R-12).
+# If a version conflict appears, record the working combination in an ADR.
+#
+# Target runtime: Colab Pro, T4. Do not request A100 without an ADR (CLAUDE.md §1).
+
+# --- shared with the laptop env (kept in sync with requirements-core.txt) ---
+numpy
+scipy
+opencv-python
+pyyaml
+pydantic>=2
+shapely
+trimesh
+typer
+rerun-sdk
+
+# --- segmentation / open-vocabulary detection ---
+# SAM 2 (Apache-2.0) - installed from source; pin to a commit once a working one is known.
+# git+https://github.com/facebookresearch/sam2.git
+# Grounding DINO (Apache-2.0)
+# git+https://github.com/IDEA-Research/GroundingDINO.git
+transformers
+timm
+supervision
+
+# --- gaussian splatting (Apache-2.0) ---
+# nerfstudio needs tiny-cuda-nn and a matching CUDA toolchain; install per its own
+# instructions inside the notebook rather than resolving it here.
+# nerfstudio
+
+# --- convex decomposition (MIT) ---
+coacd
+
+# --- collision geometry ---
+python-fcl
+
+# NOTE: Ultralytics YOLO is AGPL-3.0 and is deliberately NOT listed (CLAUDE.md §10).
+# Use an Apache/MIT detector (RT-DETR, YOLOX) instead.

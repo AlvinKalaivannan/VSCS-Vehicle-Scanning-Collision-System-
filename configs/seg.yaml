@@ -1,0 +1,51 @@
+# 2D masks -> 3D component labels. Phase 2.
+schema_version: 1
+
+# =============================================================================
+# PLACEHOLDER - the component vocabulary is task P2-T1 and needs the developer's
+# approval (>= 8 components) before any of it is used. The list below is a
+# starting proposal only. Do not treat it as approved.
+# =============================================================================
+vocabulary_status: "PROPOSED_AWAITING_P2_T1_APPROVAL"
+
+components:
+  # machine_name: text prompt fed to the open-vocabulary detector
+  front_bumper: "front bumper of a van"
+  rear_bumper: "rear bumper of a van"
+  rear_left_bumper_corner: "left corner of the rear bumper"
+  rear_right_bumper_corner: "right corner of the rear bumper"
+  left_mirror: "left side mirror"
+  right_mirror: "right side mirror"
+  sliding_door_right: "sliding side door of a van"
+  rear_doors: "rear cargo doors of a van"
+  wheel_front_left: "front left wheel and tyre"
+  wheel_front_right: "front right wheel and tyre"
+  wheel_rear_left: "rear left wheel and tyre"
+  wheel_rear_right: "rear right wheel and tyre"
+  underbody: "underside of a van"
+
+detector:
+  engine: "grounding_dino"
+  box_threshold: 0.30
+  text_threshold: 0.25
+
+segmenter:
+  engine: "sam2"
+  # Propagate masks through the scan video instead of prompting every frame.
+  track_across_frames: true
+  keyframe_stride: 15
+
+fusion3d:
+  # Project each 3D point into every posed frame, reject occluded observations,
+  # then vote. P2-T3 acceptance: mean per-component IoU >= 0.70.
+  occlusion_depth_tolerance_m: 0.03
+  min_observations_per_point: 3
+  min_vote_fraction: 0.50
+  target_mean_iou: 0.70
+
+cleanup:
+  # P2-T5: must not make IoU worse.
+  cluster_eps_m: 0.05
+  cluster_min_points: 20
+  remove_clusters_smaller_than: 50
+  seed: 20260924

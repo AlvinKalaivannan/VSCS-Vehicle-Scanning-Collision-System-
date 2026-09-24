@@ -1,0 +1,84 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vscs"
+version = "0.0.1"
+description = "Vehicle Scanning Collision System - advisory-only per-component collision risk from phone video"
+readme = "README.md"
+requires-python = "==3.11.*"
+license = { text = "MIT" }
+authors = [{ name = "Alvin Kalaivannan" }]
+
+# Runtime deps are pinned in envs/requirements-core.txt (laptop/CPU) and
+# envs/colab_requirements.txt (GPU stages). Kept loose here so the package
+# stays installable with -e . inside either environment.
+dependencies = [
+    "numpy",
+    "scipy",
+    "opencv-python",
+    "pyyaml",
+    "pydantic>=2",
+    "shapely",
+    "trimesh",
+    "typer",
+]
+
+[project.optional-dependencies]
+viz = ["rerun-sdk", "open3d"]
+dev = ["pytest", "pytest-cov", "ruff", "nbformat"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# ---------------------------------------------------------------- ruff ------
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests", "scripts"]
+extend-exclude = ["notebooks", ".venv", "data"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "N", "UP", "B", "SIM", "RUF"]
+# This codebase uses linear-algebra notation (T_a_b, R, K, P) per CLAUDE.md 4.1,
+# which pep8-naming reads as errors:
+#   N802 function name should be lowercase   -> T_from_Rt, Rt_from_T
+#   N803 argument name should be lowercase   -> K, R, T_a_b, P_cam
+#   N806 variable in function should be lowercase
+#   N812 lowercase imported as non-lowercase -> `from vscs.common import frames as F`
+ignore = ["N802", "N803", "N806", "N812"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# -------------------------------------------------------------- pytest ------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+# Makes `vscs` and `fixtures` importable without an editable install, so the test
+# suite runs on a bare checkout (and in Colab) with no build step.
+pythonpath = ["src", "tests"]
+markers = [
+    "slow: takes more than a few seconds",
+    "gpu: requires a CUDA GPU (Colab only, never runs on the laptop)",
+]
+
+# ------------------------------------------------------------ coverage ------
+# CLAUDE.md 5: coverage target for common/ and risk/ is >= 80%.
+[tool.coverage.run]
+source = ["src/vscs/common", "src/vscs/risk"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]

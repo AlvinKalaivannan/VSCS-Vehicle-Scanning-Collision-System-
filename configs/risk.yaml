@@ -1,0 +1,81 @@
+# Path prediction, swept distance, TTC, contact probability, aggregation, alerts.
+# Phase 3 (2D) then Phase 4 (3D). All tunables live here - no magic numbers in code.
+schema_version: 1
+
+motion:
+  # Constant-curvature ("bicycle at constant steer") prediction over a short horizon.
+  # At reversing speeds a constant-curvature arc is a good model; it stops being one
+  # as soon as the driver moves the wheel, which is why the horizon is short and a
+  # fan of curvatures is swept instead of a single predicted path.
+  model: "constant_curvature"
+  horizon_s: 3.0
+  dt_s: 0.1
+  wheelbase_m: 3.0          # overwritten from the measured value at P1-T6
+  # Curvature fan, 1/m. Negative = turning right (clockwise seen from above), since
+  # veh y points left. 7 curvatures, symmetric, including straight ahead.
+  curvatures_inv_m: [-0.20, -0.12, -0.05, 0.0, 0.05, 0.12, 0.20]
+  # Below this speed nothing can be reached within the horizon; skip the sweep.
+  min_speed_mps: 0.10
+
+sweep:
+  # Phase 3: 2D shapely footprint polygons per component. Phase 4: 3D via python-fcl
+  # on the URDF (fallback ladder steps back down to the 2D method).
+  method: "footprint_2d"    # footprint_2d | mesh_3d
+  # Inflate each component footprint by this before distance queries, to absorb
+  # reconstruction and localisation error rather than pretending the model is exact.
+  component_margin_m: 0.05
+  obstacle_margin_m: 0.05
+  # A component is only reported if something comes within this distance.
+  report_distance_m: 2.0
+  # Joint states used for the sweep. Manual per run in v0.1 (R-15).
+  default_joint_states:
+    sliding_door_right: 0.0
+    rear_door_left: 0.0
+    rear_door_right: 0.0
+    left_mirror: 0.0
+    right_mirror: 0.0
+
+probability:
+  # P4-T7: p_contact = Phi(-d / sigma), i.e. the probability that the true clearance
+  # is <= 0 given a Gaussian error of std sigma on an estimated clearance d.
+  method: "gaussian_clearance"
+  # sigma combines obstacle position uncertainty with vehicle model error.
+  model_sigma_m: 0.03
+  min_sigma_m: 0.02
+  # Below this, report 0 rather than a long tail of meaningless small numbers.
+  clip_below: 0.001
+
+aggregate:
+  # risk_i = p_contact_i * severity_i * speed_factor
+  # speed_factor scales with kinetic energy but is clamped so that a stationary
+  # vehicle still reports a nonzero risk when an obstacle moves toward it.
+  speed_factor:
+    method: "linear_clamped"
+    reference_speed_mps: 2.0
+    min_factor: 0.2
+    max_factor: 3.0
+
+alerts:
+  # Levels escalate on the worst single component, not on the aggregate, so a mirror
+  # about to be destroyed is not averaged away by ten safe components.
+  levels:
+    caution:
+      min_distance_m_below: 1.00
+      ttc_s_below: 3.0
+      p_contact_above: 0.20
+    warning:
+      min_distance_m_below: 0.50
+      ttc_s_below: 2.0
+      p_contact_above: 0.50
+    critical:
+      min_distance_m_below: 0.25
+      ttc_s_below: 1.0
+      p_contact_above: 0.80
+  hysteresis:
+    # R-10: no flicker. Escalate quickly, de-escalate slowly, and hold any level for
+    # a minimum dwell time so the alert cannot toggle faster than a driver can read it.
+    frames_to_escalate: 2
+    frames_to_deescalate: 6
+    min_dwell_s: 0.60
+    # Distances must improve by this much before de-escalating (deadband).
+    deescalate_distance_hysteresis_m: 0.10
