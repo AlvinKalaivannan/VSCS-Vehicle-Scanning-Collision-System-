@@ -134,6 +134,36 @@ class PathFan:
         """All ``T_veh0_veh`` along path ``k``, shape ``(n_steps, 4, 4)``."""
         return np.stack([self.T_veh0_veh(k, i) for i in range(self.n_steps)])
 
+    def truncated(self, t_max_s: float) -> PathFan:
+        """The same fan, cut off at ``t_max_s``, with an exact final pose at ``t_max_s``.
+
+        Used to limit the sweep to the *reachable* horizon: nothing after the first
+        predicted contact can happen without that contact happening first (ADR 0005). The
+        cut is exact rather than snapped to the nearest step, because the final step is
+        precisely the first-contact instant.
+        """
+        t_max = float(t_max_s)
+        if t_max < 0:
+            raise ValueError(f"t_max_s must be non-negative, got {t_max}")
+        if t_max >= self.t_s[-1]:
+            return self
+        keep = int(np.searchsorted(self.t_s, t_max, side="left"))
+        t = np.append(self.t_s[:keep], t_max)
+        s = self.speed_mps * t
+        x = np.empty((self.n_curvatures, t.size))
+        y = np.empty_like(x)
+        heading = np.empty_like(x)
+        for k, kappa in enumerate(self.curvatures):
+            x[k], y[k], heading[k] = constant_curvature_pose(float(kappa), s)
+        return PathFan(
+            t_s=t,
+            curvatures=self.curvatures,
+            speed_mps=self.speed_mps,
+            x=x,
+            y=y,
+            heading=heading,
+        )
+
     def index_of_curvature(self, kappa: float) -> int:
         """Row index of the fan curvature closest to ``kappa``."""
         return int(np.argmin(np.abs(self.curvatures - float(kappa))))

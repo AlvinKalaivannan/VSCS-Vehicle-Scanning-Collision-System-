@@ -19,8 +19,9 @@ Two stages
      delay a real warning. No dwell time applies to escalation.
    * **De-escalate slowly.** Three conditions must *all* hold before stepping down:
      the lower level has persisted for ``frames_to_deescalate`` frames (6), the current
-     level has been held for at least ``min_dwell_s`` (0.6 s), and the clearance has
-     cleared the threshold by ``deescalate_distance_hysteresis_m`` (0.10 m).
+     level has been held for at least ``min_dwell_s`` (0.6 s), and the frame has cleared
+     the threshold by the deadband - ``deescalate_distance_hysteresis_m`` (0.10 m) for a
+     near miss, ``deescalate_ttc_hysteresis_s`` (0.30 s) for a predicted contact.
 
 The deadband is what actually kills flicker. Without it, a clearance hovering at 0.50 m
 with a few centimetres of measurement noise crosses the 0.50 m warning threshold every
@@ -50,12 +51,20 @@ def _meets(
     *,
     use_p: bool,
     distance_offset_m: float,
+    ttc_offset_s: float,
 ) -> bool:
-    if r.min_distance_m < float(thresholds["min_distance_m_below"]) + distance_offset_m:
-        return True
-    if r.ttc_s is not None and r.ttc_s < float(thresholds["ttc_s_below"]):
-        return True
-    return use_p and r.p_contact > float(thresholds["p_contact_above"])
+    """Does one component meet one level? See ADR 0005 for why the two branches differ.
+
+    A predicted contact is graded by time to contact; a near miss by closest approach.
+    The sweep's ``min_distance_m`` is the minimum over the whole horizon, so it is 0 for
+    every predicted contact however distant - comparing it against the distance thresholds
+    would make every predicted contact "critical".
+    """
+    if r.ttc_s is not None:
+        hit = r.ttc_s < float(thresholds["ttc_s_below"]) + ttc_offset_s
+    else:
+        hit = r.min_distance_m < float(thresholds["min_distance_m_below"]) + distance_offset_m
+    return hit or (use_p and r.p_contact > float(thresholds["p_contact_above"]))
 
 
 def raw_level(
@@ -63,12 +72,13 @@ def raw_level(
     risk_cfg: dict[str, Any],
     *,
     distance_offset_m: float = 0.0,
+    ttc_offset_s: float = 0.0,
 ) -> AlertLevel:
     """Unfiltered alert level for one frame: the highest level any component meets.
 
-    ``distance_offset_m`` widens every clearance threshold. The state machine uses it to
-    compute the *release* level - the level a frame must fall below, with the deadband
-    applied, before de-escalation can begin.
+    The offsets widen every threshold. The state machine uses them to compute the
+    *release* level - the level a frame must fall below, deadband applied, before
+    de-escalation can begin.
     """
     alerts = risk_cfg["alerts"]
     use_p = bool(alerts.get("use_p_contact", False))
@@ -76,7 +86,14 @@ def raw_level(
     for level in reversed(LEVELS[1:]):
         thresholds = alerts["levels"][level]
         if any(
-            _meets(r, thresholds, use_p=use_p, distance_offset_m=distance_offset_m) for r in risks
+            _meets(
+                r,
+                thresholds,
+                use_p=use_p,
+                distance_offset_m=distance_offset_m,
+                ttc_offset_s=ttc_offset_s,
+            )
+            for r in risks
         ):
             return level
     return "none"
@@ -92,6 +109,7 @@ class AlertStateMachine:
         self._frames_down = int(h["frames_to_deescalate"])
         self._dwell_ns = round(float(h["min_dwell_s"]) * NS_PER_S)
         self._deadband_m = float(h["deescalate_distance_hysteresis_m"])
+        self._deadband_s = float(h["deescalate_ttc_hysteresis_s"])
         if self._frames_up < 1 or self._frames_down < 1:
             raise ValueError("frames_to_escalate and frames_to_deescalate must be >= 1")
         self.reset()
@@ -122,7 +140,12 @@ class AlertStateMachine:
 
         risks = list(risks)
         raw = raw_level(risks, self._cfg)
-        release = raw_level(risks, self._cfg, distance_offset_m=self._deadband_m)
+        release = raw_level(
+            risks,
+            self._cfg,
+            distance_offset_m=self._deadband_m,
+            ttc_offset_s=self._deadband_s,
+        )
         current = RANK[self.level]
 
         if RANK[raw] > current:

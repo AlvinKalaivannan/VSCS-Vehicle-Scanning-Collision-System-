@@ -252,3 +252,45 @@ def test_a_real_retreat_is_still_reported():
     levels = _run(AlertStateMachine(CFG), frames)
     assert levels[9] == "critical"
     assert levels[-1] == "none"
+
+
+# --------------------------------------------------------------------------- #
+# ADR 0005: a predicted contact is graded by TTC, a near miss by distance      #
+# --------------------------------------------------------------------------- #
+def test_distant_predicted_contact_is_caution_not_critical():
+    """Regression. The sweep reports min_distance_m = 0 for EVERY predicted contact.
+
+    Grading that 0 against the 0.25 m critical threshold made a contact 2.9 s away read
+    as critical, and the TTC ladder was never used.
+    """
+    assert raw_level([_risk(0.0, ttc=2.9)], CFG) == "caution"
+
+
+@pytest.mark.parametrize(
+    "ttc,expected", [(2.5, "caution"), (1.5, "warning"), (0.5, "critical"), (0.0, "critical")]
+)
+def test_predicted_contact_is_graded_by_ttc_alone(ttc, expected):
+    assert raw_level([_risk(0.0, ttc=ttc)], CFG) == expected
+
+
+def test_near_miss_is_graded_by_closest_approach():
+    """No contact predicted, but it will pass 0.2 m away: that is critical."""
+    assert raw_level([_risk(0.2, ttc=None)], CFG) == "critical"
+
+
+def test_ttc_offset_widens_ttc_thresholds():
+    assert raw_level([_risk(0.0, ttc=2.1)], CFG) == "caution"
+    assert raw_level([_risk(0.0, ttc=2.1)], CFG, ttc_offset_s=0.3) == "warning"
+
+
+def test_no_flicker_when_ttc_hovers_on_a_threshold():
+    """A predicted contact hovering at TTC = 2.0 s (the warning line) with noise."""
+    rng = np.random.default_rng(11)
+    n = int(10 * FPS)
+    ttcs = np.clip(2.0 + rng.normal(0.0, 0.08, size=n), 0.0, None)
+    frames = [[_risk(0.0, ttc=float(t))] for t in ttcs]
+
+    raw = [raw_level(f, CFG) for f in frames]
+    filtered = _run(AlertStateMachine(CFG), frames)
+    assert len(_changes(raw)) >= 50, "input is not noisy enough to test anything"
+    assert len(_changes(filtered)) <= 2
