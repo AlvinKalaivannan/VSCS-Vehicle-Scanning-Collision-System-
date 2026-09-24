@@ -1,82 +1,79 @@
 # VSCS Status — updated 2026-09-24
 mode: pair            # pair | build
-phase: P0
-current_task: P0-T6 / P0-T7 (blocked on capture — see Blockers)
+phase: P1
+current_task: P1-T1 awaiting your review; P1-T4 built but unverifiable without real footage
 health: 🟢 on track
 
 ## Done since last update
 
-First working session. The repository was empty apart from `CLAUDE.md`, with no commits.
+Second session today. Phase 0 is complete except for the three tasks that need captures
+(see Blockers). Phase 1's buildable half is now done.
 
-- **P0-T1** ✅ Repo scaffold per section 3, `pyproject.toml` (ruff + pytest + coverage),
-  `.venv` on Python 3.11.9, pinned `envs/requirements-core.txt`, `envs/core.yml`,
-  `envs/colab_requirements.txt`, `.gitignore`, README with the "not a safety device"
-  statement, `data/MANIFEST.md`.
-- **P0-T2** ✅ Reporting system: this file, `RISKS.md` seeded with all 16 risks from
-  section 8.1, devlog + ADR + phase-report templates, empty `metrics/results.jsonl`,
-  `eval/report.py` + `scripts/report.py` generating `docs/REPORT.md`.
-- **P0-T3** ✅ `common/frames.py` (transforms, rotations, pinhole projection, the
-  veh↔cam convention) and `common/types.py` (all section 4.2 schemas), plus
-  `config.py`, `io.py`, `log.py`.
-- **P0-T4** ✅ Synthetic fixture world: 12-component box vehicle, thin pole, kerb, box,
-  20-pose camera trajectory with jittered timestamps.
-- **P0-T5** ⚠️ Colab notebook template written and structurally validated locally. The
-  acceptance criterion ("runs a hello-world GPU check and writes to Drive") **needs one
-  Colab run from you** — I cannot execute it.
-- **P0-T7** ⚠️ Tooling only: `capture/calib.py` + `scripts/calibrate.py`, gated to
-  refuse writing intrinsics above 0.5 px. The acceptance criterion needs your
-  checkerboard capture.
+- **P1-T1** ✅ built, ⏳ **needs your review** — `docs/capture_checklists.md`: pre-flight,
+  scan day, lot day, post-capture backup, privacy, and abort triggers. Its acceptance
+  criterion is literally "developer reviewed it", so it is not done until you read it.
+  It ends with **two open questions that block booking a capture day** (below).
+- **P1-T4** ⚠️ built, acceptance unverifiable yet — the ingest path:
+  - `capture/frames.py` — per-frame container timestamps (ffprobe preferred, OpenCV
+    fallback), VFR/jitter/dropped-frame analysis, frame extraction writing real `t_ns`.
+  - `capture/sync.py` — video/IMU time offset by normalised cross-correlation with
+    sub-sample refinement.
+  - `capture/ingest.py` + `scripts/ingest.py` — sha256, copy-then-verify, manifest rows,
+    and permanent dev/test split assignment.
+- **Marker sheets** ✅ `capture/markers.py` + `scripts/make_markers.py` — printable ArUco
+  sheets at an exact physical size, with a 100 mm check bar so a rescaled print is visible.
+- ADR 0003 extended: **ffmpeg is also not installed**, and is needed before October.
 
 ## Verified metrics (link to metrics/results.jsonl entries)
 
-**None.** `metrics/results.jsonl` is empty, and `docs/REPORT.md` says so. Nothing has
-been measured because nothing measurable has been captured yet — every gate in
-section 6 is currently listed as unproven, which is the correct state on day one.
+**Still none, deliberately.** `metrics/results.jsonl` is empty and `docs/REPORT.md` lists
+all twelve acceptance gates as unproven. Nothing measurable has been captured.
 
-Test-suite evidence for this session (not metrics, and not written to `results.jsonl`):
+Session evidence (test-suite results, **not** metrics, and not written to `results.jsonl`):
 
-- `pytest` — **238 passed, 1 skipped** in 4.1 s
-- coverage on `common/` + `risk/` — **95%** (requirement: ≥80%, section 5)
-- `ruff check .` — clean; `ruff format --check .` — 43 files already formatted
-- `python scripts/report.py` — exits 0 and regenerates `docs/REPORT.md`
-- known-distance fixture test — rear right bumper corner to pole axis is **exactly
-  0.500 m**, asserted to 1e-6
+- `pytest` — **344 passed, 1 skipped** in 7.2 s (was 238)
+- `ruff check .` and `ruff format --check .` — clean across 56 files
+- marker round-trip — a rendered 150 mm sheet is detected as id 0 and **measures 150 mm**
+- sync — a known offset is recovered to within 10 ms, with the correct sign
+- split assignment — deterministic, ~70/30, and stratified across pole/kerb/box
 
 ## Blockers
 
-Both remaining P0 tasks need something only you can do. Neither blocks other work.
+Nothing blocks me from building. Everything below needs you.
 
-1. **P0-T6** (warm-up: phone video → COLMAP → splat) needs (a) a short video of a small
-   object, and (b) COLMAP installed — it is a native binary, not a wheel. The install
-   route is decided in ADR 0003 (prebuilt Windows no-CUDA build) but not yet done.
-2. **P0-T7** needs a checkerboard shot with **focus and exposure locked, main lens, no
-   zoom** (R-04), 15+ images, board tilted and pushed into all four image corners. Then
-   `python scripts/calibrate.py --images <folder> --device <name>`.
-3. **P0-T5** needs one run of `notebooks/colab/00_template.ipynb` on a T4.
+1. **Review `docs/capture_checklists.md`** (P1-T1 acceptance) and answer its two open
+   questions:
+   - **How is IMU recorded alongside video?** A phone's stock camera app does not log IMU,
+     and P1-T3 requires video + IMU. This needs an app choice *and a test at home* before
+     a capture day, or the day produces video with no inertial data.
+   - **Can stabilisation be turned off?** If EIS cannot be disabled it warps frames and
+     the calibration no longer describes them.
+2. **Install ffmpeg and COLMAP** (both native binaries, ADR 0003). ffmpeg is needed for
+   trustworthy VFR timestamps; COLMAP for P0-T6 and P1-T5.
+3. **P0-T6** warm-up video, **P0-T7** checkerboard, **P0-T5** one Colab run — unchanged
+   from last session.
+4. **Two review items you asked to open** — the 16 risk ratings and `JointSpec`. I have
+   the material ready; they need a conversation, not a commit.
 
 ## Open risks triggered (IDs from RISKS.md)
 
-None triggered. Two need your attention rather than mine:
+None triggered. Two worth noting:
 
-- **All 16 rows carry *proposed* likelihood/impact ratings, not agreed ones.** Section 8
-  says these are rated with you. Please walk the table with me next session.
-- **R-12** (dependency conflicts) showed up immediately: the first dependency install
-  stalled over 12 minutes on pip backtracking through `open3d`. Resolved by installing
-  in tiers and deferring `open3d` and `rerun-sdk` until P1-T6/T7. ADR 0001.
+- **R-03 is the reason P1-T4 cannot be called done.** The VFR handling is written and
+  tested, but only against *generated constant-frame-rate* video. That is not evidence
+  about real phone footage. The honest status is "built, unverified".
+- **R-02 nearly bit already.** The marker sheet's cut-guide rectangle was being detected
+  *instead of* the marker, reporting the side 13% oversize — which would have scaled the
+  whole van model by 13%. Caught by a round-trip test, fixed with open corner marks.
+- All 16 likelihood/impact ratings are still **proposed, not agreed**.
 
 ## Next 3 tasks
 
-1. **Review this session's output** — specifically `JointSpec` (I invented it; section
-   4.2 references it but never defines it, ADR 0002) and the proposed risk ratings.
-2. **P0-T6 + P0-T7 captures** — the warm-up video and the checkerboard, plus the COLMAP
-   install. These unblock the last of Phase 0.
-3. **P1-T1** — write `docs/capture_checklists.md` for scan day and lot day. Worth doing
-   before October: section 6 says all real-world data is captured in October, before
-   snow, and the checklist is what makes a capture day not get wasted.
-
-Not started on purpose: the component vocabulary (P2-T1) and severity weights need your
-approval, so `configs/seg.yaml` and `configs/severity.yaml` hold clearly flagged
-proposals only.
+1. **You review the checklist and answer the two open questions**, so a capture day can
+   be booked. October is the whole capture window.
+2. **Rate the risks and review `JointSpec`** with me (you asked for both).
+3. **P1-T5 scaffolding** — COLMAP wrappers, once ffmpeg/COLMAP are installed. Not started:
+   it would be untestable and unrunnable today.
 
 ## GPU usage this month (approx compute units)
 

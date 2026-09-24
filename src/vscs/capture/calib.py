@@ -26,7 +26,7 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-from vscs.common.config import config_dir, load_config
+from vscs.common.config import config_dir, load_config, replace_top_level_block
 from vscs.common.log import get_logger
 
 logger = get_logger("capture.calib")
@@ -255,33 +255,6 @@ def write_to_capture_config(
         )
 
     block = result_to_config_block(result, device=device)
-    _replace_yaml_block(path, "intrinsics", block)
+    replace_top_level_block(path, "intrinsics", block)
     logger.info("wrote intrinsics to %s (%s)", path, result.summary())
     return path
-
-
-def _replace_yaml_block(path: Path, top_key: str, block: dict[str, Any]) -> None:
-    """Replace one top-level mapping in a YAML file, preserving other lines.
-
-    Deliberately a text operation. Round-tripping through ``yaml.safe_load`` and
-    ``safe_dump`` would discard every comment in ``capture.yaml``, and those comments
-    carry the capture rules.
-    """
-    import yaml
-
-    lines = path.read_text(encoding="utf-8").splitlines()
-    start = next((i for i, ln in enumerate(lines) if ln.startswith(f"{top_key}:")), None)
-    if start is None:
-        raise ValueError(f"{path} has no top-level '{top_key}:' key")
-
-    end = len(lines)
-    for i in range(start + 1, len(lines)):
-        stripped = lines[i]
-        # The block ends at the next line that starts in column 0 and is not a comment.
-        if stripped and not stripped[0].isspace() and not stripped.startswith("#"):
-            end = i
-            break
-
-    rendered = yaml.safe_dump({top_key: block}, sort_keys=False, default_flow_style=False)
-    new_lines = lines[:start] + rendered.rstrip("\n").splitlines() + lines[end:]
-    path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
