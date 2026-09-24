@@ -351,6 +351,50 @@ Stop, and plan a re-shoot, rather than pressing on:
 
 These need a decision from the developer before a capture day is worth booking.
 
+### How to settle both of them in one sitting
+
+Do not try to answer these by reading app descriptions. App capabilities change, and
+"the app says it locks exposure" is exactly the kind of claim that turns out to be false
+once you are standing in a car park. Measure it instead.
+
+**Step 1 — record a test capture at home** (twenty minutes, no van required):
+
+- [ ] Pick a candidate recording setup: either one app that records video *and* IMU, or
+      a video app plus a separate sensor logger running at the same time.
+- [ ] Lock focus and exposure, main lens, no zoom — the settings you intend to use on the
+      day (R-04).
+- [ ] Record roughly **30 seconds walking slowly around a textured object** — a bookshelf
+      is ideal, a blank wall is useless.
+- [ ] **Shake the phone sharply, or clap against it, at the very start and again at the
+      very end.** This is not optional. It is the only unambiguous feature both the video
+      and the IMU see at the same instant, and it is what the offset estimate locks onto.
+- [ ] Get both files off the phone: the video, and the IMU log as CSV.
+
+**Step 2 — run the validator:**
+
+```bash
+python scripts/check_capture.py --video test.mp4 --imu gyro.csv
+```
+
+It reports, per check, whether the timestamps are usable, whether the IMU log parses and
+at what rate, and whether the video/IMU offset can actually be recovered and with what
+confidence. Exit code is 0 unless something failed, so it can gate a capture day.
+
+**Step 3 — the stabilisation check**, once the camera has been calibrated (P0-T7):
+
+- [ ] Shoot about 20 seconds of the checkerboard **while walking slowly**.
+- [ ] `python scripts/check_capture.py --video test.mp4 --imu gyro.csv --moving-board board_walk.mp4`
+
+This compares the reprojection error of the calibrated intrinsics on a still board against
+a moving one. A rigid lens keeps roughly the same error either way; if the frames are being
+warped per frame, the error jumps. Note that this **cannot separate electronic stabilisation
+from rolling shutter**, and does not try to — both break the pinhole model the same way and
+call for the same response.
+
+Rerun the whole thing on the morning of the capture as a go/no-go. It takes a minute and it
+is the cheapest insurance in the project.
+
+
 ### 1. How is IMU data recorded alongside video? *(blocks P1-T3)*
 
 P1-T3 requires "video + IMU" and P4-T2 needs visual-inertial ego-motion. **A phone's

@@ -22,6 +22,10 @@ Second session today. Phase 0 is complete except for the three tasks that need c
     sub-sample refinement.
   - `capture/ingest.py` + `scripts/ingest.py` — sha256, copy-then-verify, manifest rows,
     and permanent dev/test split assignment.
+- **Capture validator** [done] `capture/preflight.py` + `scripts/check_capture.py` —
+  turns the checklist's two open questions into a repeatable pass/fail: video timestamps,
+  IMU parsing, video/IMU sync recovery, and a stabilisation/rolling-shutter check. Also
+  usable as a go/no-go on the morning of a capture.
 - **Marker sheets** [done] `capture/markers.py` + `scripts/make_markers.py` — printable ArUco
   sheets at an exact physical size, with a 100 mm check bar so a rescaled print is visible.
 - ADR 0003 extended: **ffmpeg is also not installed**, and is needed before October.
@@ -55,8 +59,11 @@ Session evidence (test-suite results, **not** metrics, and not written to `resul
 
 Nothing blocks me from building. Everything below needs you.
 
-1. **Answer the checklist's two open questions.** The document is approved; these are
-   not document problems, so signing it did not resolve them:
+1. **Run the pre-flight test** (`scripts/check_capture.py`) to settle the checklist's two
+   open questions. They are now a measurement rather than a decision: record ~30 s at home
+   with a sharp shake at each end, plus an IMU log, and the validator reports whether the
+   setup is usable. Twenty minutes, no van required. The questions remain open until it
+   has actually been run:
    - **How is IMU recorded alongside video?** A phone's stock camera app does not log IMU,
      and P1-T3 requires video + IMU. This needs an app choice *and a test at home* before
      a capture day, or the day produces video with no inertial data.

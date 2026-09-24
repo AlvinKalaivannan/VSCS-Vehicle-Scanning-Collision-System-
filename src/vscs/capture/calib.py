@@ -78,7 +78,7 @@ class CalibrationResult:
         )
 
 
-def _object_points(pattern_size: tuple[int, int], square_size_m: float) -> FloatArray:
+def object_points(pattern_size: tuple[int, int], square_size_m: float) -> FloatArray:
     """The board's corners in its own frame: z = 0, spaced by the square size.
 
     Feeding real metres here is what makes the calibration metric rather than
@@ -99,6 +99,24 @@ def find_images(folder: Path) -> list[Path]:
     return sorted(p for p in folder.iterdir() if p.suffix.lower() in IMAGE_SUFFIXES)
 
 
+def detect_corners_in_image(
+    image: np.ndarray,
+    pattern_size: tuple[int, int],
+) -> FloatArray | None:
+    """Detect refined checkerboard corners in an in-memory greyscale image.
+
+    Split out from :func:`detect_corners` so callers processing video frames do not have
+    to round-trip every frame through a file on disk.
+    """
+    flags = cv2.CALIB_CB_ADAPTIVE_THRESH | cv2.CALIB_CB_NORMALIZE_IMAGE
+    found, corners = cv2.findChessboardCorners(image, pattern_size, flags)
+    if not found:
+        return None
+    corners = cv2.cornerSubPix(image, corners, _SUBPIX_WINDOW, (-1, -1), _SUBPIX_CRITERIA)
+    # Must stay float32: cv2.calibrateCamera and solvePnP require Point2f.
+    return corners.astype(np.float32)
+
+
 def detect_corners(
     image_path: Path,
     pattern_size: tuple[int, int],
@@ -115,13 +133,7 @@ def detect_corners(
         return None, None
     size = (int(img.shape[1]), int(img.shape[0]))
 
-    flags = cv2.CALIB_CB_ADAPTIVE_THRESH | cv2.CALIB_CB_NORMALIZE_IMAGE
-    found, corners = cv2.findChessboardCorners(img, pattern_size, flags)
-    if not found:
-        return None, size
-    corners = cv2.cornerSubPix(img, corners, _SUBPIX_WINDOW, (-1, -1), _SUBPIX_CRITERIA)
-    # Must stay float32: cv2.calibrateCamera requires Point2f and rejects float64.
-    return corners.astype(np.float32), size
+    return detect_corners_in_image(img, pattern_size), size
 
 
 def calibrate_intrinsics(
@@ -139,7 +151,7 @@ def calibrate_intrinsics(
     if not image_paths:
         raise ValueError("no images given")
 
-    objp = _object_points(pattern_size, square_size_m)
+    objp = object_points(pattern_size, square_size_m)
     obj_points: list[FloatArray] = []
     img_points: list[FloatArray] = []
     used: list[Path] = []
