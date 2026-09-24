@@ -19,6 +19,7 @@ the pole 0.37 s in, so the last frame is at 0.33 s.
 
 from __future__ import annotations
 
+import itertools
 import time
 
 import pytest
@@ -130,7 +131,7 @@ def test_time_to_contact_counts_down(drive):
 def test_alert_escalates_and_never_backs_off_during_the_approach(drive):
     frames, _ = drive
     ranks = [RANK[f.alert_level] for f in frames]
-    assert all(b >= a for a, b in zip(ranks, ranks[1:], strict=False))
+    assert all(b >= a for a, b in itertools.pairwise(ranks))
     assert frames[-1].alert_level == "critical"
 
 
