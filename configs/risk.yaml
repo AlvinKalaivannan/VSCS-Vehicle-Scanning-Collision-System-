@@ -51,8 +51,10 @@ probability:
 
 aggregate:
   # risk_i = p_contact_i * severity_i * speed_factor
-  # speed_factor scales with kinetic energy but is clamped so that a stationary
-  # vehicle still reports a nonzero risk when an obstacle moves toward it.
+  # speed_factor = clamp(|v| / reference_speed_mps, min_factor, max_factor).
+  # Linear in speed - a deliberately simple proxy for impact severity (kinetic energy
+  # would be v^2, which overweights the fastest passes in a sub-5 km/h dataset). The
+  # floor keeps a stationary vehicle's risk nonzero when an obstacle approaches it.
   speed_factor:
     method: "linear_clamped"
     reference_speed_mps: 2.0
@@ -62,6 +64,16 @@ aggregate:
 alerts:
   # Levels escalate on the worst single component, not on the aggregate, so a mirror
   # about to be destroyed is not averaged away by ten safe components.
+  #
+  # A component meets a level if its clearance OR its time-to-contact is inside that
+  # level's threshold (and, when enabled, its contact probability is above it).
+  #
+  # use_p_contact is FALSE for v0.1. Until P4-T7 there is no real contact probability:
+  # v0.1 uses a deterministic 0/1 indicator (contact predicted within the horizon or
+  # not), which is the CLAUDE.md §6 cut-order fallback "use clearance/TTC thresholds".
+  # Applying p_contact_above to a 0/1 value would make EVERY predicted contact
+  # "critical", however far away. Turn this on only once probability.py exists.
+  use_p_contact: false
   levels:
     caution:
       min_distance_m_below: 1.00
