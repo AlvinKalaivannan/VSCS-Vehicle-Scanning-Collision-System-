@@ -2,6 +2,7 @@
 mode: pair            # pair | build
 phase: P1
 current_task: P1-T1 awaiting your review; P1-T4 built but unverifiable without real footage
+#             P2-T1 approved 2026-09-24 - vocabulary and severity are now frozen
 health: 🟢 on track
 
 ## Done since last update
@@ -23,6 +24,14 @@ Second session today. Phase 0 is complete except for the three tasks that need c
 - **Marker sheets** ✅ `capture/markers.py` + `scripts/make_markers.py` — printable ArUco
   sheets at an exact physical size, with a 100 mm check bar so a rescaled print is visible.
 - ADR 0003 extended: **ffmpeg is also not installed**, and is needed before October.
+- **P2-T1 approved** (2026-09-24): 13 components and the severity weights signed off in
+  `configs/seg.yaml` and `configs/severity.yaml`. Before approving I checked the list
+  against the physical van and found it had nothing for rear protrusions — on many vans a
+  **tow bar** is the actual first-contact point when reversing. You confirmed the van has
+  none (no tow bar, rear step, spare carrier or ladder), so the rear bumper and its two
+  corners really are the rearmost points and nothing needed adding. **The list is now
+  frozen for the phase**: changing it after P2-T3 runs would invalidate every
+  per-component IoU number.
 - **Risk ratings agreed** with you, and **ADR 0004** written: the sliding door is modelled
   as two scanned collision variants rather than a prismatic joint, because it runs on a
   curved track. `configs/model.yaml` and `configs/risk.yaml` updated accordingly, and the
@@ -78,8 +87,8 @@ None triggered. Two worth noting:
    be booked. October is the whole capture window.
 2. **P1-T5 scaffolding** — COLMAP wrappers, once ffmpeg/COLMAP are installed. Not
    started: it would be untestable and unrunnable today.
-3. **P2-T1 component vocabulary** — needs your approval (≥8 components) and is the last
-   thing blocking Phase 2 prep.
+3. **P2-T2 prep** — unblocked by the P2-T1 approval, but it is a GPU stage, so it needs
+   the Colab template proven (P0-T5) and a scan to segment (P1-T2) first.
 
 ## GPU usage this month (approx compute units)
 
