@@ -86,9 +86,13 @@ Two supporting decisions worth naming:
 - Pydantic validation costs time per object. `RiskFrame` construction happens once per
   frame, not per point, so this is not on a hot path. If profiling later shows
   otherwise, `model_construct()` bypasses validation for trusted internal paths.
-- `JointSpec` is **Claude's invention, not the developer's specification.** It should be
-  reviewed before P2-T7 measures real hinge axes on the van. If it is wrong, changing it
-  is cheap now and expensive after the URDF exists.
+- `JointSpec` was **Claude's invention, not the developer's specification.** It was
+  reviewed with the developer on 2026-09-24 and **kept as defined** — but that review
+  found that the *sliding door should not be a joint at all*, because it runs on a curved
+  track. `JointSpec` remains correct for the rear doors and mirrors, which are genuine
+  revolute hinges; the sliding door became two scanned collision variants instead. See
+  **ADR 0004**. Reviewing the schema before the URDF existed is what made that a cheap
+  change rather than an expensive one.
 - Any future schema change must bump `SCHEMA_VERSION`, add an ADR, and update tests, per
   section 4.2.
 - `p_any_contact` assumes per-component independence, which is false: adjacent

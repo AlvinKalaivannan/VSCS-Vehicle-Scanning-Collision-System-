@@ -17,16 +17,31 @@ urdf:
   mesh_format: "obj"
   mesh_dir: "meshes"
 
-joints:
-  # Axes are set manually in v0.1 (R-15); auto-detection from open/closed scans is a
-  # stretch goal. Values below are structural placeholders - measured on the real van
-  # at P2-T7 and then committed with the scan they came from.
-  status: "PLACEHOLDER_MEASURE_AT_P2_T7"
+# Collision-geometry variants (ADR 0004).
+#
+# The sliding door runs on a CURVED track: it pops outward, travels rearward, then
+# settles back in. A prismatic joint along x would be wrong by roughly the track's
+# outward throw through the whole middle of its travel - on a component with severity
+# 2.5. So the door is not a joint at all. It is two separately scanned, separately
+# decomposed collision models, selected per run from the state the operator wrote down
+# (R-15).
+#
+# Consequence for the offline pipeline: P2-T6 and P2-T8 run once per variant.
+variants:
+  status: "AWAITING_P1_T2_SCAN"
   sliding_door_right:
-    type: "prismatic"
-    axis: [1.0, 0.0, 0.0]
-    limit_lower: 0.0
-    limit_upper: 1.0
+    closed: null      # path to the closed-door collision model, set at P2-T8
+    open: null        # path to the open-door collision model, set at P2-T8
+    # Measure on capture day and record here: body skin to door skin at full open,
+    # which is the number that justifies ADR 0004.
+    measured_outward_throw_m: null
+
+joints:
+  # Genuine hinges only. Axes are set manually in v0.1 (R-15); auto-detection from
+  # open/closed scans is a stretch goal. Values below are structural placeholders -
+  # measured on the real van at P2-T7 and committed with the scan they came from.
+  # The sliding door is deliberately absent: see `variants` above and ADR 0004.
+  status: "PLACEHOLDER_MEASURE_AT_P2_T7"
   rear_door_left:
     type: "revolute"
     axis: [0.0, 0.0, 1.0]
