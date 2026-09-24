@@ -1,82 +1,162 @@
-# VSCS - Vehicle Scanning Collision System
+# VSCS — Vehicle Scanning Collision System
 
-> ## ⚠️ This is not a safety device.
-> VSCS is an **advisory-only research prototype**. It never controls steering, throttle, or brakes, and no code
-> in this repository may send commands to a vehicle. It must never be relied upon to prevent a collision.
-> It runs **offline, on recordings** - it is not a deployed in-vehicle system.
+Per-component collision risk estimation for low-speed vehicle manoeuvring, derived from a
+metric three-dimensional reconstruction of the subject vehicle.
 
-VSCS scans a real vehicle from phone video into a metric 3D model, segments that model into **individual
-mechanical components** (bumper corners, mirrors, wheels, doors, underbody), and then - on recorded low-speed
-manoeuvring footage - estimates **per-component** collision risk instead of the usual single "is the car near
-something" bounding box.
+## Intended use and limitations
 
-The question it exists to answer: *not* "will I hit something?" but **"which part of the vehicle is at risk,
-how likely is contact, and how much would it cost?"**
+VSCS is an **advisory-only research prototype**. It is **not a safety device** and must not
+be relied upon to prevent a collision.
 
-## Why per-component
+- The system issues advisory information only. It does not actuate steering, throttle or
+  braking, and no component of this repository transmits commands to a vehicle.
+- Processing is performed offline against recorded sequences. VSCS is not a deployed
+  in-vehicle system, and real-time feasibility is characterised by measured throughput
+  rather than demonstrated by live operation.
+- Reported performance figures describe evaluation on a finite, held-out set of recorded
+  manoeuvres. They are not a general guarantee of detection or of accuracy.
 
-A single bounding box around a van treats a mirror clipping a pole and a wheel scuffing a curb as the same
-event. They are not: they differ in likelihood, in which driver action avoids them, and in repair cost. VSCS
-carries a severity weight per component and reports an expected-damage estimate, so the warning can name the
-part.
+## Overview
 
-The project's core result is therefore a **comparison against a single-bounding-box baseline** on a held-out
-test split (see `docs/REPORT.md`).
+Conventional low-speed proximity systems represent the vehicle as a single bounding volume
+and report a scalar distance to the nearest obstacle. That abstraction discards the
+information a driver actually needs: a mirror contacting a post and a tyre contacting a
+kerb are distinguished neither by likelihood, nor by the corrective action required, nor by
+consequence.
 
-## Pipeline
+VSCS resolves the vehicle into its individual mechanical components — bumper corners,
+mirrors, wheels, doors and underbody — and estimates contact risk for each independently.
+Each component carries a severity weight, allowing the system to report an expected-damage
+figure and to identify the specific component at risk rather than issuing an undifferentiated
+proximity warning.
+
+The system therefore addresses a more specific question than proximity alone: **which
+component of the vehicle is at risk, with what probability of contact, and at what
+consequence.**
+
+## Method
+
+### Vehicle model acquisition
+
+A complete exterior surface scan of the subject vehicle is acquired as a calibrated
+monocular image sequence, captured at multiple heights and viewing angles with fixed
+intrinsics and dimensional reference markers of known size. Structure-from-motion
+reconstruction, marker-based metric scaling and ground-plane estimation yield a
+dimensionally accurate model expressed in a vehicle-fixed coordinate frame.
+
+The reconstruction is segmented into individual mechanical components by lifting
+open-vocabulary two-dimensional masks into three dimensions through multi-view label fusion
+with explicit occlusion testing. Components are convex-decomposed and exported as a
+collision model with per-component severity weights and articulation for hinged parts.
+
+Dimensional accuracy is validated against independent physical measurements of the vehicle,
+with an acceptance threshold of ±2 cm across four independent dimensions.
+
+### Risk estimation
+
+Recorded manoeuvring sequences are processed to recover ego-motion, obstacle geometry and
+obstacle classification. A constant-curvature motion model generates a fan of candidate
+vehicle trajectories over a short horizon. For each component and each candidate
+trajectory, the system computes swept clearance, time-to-contact, and a contact probability
+derived from the estimated clearance and its uncertainty. Per-component risks are
+aggregated into a frame-level expected-damage figure and an alert state governed by
+hysteresis.
+
+### Evaluation
+
+The principal result is a controlled comparison against a **single-bounding-box baseline**:
+an otherwise identical pipeline in which the vehicle is represented as one oriented
+bounding box. Both configurations are evaluated on the same held-out test split, which is
+assigned at data ingest and examined exactly once, at the final evaluation stage.
+
+Reported metrics comprise component attribution accuracy, time-to-contact error, false
+alarms per minute, warning lead time, recall on thin and low-profile obstacles,
+depth error by range, and per-stage throughput.
+
+## System architecture
 
 ```
-Offline, once per vehicle:   capture -> recon -> seg -> model   (URDF + per-component severity)
-Per drive:                   capture -> perception -> risk -> ui / eval
+Vehicle model (once per vehicle):   capture -> recon -> seg -> model
+Per manoeuvre:                      capture -> perception -> risk -> ui / eval
 ```
 
-| Stage | What it does |
+| Stage | Function |
 |---|---|
-| `capture/` | Ingest phone video + IMU; variable-frame-rate-safe frame extraction with real timestamps |
-| `recon/` | Structure-from-motion, metric scale from markers, ground plane, vehicle frame |
-| `seg/` | 2D component masks lifted to 3D by multi-view label fusion with occlusion tests |
-| `model/` | Convex decomposition per component, joints for doors and mirrors, URDF export |
-| `perception/` | Depth, occupancy, detection, tracking, ego-motion on driving footage |
-| `risk/` | Predicted path fan, swept distance, time-to-contact, contact probability, aggregation |
-| `ui/` | Rerun developer view and a driver replay view |
-| `eval/` | Metrics, the bounding-box baseline, and report generation |
+| `capture/` | Sequence ingest, frame extraction with container-accurate timestamps, calibration, inertial synchronisation |
+| `recon/` | Structure-from-motion, metric scaling, ground-plane estimation, vehicle frame definition |
+| `seg/` | Two-dimensional component masks lifted to three dimensions by multi-view label fusion |
+| `model/` | Per-component convex decomposition, articulation, collision model export |
+| `perception/` | Depth estimation, occupancy mapping, obstacle detection and tracking, ego-motion |
+| `risk/` | Trajectory prediction, swept clearance, time-to-contact, contact probability, aggregation |
+| `ui/` | Developer visualisation and driver replay |
+| `eval/` | Metric definitions, baseline comparison, report generation |
 
-## Status
+Inter-module communication is restricted to the versioned schemas defined in `CLAUDE.md`
+§4.2. Units are metres, seconds and radians throughout; timestamps are 64-bit integer
+nanoseconds; the vehicle frame follows ROS REP-103.
 
-Phase 0 (setup). See **`docs/STATUS.md`** for the current task and health, `docs/RISKS.md` for open risks, and
-`docs/devlog/` for the working log.
+## Results
 
-## Honest numbers
+All reported figures are generated from `metrics/results.jsonl` and regenerated into
+`docs/REPORT.md` by `python scripts/report.py`. No figure is recorded by hand.
 
-Every number quoted in this README or in any writeup traces to a line in `metrics/results.jsonl` and is
-regenerated into `docs/REPORT.md` by `python scripts/report.py`. **No metrics have been measured yet** - the
-table below stays empty until they are.
+**No measurements have yet been taken.** The table below remains empty until evaluation is
+performed, and `docs/REPORT.md` currently lists every acceptance threshold as unproven.
 
 | Metric | Value | Split | Evidence |
 |---|---|---|---|
-| _(none yet)_ | | | |
+| — | — | — | — |
 
-## Setup
+## Acquisition constraints
 
-Python 3.11. On this laptop there is no NVIDIA GPU, so all GPU stages run on Colab.
+The current acquisition instrument is a consumer smartphone camera. This is a deliberate
+constraint rather than a limitation of the method: the pipeline assumes only a single
+calibrated monocular camera and makes no use of depth sensors, structured light or stereo
+rigs. Consequences that follow from it are treated explicitly in the risk register
+(`docs/RISKS.md`):
+
+- variable frame rate and rolling shutter require container-accurate timestamps, never
+  frame indices;
+- focus and exposure must remain locked for the duration of a capture, since autofocus
+  invalidates the calibration;
+- metric scale derives from printed reference markers of measured dimension, validated
+  against independent physical measurement of the vehicle.
+
+Substituting a stereo or depth-capable instrument would relax several of these constraints
+and is recorded as a possible future extension.
+
+## Environment
+
+Requires Python 3.11. Compute-intensive stages execute on a CUDA-capable host; all
+remaining stages run on CPU.
 
 ```bash
 python -m venv .venv
-.venv\Scripts\activate                              # Windows
+.venv\Scripts\activate
 pip install -r envs/requirements-core.txt
 pip install -e .
 pytest -q && ruff check .
 ```
 
-`envs/core.yml` is the equivalent conda spec for machines that have conda; `envs/colab_requirements.txt` is
-installed only inside Colab. See `docs/decisions/0001-venv-instead-of-conda.md`.
+`envs/core.yml` provides an equivalent Conda specification. `envs/colab_requirements.txt`
+covers GPU stages and is installed only on the GPU host. See
+`docs/decisions/0001-venv-instead-of-conda.md`.
 
-## Privacy
+## Data handling
 
-Recordings may contain bystanders and license plates. Nothing leaves `data/` without a face + plate blur pass
-and a human visual confirmation. Raw recordings, GPS tracks, and location metadata are never committed.
+Recorded sequences may contain identifiable individuals and vehicle registration plates.
+No material leaves the `data/` tree without face and plate redaction followed by human
+verification. Raw sequences, positional traces and location metadata are excluded from
+version control; `data/MANIFEST.md` is the only tracked file within that tree. Third-party
+footage is used for private evaluation only and is not redistributed.
+
+## Project status
+
+Phase 1. Current task state, verified metrics and open risks are recorded in
+`docs/STATUS.md`; architectural decisions in `docs/decisions/`; the working log in
+`docs/devlog/`.
 
 ## Licence
 
-MIT for this repository's own code. Third-party components keep their own licences (see CLAUDE.md §10);
-AGPL-licensed detectors are deliberately avoided.
+MIT for original work in this repository. Third-party components remain under their
+respective licences; copyleft-licensed detection models are excluded by policy.

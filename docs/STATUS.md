@@ -3,26 +3,26 @@ mode: pair            # pair | build
 phase: P1
 current_task: P1-T4 built but unverifiable without real footage (needs ffmpeg + a real clip)
 #             P2-T1 approved 2026-09-24 - vocabulary and severity are now frozen
-health: 🟢 on track
+health: ON TRACK
 
 ## Done since last update
 
 Second session today. Phase 0 is complete except for the three tasks that need captures
 (see Blockers). Phase 1's buildable half is now done.
 
-- **P1-T1** ✅ **approved 2026-09-24** — `docs/capture_checklists.md`: pre-flight,
+- **P1-T1** [done] **approved 2026-09-24** — `docs/capture_checklists.md`: pre-flight,
   scan day, lot day, post-capture backup, privacy, and abort triggers. Its acceptance
   criterion is literally "developer reviewed it", so it is not done until you read it.
   Approved, but it still ends with **two open questions that block booking a capture
   day** — approving the document did not answer them (below).
-- **P1-T4** ⚠️ built, acceptance unverifiable yet — the ingest path:
+- **P1-T4** [partial] built, acceptance unverifiable yet — the ingest path:
   - `capture/frames.py` — per-frame container timestamps (ffprobe preferred, OpenCV
     fallback), VFR/jitter/dropped-frame analysis, frame extraction writing real `t_ns`.
   - `capture/sync.py` — video/IMU time offset by normalised cross-correlation with
     sub-sample refinement.
   - `capture/ingest.py` + `scripts/ingest.py` — sha256, copy-then-verify, manifest rows,
     and permanent dev/test split assignment.
-- **Marker sheets** ✅ `capture/markers.py` + `scripts/make_markers.py` — printable ArUco
+- **Marker sheets** [done] `capture/markers.py` + `scripts/make_markers.py` — printable ArUco
   sheets at an exact physical size, with a 100 mm check bar so a rescaled print is visible.
 - ADR 0003 extended: **ffmpeg is also not installed**, and is needed before October.
 - **P2-T1 approved** (2026-09-24): 13 components and the severity weights signed off in

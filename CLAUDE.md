@@ -37,20 +37,20 @@ Default: **pair mode.** VSCS is the developer's portfolio project and they must 
 
 ## 1. Project summary
 
-VSCS is a **purely software, advisory-only** computer-vision system that:
+VSCS is a software-only, advisory computer-vision system that:
 
-1. Scans a real vehicle (the project van) from phone video into a metric 3D model.
+1. Acquires a full exterior surface scan of the subject vehicle as a calibrated monocular image sequence, and reconstructs it as a metric 3D model.
 2. Segments that model into **individual mechanical components** (wheels, bumpers, mirrors, doors, underbody, etc.) and exports a collision model (URDF) with per-component **severity weights** and **joints** for articulated parts.
-3. Processes recorded driving footage (reversing / low-speed maneuvering) to build a 3D picture of obstacles around the vehicle.
+3. Processes recorded manoeuvring sequences (reversing and low-speed manoeuvring) to build a 3D representation of obstacles around the vehicle.
 4. Computes **per-component collision risk** (distance, time-to-contact, probability, severity) and an aggregate risk, then produces warnings.
-5. Proves its value against a **single-bounding-box baseline**.
+5. Establishes its value through controlled comparison against a **single-bounding-box baseline**.
 
 ### Hard boundaries
 
 - **Advisory only.** VSCS never controls steering, throttle, or brakes. No code in this repo may send commands to a vehicle.
 - **Not a safety device.** The README and demo must state this. Never let a test depend on VSCS to prevent a real collision.
-- **Offline-first.** The system runs on recordings. Real-time *feasibility* is shown by throughput on a Colab T4, not by in-vehicle deployment.
-- **No custom hardware.** Capture device is the developer's phone. A USB stereo camera is an optional later upgrade (Tier 1), only with the developer's approval.
+- **Offline-first.** The system operates on recorded sequences. Real-time *feasibility* is characterised by measured throughput on a Colab T4, not demonstrated by in-vehicle deployment.
+- **Single monocular instrument.** Acquisition uses one calibrated monocular camera. No depth sensor, structured light or stereo rig is assumed, and no custom hardware is built. The current instrument is a consumer smartphone camera; this is recorded explicitly because the constraints it imposes — variable frame rate, rolling shutter, autofocus drift — are the stated cause of R-03, R-04 and R-06, and of the P0-T7 calibration gate. A USB stereo camera is an optional later upgrade (Tier 1), only with the developer's approval.
 
 ### Compute
 
@@ -63,7 +63,7 @@ VSCS is a **purely software, advisory-only** computer-vision system that:
 ## 2. Architecture
 
 ```
- phone video + IMU                     phone video + IMU (mounted on van)
+ monocular sequence + IMU              monocular sequence + IMU (mounted on van)
         │                                         │
         ▼                                         ▼
  ┌─────────────┐   ┌────────────┐          ┌──────────────┐
@@ -162,7 +162,7 @@ vscs/
 - **Camera frame `cam`:** OpenCV convention — x right, y down, z forward.
 - **World frame `world`:** fixed at the vehicle's pose at the start of a drive (for ego-motion).
 - **Transform naming:** `T_a_b` is a 4×4 homogeneous matrix that maps points expressed in frame `b` into frame `a`: `p_a = T_a_b @ p_b`. Composition: `T_a_c = T_a_b @ T_b_c`. All transforms live in `common/frames.py` with tests for inverse and composition.
-- **Timestamps:** `int64` nanoseconds. Never use frame index as time (phones record variable frame rate).
+- **Timestamps:** `int64` nanoseconds. Never use frame index as time (consumer capture devices record at variable frame rate).
 
 ### 4.2 Schemas (`src/vscs/common/types.py`, dataclasses or pydantic)
 
@@ -253,7 +253,7 @@ A phase is complete only when every task's acceptance criterion is met and `docs
 | P0-T3 | `common/frames.py` + `types.py` with tests | Transform + projection tests pass |
 | P0-T4 | Synthetic fixture world | Fixture loads; known-distance test passes |
 | P0-T5 | Colab notebook template (install, Drive mount, checkpoint dir, call into package) | Runs a hello-world GPU check and writes to Drive |
-| P0-T6 | Warm-up: phone video of a small object → COLMAP → splat | Viewable 3D model; steps documented in devlog |
+| P0-T6 | Warm-up: monocular sequence of a small object → COLMAP → splat | Viewable 3D model; steps documented in devlog |
 | P0-T7 | Phone camera intrinsics calibration (checkerboard, focus/exposure locked) | Reprojection error < 0.5 px, saved to `configs/capture.yaml` |
 
 ### Phase 1 — Data capture + van scan (October)
@@ -262,7 +262,7 @@ A phase is complete only when every task's acceptance criterion is met and `docs
 |---|---|---|
 | P1-T1 | Write `docs/capture_checklists.md` (scan day + lot day, safety, privacy) | Developer reviewed it |
 | P1-T2 | Capture day 1: van scan (2–3 loops, 3 heights, ArUco/AprilTag markers, doors closed + open, overcast) | Raw files ingested, checksummed in `MANIFEST.md`, backed up to 2 locations |
-| P1-T3 | Capture day 2: parking-lot runs with cones/pole/boxes at tape-measured positions; phone mounted rear-facing, video + IMU | ≥10 passes recorded; ground-truth positions in `data/raw/lot_*/gt.yaml`; backed up |
+| P1-T3 | Capture day 2: parking-lot runs with cones/pole/boxes at tape-measured positions; camera mounted rear-facing, sequence + IMU | ≥10 passes recorded; ground-truth positions in `data/raw/lot_*/gt.yaml`; backed up |
 | P1-T4 | Ingest: VFR-safe frame extraction with real timestamps; IMU/video sync | Timestamp monotonic check passes; sync offset estimated and logged |
 | P1-T5 | SfM reconstruction of van (COLMAP) | ≥90% of extracted frames registered; mean reprojection error < 1.5 px |
 | P1-T6 | Metric scale from markers + ground plane (RANSAC) + vehicle frame | Length, width, height, wheelbase each within **±2 cm** of tape measurements (`scale_error_m` logged) |
@@ -281,7 +281,7 @@ A phase is complete only when every task's acceptance criterion is met and `docs
 | P2-T7 | Joints for sliding door, rear doors, mirrors (manual axis first) | Rerun shows door swinging correctly through its range |
 | P2-T8 | URDF + `components.yaml` export | Loads in a URDF viewer and in `risk/`; fixture test for loading passes |
 
-### ⏸ December — exams. No planned work. Only emergency data backups.
+### December — examination period. No planned work. Emergency data backups only.
 
 ### Phase 3 — MVP "VSCS v0.1" (winter break)
 
@@ -340,7 +340,7 @@ Reporting is not optional. The goal: at any moment, the developer (or a future s
 mode: pair            # pair | build
 phase: P2
 current_task: P2-T3 (in progress)
-health: 🟢 on track | 🟡 at risk | 🔴 blocked
+health: ON TRACK | AT RISK | BLOCKED
 ## Done since last update
 - ...
 ## Verified metrics (link to metrics/results.jsonl entries)
@@ -391,9 +391,9 @@ At each phase gate: table of every task → criterion → result → evidence li
 
 ### 7.6 Health rules
 
-- 🟡 **at risk** when: a task has exceeded 2× its expected time, a fallback trigger has fired, or a phase will slip past its month.
-- 🔴 **blocked** when: progress is impossible without the developer's decision, new data, or money.
-- On 🟡 or 🔴, the session summary must lead with it.
+- **AT RISK** when: a task has exceeded 2× its expected time, a fallback trigger has fired, or a phase will slip past its month.
+- **BLOCKED** when: progress is impossible without the developer's decision, new data, or money.
+- On AT RISK or BLOCKED, the session summary must lead with it.
 
 ---
 
@@ -410,7 +410,7 @@ Seed `docs/RISKS.md` from this table. Columns: ID · risk · likelihood · impac
 | R-03 | Phone variable frame rate + rolling shutter corrupt timing | Non-monotonic or irregular timestamps; ego-motion jitter | Use container timestamps, never frame index; slow motion during capture; record at highest fixed fps available |
 | R-04 | Autofocus/zoom changes intrinsics mid-capture | Calibration reprojection error rises on capture frames | Lock focus/exposure, use main lens only, no zoom |
 | R-05 | SAM/Grounding DINO labels bleed across component boundaries | IoU < 0.70; labels spill onto neighbors | Multi-view voting with occlusion test; confidence thresholds; manual prompts for weak classes |
-| R-06 | Monocular/phone depth too inaccurate for contact-level precision | Depth error > 10 cm at 3 m | Motion stereo + metric depth fusion; ground-plane anchoring; report error honestly |
+| R-06 | Monocular depth too inaccurate for contact-level precision | Depth error > 10 cm at 3 m | Motion stereo + metric depth fusion; ground-plane anchoring; report error honestly |
 | R-07 | Thin poles, low curbs, glass missed | Low recall on those categories | Dedicated test cases in lot runs; occupancy layer independent of detector |
 | R-08 | Ego-motion drift corrupts persistent map | Static cones "move" over a pass | IMU fusion; short horizons; reset map per maneuver |
 | R-09 | Overfitting thresholds to the data you evaluate on | Dev/test gap large at P5 | Split runs into **dev** and **held-out test** at ingest; test touched once, in P5-T2 |
@@ -418,7 +418,7 @@ Seed `docs/RISKS.md` from this table. Columns: ID · risk · likelihood · impac
 | R-11 | Colab disconnects / compute units run out | Lost runs; CU balance low | Checkpoint to Drive every stage; small resumable jobs; T4 not A100; log CU per job |
 | R-12 | Dependency conflicts (nerfstudio, COLMAP, torch, CUDA) | Env install fails | Separate envs; pinned versions; record working combos in ADR |
 | R-13 | Data loss | Missing/corrupt raw file | 3 copies (laptop, external drive, cloud); sha256 in MANIFEST; verify after copy |
-| R-14 | Scope creep / time crunch with coursework | Health 🟡 two sessions in a row | Cut order in §6; Phase 3 MVP protected |
+| R-14 | Scope creep / time crunch with coursework | Health AT RISK two sessions in a row | Cut order in §6; Phase 3 MVP protected |
 | R-15 | Articulated joint states unknown during drives | Wrong geometry used (door open vs closed) | Manual joint-state input per run in v0.1; auto-detect is stretch |
 | R-16 | Schema/convention drift between modules | Integration test fails; frames mismatched | §4 contracts, version field, smoke test on every merge |
 
@@ -447,11 +447,11 @@ Seed `docs/RISKS.md` from this table. Columns: ID · risk · likelihood · impac
 
 ### Capture safety (write into `docs/capture_checklists.md`)
 
-- A licensed driver operates the van; Claude never plans a session where the phone operator is also the driver.
+- A licensed driver operates the van; Claude never plans a session in which the camera operator is also the driver.
 - Walking speed only (< 5 km/h) in an empty lot, with permission to use the lot where needed.
 - **No people behind or beside the moving vehicle.** Dynamic-object clips (P4-T4) use a person walking at a safe distance with the **vehicle stationary**, or use public footage/CARLA.
 - Obstacles are soft/cheap (cones, cardboard boxes, a foam or PVC pole). Nothing that damages the van if touched.
-- Phone mount must be secure; the phone is never handled while the vehicle moves. Check current Ontario distracted-driving rules before any in-vehicle screen use.
+- The camera mount must be secure; the camera is never handled while the vehicle is in motion. Check current Ontario distracted-driving rules before any in-vehicle screen use.
 - Stop immediately on rain/ice/poor visibility.
 
 ### Privacy

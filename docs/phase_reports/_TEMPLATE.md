@@ -1,13 +1,13 @@
 # Phase N report
 
 - **Window:** YYYY-MM-DD → YYYY-MM-DD
-- **Health at gate:** 🟢 | 🟡 | 🔴
+- **Health at gate:** ON TRACK | AT RISK | BLOCKED
 
 ## Task results
 
 | ID | Task | Acceptance criterion | Result | Evidence |
 |---|---|---|---|---|
-| P?-T? | | | ✅ met / ⚠️ partial / ❌ unmet | |
+| P?-T? | | | MET / PARTIAL / UNMET | |
 
 ## What changed from the plan
 
