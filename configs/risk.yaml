@@ -27,6 +27,11 @@ sweep:
   obstacle_margin_m: 0.05
   # A component is only reported if something comes within this distance.
   report_distance_m: 2.0
+  # Time-to-contact is refined inside the swept segment where contact first occurs,
+  # using the continuous motion model, until the bracket is narrower than this.
+  # Without refinement TTC is quantised to motion.dt_s (0.1 s) - a 10-20% error on a
+  # half-second warning.
+  ttc_tolerance_s: 0.005
   # Joint states used for the sweep. Manual per run in v0.1 (R-15).
   # sliding_door_right is a VARIANT SELECTOR ("closed" / "open"), not a displacement:
   # the door is two scanned collision models rather than a joint (ADR 0004). The rest
@@ -65,8 +70,14 @@ alerts:
   # Levels escalate on the worst single component, not on the aggregate, so a mirror
   # about to be destroyed is not averaged away by ten safe components.
   #
-  # A component meets a level if its clearance OR its time-to-contact is inside that
-  # level's threshold (and, when enabled, its contact probability is above it).
+  # How a component is graded (ADR 0005):
+  #   - contact predicted (ttc_s set): graded by TIME TO CONTACT - "how soon will it hit".
+  #   - no contact predicted:          graded by CLOSEST APPROACH  - "how close will it pass".
+  # Clearance and TTC are not interchangeable here: the sweep's min_distance_m is the
+  # minimum over the whole horizon, so it is 0 for EVERY predicted contact, including one
+  # 2.9 s away. Grading that 0 against the distance thresholds would make every predicted
+  # contact "critical" and leave the TTC ladder unused.
+  # When enabled, a contact probability above a level's p_contact_above also meets it.
   #
   # use_p_contact is FALSE for v0.1. Until P4-T7 there is no real contact probability:
   # v0.1 uses a deterministic 0/1 indicator (contact predicted within the horizon or
@@ -95,3 +106,7 @@ alerts:
     min_dwell_s: 0.60
     # Distances must improve by this much before de-escalating (deadband).
     deescalate_distance_hysteresis_m: 0.10
+    # The same deadband for TTC-graded levels: to leave a level, TTC must exceed that
+    # level's threshold by this much. Stops a TTC hovering at 2.0 s from flickering
+    # between caution and warning.
+    deescalate_ttc_hysteresis_s: 0.30

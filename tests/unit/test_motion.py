@@ -198,3 +198,45 @@ def test_curvature_from_yaw_rate():
 def test_rejects_bad_arguments(kwargs, match):
     with pytest.raises(ValueError, match=match):
         M.path_fan(-1.0, **kwargs)
+
+
+# --------------------------------------------------------------------------- #
+# Truncation to the reachable horizon (ADR 0005)                               #
+# --------------------------------------------------------------------------- #
+def test_truncated_ends_exactly_at_t_max():
+    fan = M.path_fan(-1.0, horizon_s=3.0, dt_s=0.1, curvatures=[-0.2, 0.0, 0.2])
+    cut = fan.truncated(0.37)
+    assert cut.t_s[-1] == pytest.approx(0.37)
+    np.testing.assert_allclose(cut.t_s[:-1], [0.0, 0.1, 0.2, 0.3])
+    assert cut.n_curvatures == 3
+
+
+def test_truncated_final_pose_is_the_exact_continuous_pose():
+    fan = M.path_fan(-1.0, horizon_s=3.0, dt_s=0.1, curvatures=[0.12])
+    cut = fan.truncated(1.234)
+    x, y, h = M.constant_curvature_pose(0.12, -1.234)
+    assert cut.x[0, -1] == pytest.approx(float(x), abs=EXACT)
+    assert cut.y[0, -1] == pytest.approx(float(y), abs=EXACT)
+    assert cut.heading[0, -1] == pytest.approx(float(h), abs=EXACT)
+
+
+def test_truncated_on_a_step_boundary_does_not_duplicate_it():
+    fan = M.path_fan(-1.0, horizon_s=3.0, dt_s=0.1, curvatures=[0.0])
+    cut = fan.truncated(0.3)
+    np.testing.assert_allclose(cut.t_s, [0.0, 0.1, 0.2, 0.3], atol=1e-12)
+
+
+def test_truncated_at_zero_is_the_current_pose_only():
+    cut = M.path_fan(-1.0, horizon_s=3.0, dt_s=0.1, curvatures=[0.0]).truncated(0.0)
+    assert cut.n_steps == 1
+    np.testing.assert_allclose(cut.T_veh0_veh(0, 0), np.eye(4), atol=EXACT)
+
+
+def test_truncating_beyond_the_horizon_is_a_no_op():
+    fan = M.path_fan(-1.0, horizon_s=3.0, dt_s=0.1, curvatures=[0.0])
+    assert fan.truncated(5.0) is fan
+
+
+def test_truncated_rejects_negative_time():
+    with pytest.raises(ValueError, match="non-negative"):
+        M.path_fan(-1.0, horizon_s=3.0, dt_s=0.1, curvatures=[0.0]).truncated(-0.1)
