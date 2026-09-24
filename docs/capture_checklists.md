@@ -375,4 +375,14 @@ that as a known limitation and expect it to be the first suspect if reconstructi
 
 ---
 
-*Reviewed by developer:* ___________  *date:* ___________
+*Reviewed by developer:* **approved** — *date:* **2026-09-24**
+
+> **Approving this document did not answer the two open questions above**, and those still
+> block booking a capture day:
+>
+> 1. **How IMU gets recorded alongside video.** Nothing does it yet, and P1-T3 requires
+>    video + IMU. Needs an app choice *and a 30-second test at home* confirming both files
+>    exist with real timestamps.
+> 2. **Whether stabilisation can be disabled.** Ten minutes to check.
+>
+> Neither is a document problem, so neither is fixed by signing the document.

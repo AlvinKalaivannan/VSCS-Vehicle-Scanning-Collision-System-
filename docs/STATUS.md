@@ -1,7 +1,7 @@
 # VSCS Status — updated 2026-09-24
 mode: pair            # pair | build
 phase: P1
-current_task: P1-T1 awaiting your review; P1-T4 built but unverifiable without real footage
+current_task: P1-T4 built but unverifiable without real footage (needs ffmpeg + a real clip)
 #             P2-T1 approved 2026-09-24 - vocabulary and severity are now frozen
 health: 🟢 on track
 
@@ -10,10 +10,11 @@ health: 🟢 on track
 Second session today. Phase 0 is complete except for the three tasks that need captures
 (see Blockers). Phase 1's buildable half is now done.
 
-- **P1-T1** ✅ built, ⏳ **needs your review** — `docs/capture_checklists.md`: pre-flight,
+- **P1-T1** ✅ **approved 2026-09-24** — `docs/capture_checklists.md`: pre-flight,
   scan day, lot day, post-capture backup, privacy, and abort triggers. Its acceptance
   criterion is literally "developer reviewed it", so it is not done until you read it.
-  It ends with **two open questions that block booking a capture day** (below).
+  Approved, but it still ends with **two open questions that block booking a capture
+  day** — approving the document did not answer them (below).
 - **P1-T4** ⚠️ built, acceptance unverifiable yet — the ingest path:
   - `capture/frames.py` — per-frame container timestamps (ffprobe preferred, OpenCV
     fallback), VFR/jitter/dropped-frame analysis, frame extraction writing real `t_ns`.
@@ -54,8 +55,8 @@ Session evidence (test-suite results, **not** metrics, and not written to `resul
 
 Nothing blocks me from building. Everything below needs you.
 
-1. **Review `docs/capture_checklists.md`** (P1-T1 acceptance) and answer its two open
-   questions:
+1. **Answer the checklist's two open questions.** The document is approved; these are
+   not document problems, so signing it did not resolve them:
    - **How is IMU recorded alongside video?** A phone's stock camera app does not log IMU,
      and P1-T3 requires video + IMU. This needs an app choice *and a test at home* before
      a capture day, or the day produces video with no inertial data.
