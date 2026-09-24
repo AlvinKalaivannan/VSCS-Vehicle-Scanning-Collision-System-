@@ -104,7 +104,7 @@ def _synth_images(tmp_path, n: int = 18, seed: int = 20260924) -> list:
 # Object points                                                                #
 # --------------------------------------------------------------------------- #
 def test_object_points_are_metric_and_planar():
-    objp = calib._object_points(PATTERN, SQUARE_SIZE_M)
+    objp = calib.object_points(PATTERN, SQUARE_SIZE_M)
     assert objp.shape == (PATTERN[0] * PATTERN[1], 3)
     assert np.all(objp[:, 2] == 0.0)
     # Neighbouring corners are exactly one square apart, in real metres.
