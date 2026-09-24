@@ -43,6 +43,25 @@ Not yet done - it is not needed until P0-T6, which is blocked on the developer s
 the warm-up video anyway. Recording it now so the two blocked tasks have one owner and
 one known path.
 
+### ffmpeg / ffprobe is also missing, and P1-T4 needs it
+
+*Added 2026-09-24, second session.*
+
+`ffprobe` is the authoritative source of per-frame container presentation timestamps,
+which is exactly what R-03 and CLAUDE.md §4.1 require ("never use frame index as time").
+It is not installed either.
+
+`capture/frames.py` therefore has two backends: `ffprobe` (preferred) and an OpenCV
+`CAP_PROP_POS_MSEC` fallback, chosen automatically with a warning when it falls back. The
+fallback works and is tested, but it is backend-dependent and is not trustworthy for real
+variable-frame-rate phone footage - which is the only kind this project will ever have.
+
+**Install ffmpeg before the October capture day**, alongside COLMAP. Both are native
+binaries on the same shopping list. Until then, P1-T4's acceptance criterion
+("timestamp monotonic check passes; sync offset estimated and logged") is only verified
+against generated constant-frame-rate video, which is not evidence about VFR behaviour and
+is recorded as such in STATUS.md.
+
 Related toolchain facts settled this session:
 
 - **`open3d` and `rerun-sdk` are not installed yet**, deliberately. See ADR 0001. They
