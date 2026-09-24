@@ -23,6 +23,10 @@ Second session today. Phase 0 is complete except for the three tasks that need c
 - **Marker sheets** ✅ `capture/markers.py` + `scripts/make_markers.py` — printable ArUco
   sheets at an exact physical size, with a 100 mm check bar so a rescaled print is visible.
 - ADR 0003 extended: **ffmpeg is also not installed**, and is needed before October.
+- **Risk ratings agreed** with you, and **ADR 0004** written: the sliding door is modelled
+  as two scanned collision variants rather than a prismatic joint, because it runs on a
+  curved track. `configs/model.yaml` and `configs/risk.yaml` updated accordingly, and the
+  door-open scan pass is now marked load-bearing in the checklist.
 
 ## Verified metrics (link to metrics/results.jsonl entries)
 
@@ -52,8 +56,8 @@ Nothing blocks me from building. Everything below needs you.
    trustworthy VFR timestamps; COLMAP for P0-T6 and P1-T5.
 3. **P0-T6** warm-up video, **P0-T7** checkerboard, **P0-T5** one Colab run — unchanged
    from last session.
-4. **Two review items you asked to open** — the 16 risk ratings and `JointSpec`. I have
-   the material ready; they need a conversation, not a commit.
+4. ~~Two review items~~ — **both closed 2026-09-24.** All 16 risks are now rated with
+   you, and reviewing `JointSpec` turned up a real modelling error (ADR 0004).
 
 ## Open risks triggered (IDs from RISKS.md)
 
@@ -65,15 +69,17 @@ None triggered. Two worth noting:
 - **R-02 nearly bit already.** The marker sheet's cut-guide rectangle was being detected
   *instead of* the marker, reporting the side 13% oversize — which would have scaled the
   whole van model by 13%. Caught by a round-trip test, fixed with open corner marks.
-- All 16 likelihood/impact ratings are still **proposed, not agreed**.
+- All 16 ratings are now **agreed** (2026-09-24). R-01 and R-13 were set from facts you
+  supplied; the other fourteen were accepted as proposed. Re-rate at the Phase 1 gate.
 
 ## Next 3 tasks
 
 1. **You review the checklist and answer the two open questions**, so a capture day can
    be booked. October is the whole capture window.
-2. **Rate the risks and review `JointSpec`** with me (you asked for both).
-3. **P1-T5 scaffolding** — COLMAP wrappers, once ffmpeg/COLMAP are installed. Not started:
-   it would be untestable and unrunnable today.
+2. **P1-T5 scaffolding** — COLMAP wrappers, once ffmpeg/COLMAP are installed. Not
+   started: it would be untestable and unrunnable today.
+3. **P2-T1 component vocabulary** — needs your approval (≥8 components) and is the last
+   thing blocking Phase 2 prep.
 
 ## GPU usage this month (approx compute units)
 

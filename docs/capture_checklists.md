@@ -112,9 +112,32 @@ locations. **Target:** ≥90% of frames registered, and all four measured dimens
 
 ### Conditions
 
-- [ ] **Overcast**, or open shade. Bright sun puts hard specular highlights on paint and
-      blows out panels, and specular highlights move with the camera, which is precisely
-      what breaks feature matching (R-01).
+- [ ] **Overcast**, or open shade. Specular highlights move with the camera, which is
+      precisely what breaks feature matching (R-01).
+
+> **This van is dark maroon and glossy, so read R-01 this way.** Dark paint will not blow
+> out to white the way a light van does — that failure is not your problem. Your problem
+> is the opposite: glossy dark panels behave like **mirrors**. They reflect the sky,
+> trees and buildings, those reflections slide across the panel as you walk, and SfM
+> tries to match them as if they were surface features. Under flat overcast the same
+> panels instead go **uniformly dark with almost no texture at all**.
+>
+> Either way the large flat panels are the weak surface, so the things that actually help
+> are **overlap, ground texture and markers** — not merely avoiding sun:
+>
+> - [ ] Walk **slower** and take **more overlapping views** than feels necessary. Overlap
+>       is the single best defence when the surface itself is uncooperative.
+> - [ ] Put **extra markers and textured objects on the ground** all round the van. If the
+>       panels give SfM nothing, the ground must.
+> - [ ] Expect holes in the middle of big flat panels. That is R-01 behaving as predicted,
+>       not a mistake you made. The bumpers, wheels, mirrors and trim — the parts with
+>       actual geometry, and the parts VSCS cares about — will reconstruct far better than
+>       the door skins.
+> - [ ] *Optional, your call:* low-tack painter's tape crosses on the largest blank panels
+>       give SfM real features and peel off afterwards. It is a standard photogrammetry
+>       trick and it does not change the geometry, since the tape is flat on the surface.
+>       **Only if you are happy putting tape on the van** — test one piece somewhere
+>       inconspicuous first, and remove it all the same day.
 - [ ] Van **clean and dry**. Water droplets and dirt are features that move.
 - [ ] Park well away from walls, with room to walk a full loop plus a couple of metres.
 - [ ] Ground with visible texture (asphalt is ideal). A smooth clean concrete floor gives
@@ -168,9 +191,21 @@ blur and rolling-shutter skew at once (R-03).
 
 ### Recording — doors and mirrors open
 
-Needed for the joints at P2-T7.
+Needed for the joints at P2-T7, and — for the sliding door — for the **second collision
+model** (ADR 0004).
 
-- [ ] Sliding door fully open: one slow pass along that side.
+> **The sliding-door-open pass is load-bearing, not a quick extra.** The door runs on a
+> curved track, so it is not modelled as a joint. Instead there are two separately scanned
+> collision models, closed and open, and the one used per run is whichever you wrote down.
+> That means the door-open pass has to be **good enough to reconstruct on its own** — same
+> care, same overlap, same three heights as the main loops. A sloppy pass here means no
+> door-open model at all.
+
+- [ ] Sliding door fully open: a **full-quality** slow pass along that side, not a sweep.
+- [ ] **Measure the door's outward throw** with a tape: body skin to door skin at full
+      open, versus closed. One minute, and it is the measurement that justifies ADR 0004.
+      Write it into the devlog and into `configs/model.yaml`
+      (`variants.sliding_door_right.measured_outward_throw_m`).
 - [ ] Rear doors fully open: one slow pass at the rear.
 - [ ] Mirrors folded: one short pass of each.
 - [ ] **Record, for each, which parts are open, in the devlog.** Joint states are entered

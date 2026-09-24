@@ -28,8 +28,12 @@ sweep:
   # A component is only reported if something comes within this distance.
   report_distance_m: 2.0
   # Joint states used for the sweep. Manual per run in v0.1 (R-15).
+  # sliding_door_right is a VARIANT SELECTOR ("closed" / "open"), not a displacement:
+  # the door is two scanned collision models rather than a joint (ADR 0004). The rest
+  # are real revolute hinges, in radians.
+  default_variants:
+    sliding_door_right: "closed"
   default_joint_states:
-    sliding_door_right: 0.0
     rear_door_left: 0.0
     rear_door_right: 0.0
     left_mirror: 0.0
