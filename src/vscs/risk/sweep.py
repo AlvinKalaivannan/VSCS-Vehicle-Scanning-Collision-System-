@@ -16,9 +16,11 @@ For each component footprint ``P`` (veh frame) and obstacle footprint ``O`` (veh
 2. Height gate ("2.5D"): skip the pair unless their z-ranges overlap. A kerb under a mirror
    is not a mirror strike.
 3. Move ``P`` along one path of the fan: at step ``i`` its footprint in veh0 is
-   ``A_i = T_i · P`` with ``T_i = fan.T_veh0_veh(k, i)``. Track the minimum ``A_i.distance(O)``.
+   ``A_i = T_i · P`` with ``T_i = fan.T_veh0_veh(k, i)``. Track the minimum
+   ``A_i.distance(O)``.
 4. Tunnelling guard: between steps, test the swept region against ``O`` - the convex
-   hull of the union of ``A_i`` and ``A_{i+1}``. Sampled gaps alone can miss a thin obstacle that falls between two samples.
+   hull of the union of ``A_i`` and ``A_{i+1}``. Sampled gaps alone can miss a thin
+   obstacle that falls between two samples.
 5. TTC refinement: inside the first segment whose swept region hits ``O``, re-evaluate
    with the continuous pose ``motion.constant_curvature_pose(kappa, v * t)`` until the
    first-contact time is bracketed to within ``sweep.ttc_tolerance_s``.
