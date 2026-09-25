@@ -42,19 +42,13 @@ branches are green apart from their intended red targets.
 
 1. **Your drafts:** `risk/sweep.py` on `p3-t4-sweep` and `recon/scale.py` on `p1-t6-scale`.
    Each has its maths in the module docstring and a validated test target.
-2. **Marker placement (proposal, needs your decision).** Measured on synthetic views: markers
-   lying flat on the ground, seen from a standing walk-round, are viewed at grazing angles and
-   their corners come out up to 5 px wrong. Once the corner-angle gate removes those views,
-   most flat markers are left with fewer than two usable views - too few to triangulate, so
-   no scale. Markers on **boards propped at ~45 deg facing the walking path** kept 3-4 good
-   views at every position tested (worst corner 0.5-1.2 px). The approved checklist still
-   says flat on the ground; I have not changed it.
-3. **P1-T7 dense route (needs your decision).** COLMAP dense stereo needs CUDA; the laptop's
-   no-CUDA build cannot run it. Options: COLMAP dense on Colab, OpenMVS on CPU, or splat
-   points (ADR 0003).
-4. **Scan-day measurements the code now depends on:** rear overhang (already in the
-   checklist; `recon.yaml vehicle_frame.rear_overhang_m` refuses to run until set) and a way to
-   mark which end is the front - e.g. one marker board placed at the front bumper.
+2. ~~Marker placement~~ **decided 2026-09-25: propped 45° boards** (you picked the most
+   accurate option). Checklist updated - please re-read its "Marker placement" section, which
+   changed after your approval. Four sheets now: IDs 0-2 around the van, ID 3 at the front
+   bumper (`recon.yaml vehicle_frame.front_marker_id`) so the software knows the front.
+3. ~~P1-T7 dense route~~ **decided 2026-09-25: COLMAP dense on Colab** (ADR 0003).
+4. **Scan day:** measure the rear overhang (in the checklist; `recon.yaml
+   vehicle_frame.rear_overhang_m` refuses to run until set).
 5. **Unchanged:** ffmpeg + COLMAP install; the pre-flight test (`scripts/check_capture.py`);
    P0-T5/T6/T7 captures.
 6. **Push:** `main` is 20+ commits ahead of `origin`. Say the word and I'll push after the same
