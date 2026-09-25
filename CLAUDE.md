@@ -504,17 +504,23 @@ Prefer permissive licenses (MIT, BSD, Apache-2.0). Check before adding anything;
 ## 12. Quick reference
 
 ```bash
-conda activate vscs
+.venv\Scripts\activate                     # venv, not conda, on the dev laptop (ADR 0001)
 pytest -q && ruff check .                  # before every commit to main
-python scripts/ingest.py --src <path> --kind scan|lot
-python scripts/recon.py --config configs/recon.yaml --run <raw_id>
-python scripts/seg.py --config configs/seg.yaml --recon-run <run_dir>     # GPU stage → Colab
-python scripts/export_model.py --seg-run <run_dir>
-python scripts/perceive.py --config configs/perception.yaml --drive <raw_id>
-python scripts/risk.py --model <urdf_dir> --perception-run <run_dir>
-python scripts/view.py --drive <raw_id>                                   # Rerun
-python scripts/evaluate.py --split dev
-python scripts/report.py                                                  # regenerates docs/REPORT.md
+
+# Capture preparation (Phase 0/1)
+python scripts/check_capture.py --video <clip> --imu <gyro.csv> [--moving-board <clip>]
+python scripts/calibrate.py --images <checkerboard_dir> --device <name>     # P0-T7
+python scripts/make_markers.py --out <dir>                                  # print at 100%
+
+# Offline pipeline (per vehicle)
+python scripts/ingest.py --src <path> --kind scan|lot|calib                 # P1-T4
+python scripts/extract_frames.py --video data/raw/<id>/<clip>              # P1-T4
+python scripts/recon.py --frames-run data/processed/capture/<run>          # P1-T5, needs COLMAP
+
+python scripts/report.py                                                    # regenerates docs/REPORT.md
 ```
 
-(Scripts are created as their phases begin; keep this list in sync with reality.)
+Planned, not yet created (added as their phases begin): `seg.py` (GPU stage, Colab),
+`export_model.py`, `perceive.py`, `risk.py`, `view.py` (Rerun), `evaluate.py`.
+
+(Keep this list in sync with reality.)
