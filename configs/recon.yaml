@@ -16,6 +16,22 @@ scale:
   method: "markers"         # markers | known_dimension | spec_sheet  (§8.2)
   marker:
     dictionary: "DICT_4X4_50"
+    # Detection quality gates. Both were set from measurement on synthetic views and from
+    # the marker's geometry, not tuned to one test.
+    #
+    # min_side_px: mean marker side in the image. A 4x4 ArUco marker is 6 modules across;
+    # below ~7 px per module the corners can no longer be located reliably. At 4K a
+    # 150 mm marker clears this out to roughly 9 m.
+    min_side_px: 42
+    # min_corner_angle_deg: smallest interior angle of the detected quad. A marker seen
+    # at a grazing angle projects to a thin trapezoid whose corners are sharply acute; a
+    # corner is where two edges meet, and when they meet at a shallow angle its position
+    # along the edges is poorly determined (error grows like 1 / sin(angle)). 30 deg caps
+    # that at twice the square-on error. Measured: this was the best single predictor of
+    # corner error (r = -0.63); ungated grazing views were off by up to 5 px, gated views
+    # stayed at or below ~1.2 px. Flat ground markers seen from a standing walk-round mostly
+    # fail it - see docs/devlog 2026-09-25 for the capture implication.
+    min_corner_angle_deg: 30
     side_length_m: 0.150    # measure the printed marker, do not trust the PDF
     min_markers_detected: 3
     min_detection_frame_fraction: 0.50   # below this, R-02 fallback triggers
@@ -29,14 +45,29 @@ ground_plane:
   ransac_n: 3
   num_iterations: 2000
   seed: 20260924           # CLAUDE.md §4.3: seed every random process
+  # Reject candidate planes whose normal is more than this far from "up". Without it,
+  # a van's flat side panel - a big vertical plane with many points - can out-vote the
+  # ground. "Up" is estimated from the scan itself: the mean of the cameras' image-up
+  # directions, since a phone is held roughly upright.
+  max_tilt_deg: 30.0
 
 vehicle_frame:
   # veh: x forward, y left, z up. Origin on the ground plane directly below the
   # centre of the rear axle (CLAUDE.md §4.1 - do not change without an ADR).
   origin: "ground_below_rear_axle_centre"
   # Forward axis is taken from the long axis of the body point cloud, then
-  # disambiguated by which end the rear axle markers sit at.
+  # disambiguated by a point known to be at the front.
   forward_from: "body_principal_axis"
+  # Rear axle centre to rear bumper, horizontal, in metres. MEASURED BY HAND on scan day
+  # (docs/capture_checklists.md, "Measure the van first"). It places the frame origin.
+  rear_overhang_m: null
+  # Width is measured per slice along the vehicle and the MEDIAN slice taken, so the
+  # mirrors - which widen only a few slices - do not inflate the body width. The
+  # checklist measures width excluding mirrors, and this has to match it.
+  width_slice_m: 0.10
+  # Ignore this percentage of points at each extreme when taking length and height,
+  # so a few stray reconstruction points cannot stretch the vehicle.
+  trim_percentile: 0.5
 
 dense:
   engine: "colmap_patch_match"   # colmap_patch_match | openmvs | splat_points (§8.2)

@@ -26,6 +26,16 @@ needs only the fixture world, and building it now protects it from the December 
   0.50 m warning line with 4 cm noise for 10 s, the raw level changes 150 times and the
   filtered level twice, never more than twice in a second (R-10). With hysteresis disabled
   the same input gives 150 transitions at up to 21/s, so the test genuinely discriminates.
+- **Two defects in my own merged P3-T5 work, found by wiring the pipeline together, fixed
+  (ADR 0005).** (1) A contact predicted 2.9 s away was graded "critical", because the
+  sweep's horizon-minimum clearance is 0 for every predicted contact; contacts are now
+  graded by TTC, near misses by closest approach. (2) The fixture frame named the
+  *sliding door* for the pole, from a phantom 2.37 s contact behind the corner's 0.37 s
+  impact; new `risk/engine.py` cuts the sweep at the first predicted impact. Neither
+  touched the §4.2 schema or the `sweep.py` contract.
+- **End-to-end smoke test** wired to the real `sweep.py` on `p3-t4-sweep` - the second
+  target after `test_sweep.py`. Checked achievable with the brute-force oracle (20 s, inside
+  the 60 s budget).
 - v0.1 uses a deterministic 0/1 contact indicator until P4-T7 (§6 cut-order fallback #3),
   and `alerts.use_p_contact: false` stops that indicator making every predicted contact
   "critical".
