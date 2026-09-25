@@ -33,6 +33,12 @@ ingest:
   target_fps: 30
   resample_to_cfr: false
   frame_format: "png"
+  # Keep every Nth frame when extracting a scan for SfM. A 4K30 scan of three one-minute
+  # loops is ~5400 frames; exhaustive matching is O(n^2) - ~14.6 million image pairs -
+  # and recon.yaml's matcher assumes a few hundred frames. 10 gives 3 fps, about 17 cm
+  # between frames at walking pace, which still overlaps heavily. Timestamps are the real
+  # container times of the frames kept, never renumbered (R-03).
+  extract_stride: 10
   # Drop frames whose inter-frame gap deviates this much from the median (jitter guard).
   max_timestamp_jitter_ratio: 0.5
 
