@@ -62,6 +62,26 @@ binaries on the same shopping list. Until then, P1-T4's acceptance criterion
 against generated constant-frame-rate video, which is not evidence about VFR behaviour and
 is recorded as such in STATUS.md.
 
+### COLMAP's dense stereo needs CUDA, so P1-T7 cannot run on the laptop as planned
+
+*Added 2026-09-25.*
+
+`colmap patch_match_stereo` - the dense step `configs/recon.yaml` names as the primary
+(`dense.engine: colmap_patch_match`) - requires a CUDA GPU. The no-CUDA Windows build chosen
+above does sparse SfM (P1-T5) but cannot do dense reconstruction, and the laptop has no
+NVIDIA GPU. P1-T7 therefore needs one of:
+
+1. **COLMAP dense on Colab** (T4 has CUDA): upload the undistorted scan frames and the sparse
+   model, run `image_undistorter` / `patch_match_stereo` / `stereo_fusion` there. The scan
+   frames show only the van, so the privacy concern of uploading footage is small.
+2. **OpenMVS on the laptop** - the §8.2 dense fallback 1, which runs on CPU.
+3. **Points from the Gaussian splat** (§8.2 dense fallback 2), already planned on Colab for
+   P1-T7's visuals.
+
+This is a choice between alternatives - the developer's decision - and is recorded here as
+open. Note it is not a fallback *trigger* (§8.2's trigger is a dense run failing or running
+out of memory twice); the primary simply cannot be executed on this machine.
+
 Related toolchain facts settled this session:
 
 - **`open3d` and `rerun-sdk` are not installed yet**, deliberately. See ADR 0001. They
