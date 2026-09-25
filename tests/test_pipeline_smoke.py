@@ -20,7 +20,7 @@ import pytest
 
 pytestmark = pytest.mark.skipif(
     True,
-    reason="needs risk/ (P3-T3..P3-T5); enable at P3-T6",
+    reason="needs risk/sweep.py (P3-T4, developer's draft); the real test is on branch p3-t4-sweep",
 )
 
 #: CLAUDE.md section 5: the whole fixture pipeline must finish inside this, on laptop CPU.
