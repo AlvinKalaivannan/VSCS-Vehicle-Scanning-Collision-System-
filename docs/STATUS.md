@@ -46,7 +46,10 @@ branches are green apart from their intended red targets.
    accurate option). Checklist updated - please re-read its "Marker placement" section, which
    changed after your approval. Four sheets now: IDs 0-2 around the van, ID 3 at the front
    bumper (`recon.yaml vehicle_frame.front_marker_id`) so the software knows the front.
-3. ~~P1-T7 dense route~~ **decided 2026-09-25: COLMAP dense on Colab** (ADR 0003).
+3. ~~P1-T7 dense route~~ **decided 2026-09-25: COLMAP dense on Colab** (ADR 0003). Built: `recon/dense.py`,
+   `scripts/dense.py`, `notebooks/colab/10_dense.ipynb`. The Colab COLMAP install route is
+   unverified; the code refuses to start on a non-CUDA build, and the first run records
+   the route that works.
 4. **Scan day:** measure the rear overhang (in the checklist; `recon.yaml
    vehicle_frame.rear_overhang_m` refuses to run until set).
 5. **Unchanged:** ffmpeg + COLMAP install; the pre-flight test (`scripts/check_capture.py`);

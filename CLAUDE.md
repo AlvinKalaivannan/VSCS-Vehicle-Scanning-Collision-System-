@@ -516,6 +516,7 @@ python scripts/make_markers.py --out <dir>                                  # pr
 python scripts/ingest.py --src <path> --kind scan|lot|calib                 # P1-T4
 python scripts/extract_frames.py --video data/raw/<id>/<clip>              # P1-T4
 python scripts/recon.py --frames-run data/processed/capture/<run>          # P1-T5, needs COLMAP
+python scripts/dense.py --recon-run <run> --images <frames>              # P1-T7, Colab (notebooks/colab/10_dense.ipynb)
 
 python scripts/report.py                                                    # regenerates docs/REPORT.md
 ```

@@ -78,4 +78,12 @@ dense:
   # COLMAP dense stereo needs CUDA, which the laptop lacks, so it runs on Colab (T4) -
   # the developer's decision 2026-09-25, ADR 0003. Sparse SfM (P1-T5) stays on the laptop.
   runs_on: "colab"
+  # Longest image side for dense stereo. 4K frames are downscaled: patch-match time and
+  # GPU memory grow with pixel count, and a T4 has 16 GB. Raise only if detail is missing.
   max_image_size: 1600
+  # Geometric consistency filtering: keep only depths the neighbouring views agree on.
+  # Slower, but it removes most of the floating noise glossy panels produce (R-01).
+  geom_consistency: true
+  # P1-T7 sanity floor: a fused cloud with fewer points than this almost certainly means
+  # the dense step failed silently (e.g. a non-CUDA build or an empty workspace).
+  min_fused_points: 10000
