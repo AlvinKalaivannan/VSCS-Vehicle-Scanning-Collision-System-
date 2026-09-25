@@ -55,6 +55,8 @@ with the **vehicle stationary**, or public footage, or CARLA.
 - [ ] **Printed ArUco markers** — see below.
 - [ ] Rigid flat backing for each marker (clipboard, foam board, stiff card). Paper that
       curls is a curved marker, and a curved marker is a wrong scale.
+- [ ] Something to **prop each board at about 45°** — a box, a foam wedge, a stack of books.
+      See "Marker placement" for why the markers must not lie flat.
 - [ ] Chalk or low-tack tape to mark obstacle positions on the ground.
 - [ ] Traffic cones, cardboard boxes, foam or PVC pole (lot day).
 - [ ] Checkerboard for calibration, on rigid backing.
@@ -62,16 +64,18 @@ with the **vehicle stationary**, or public footage, or CARLA.
 
 ### Markers (this is what makes the model metric — R-02)
 
-- [ ] Generate sheets: `python scripts/make_markers.py --out data/raw/markers`
+- [ ] Generate four sheets: `python scripts/make_markers.py --out data/raw/markers --ids 0 1 2 3`
+      (IDs 0–2 go around the van; ID 3 goes at the front bumper — see "Marker placement").
 - [ ] Print at **100% scale / no fit-to-page**. "Shrink to fit" silently rescales your
       marker and therefore your entire vehicle model.
 - [ ] **Measure the printed marker's black square with a ruler or calipers** and write the
       measured value into `configs/recon.yaml` under `scale.marker.side_length_m`. Do not
       trust the nominal size. Each sheet prints its intended size on it so you can check.
 - [ ] Mount each on rigid backing. Confirm flat.
-- [ ] **At least 3 markers**, different IDs, spread around the vehicle — not clustered on
-      one side. §8.2 steps down to tape-measured dimensions if marker detection fails in
-      over half the frames, and three spread markers is what avoids that.
+- [ ] **At least 3 markers for scale**, different IDs, spread around the vehicle — not
+      clustered on one side — **plus ID 3 at the front**. §8.2 steps down to tape-measured
+      dimensions if marker detection fails in over half the frames, and spread markers are
+      what avoids that.
 
 ### Camera calibration (P0-T7) — do this first, and never again after
 
@@ -127,8 +131,9 @@ locations. **Target:** ≥90% of frames registered, and all four measured dimens
 >
 > - [ ] Walk **slower** and take **more overlapping views** than feels necessary. Overlap
 >       is the single best defence when the surface itself is uncooperative.
-> - [ ] Put **extra markers and textured objects on the ground** all round the van. If the
->       panels give SfM nothing, the ground must.
+> - [ ] Put **extra textured objects on the ground** all round the van (newspaper, a
+>       patterned mat, gravel, leaves). If the panels give SfM nothing, the ground must. These
+>       are for feature matching only; the scale markers go on propped boards.
 > - [ ] Expect holes in the middle of big flat panels. That is R-01 behaving as predicted,
 >       not a mistake you made. The bumpers, wheels, mirrors and trim — the parts with
 >       actual geometry, and the parts VSCS cares about — will reconstruct far better than
@@ -141,7 +146,7 @@ locations. **Target:** ≥90% of frames registered, and all four measured dimens
 - [ ] Van **clean and dry**. Water droplets and dirt are features that move.
 - [ ] Park well away from walls, with room to walk a full loop plus a couple of metres.
 - [ ] Ground with visible texture (asphalt is ideal). A smooth clean concrete floor gives
-      SfM nothing to hold on to — this is why markers go on the ground too.
+      SfM nothing to hold on to — this is why textured objects go on the ground too.
 
 ### Measure the van first, by hand
 
@@ -164,11 +169,26 @@ below the **centre of the rear axle**):
 
 ### Marker placement
 
-- [ ] 3+ markers flat **on the ground** around the van, spread out, each visible from a
-      good part of at least one loop.
+*Changed 2026-09-25 (developer's decision): markers on propped boards, not flat on the
+ground.* Measured on synthetic views: a marker lying flat, seen from a standing walk-round,
+is viewed at a grazing angle. It looks like a thin sliver, its corners come out up to 5 px
+wrong, and once those views are filtered out most flat markers are left with too few good
+views to compute a scale at all. Boards propped at 45° kept 3–4 good views at every
+position tested. Evidence: devlog 2026-09-25.
+
+- [ ] Each marker on its rigid board, **propped at about 45°**, printed face **toward the
+      walking path** (facing outward from the van and tilted up toward the camera).
+- [ ] Place scale markers (IDs 0–2) **about 1.5–2.5 m out from the van body**, spread
+      around it: one on each side and one behind, say. They must sit *inside* your walking
+      loop so the camera faces them as it passes.
+- [ ] Put **ID 3 at the front bumper**, facing forward. The software uses it to tell which
+      end of the van is the front (it cannot tell from the shape alone). It can double as
+      a fourth scale marker.
+- [ ] Make sure no board is only ever seen edge-on or from far away. At 4K a 150 mm marker
+      is still usable out to roughly 9 m, but it must be seen reasonably face-on.
 - [ ] Note which marker ID sits where, roughly, in the devlog.
-- [ ] Optionally tape one marker to a flat body panel — helpful, but ground markers are
-      the ones that also pin down the ground plane.
+- [ ] The ground plane no longer relies on markers — it is fitted to the ground itself —
+      so markers do not need to lie flat. Keep the textured objects on the ground.
 
 ### Recording — doors closed
 

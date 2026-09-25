@@ -78,8 +78,11 @@ NVIDIA GPU. P1-T7 therefore needs one of:
 3. **Points from the Gaussian splat** (§8.2 dense fallback 2), already planned on Colab for
    P1-T7's visuals.
 
-This is a choice between alternatives - the developer's decision - and is recorded here as
-open. Note it is not a fallback *trigger* (§8.2's trigger is a dense run failing or running
+**Decided 2026-09-25 by the developer: option 1, COLMAP dense on Colab.** It is also the
+most accurate of the three: full multi-view stereo on a CUDA GPU, the planned §8.2 primary.
+OpenMVS would work on the laptop but slowly; splat-derived points are the least
+geometrically accurate. Scan frames are uploaded to the developer's own Google Drive for
+this - private storage, not publication, and scan frames show only the van. Note it is not a fallback *trigger* (§8.2's trigger is a dense run failing or running
 out of memory twice); the primary simply cannot be executed on this machine.
 
 Related toolchain facts settled this session:

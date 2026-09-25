@@ -61,6 +61,10 @@ vehicle_frame:
   # Rear axle centre to rear bumper, horizontal, in metres. MEASURED BY HAND on scan day
   # (docs/capture_checklists.md, "Measure the van first"). It places the frame origin.
   rear_overhang_m: null
+  # The marker placed at the front bumper on scan day (docs/capture_checklists.md). Its
+  # triangulated position tells the frame builder which end of the van is the front - the
+  # body's long axis alone cannot.
+  front_marker_id: 3
   # Width is measured per slice along the vehicle and the MEDIAN slice taken, so the
   # mirrors - which widen only a few slices - do not inflate the body width. The
   # checklist measures width excluding mirrors, and this has to match it.
@@ -71,4 +75,7 @@ vehicle_frame:
 
 dense:
   engine: "colmap_patch_match"   # colmap_patch_match | openmvs | splat_points (§8.2)
+  # COLMAP dense stereo needs CUDA, which the laptop lacks, so it runs on Colab (T4) -
+  # the developer's decision 2026-09-25, ADR 0003. Sparse SfM (P1-T5) stays on the laptop.
+  runs_on: "colab"
   max_image_size: 1600
