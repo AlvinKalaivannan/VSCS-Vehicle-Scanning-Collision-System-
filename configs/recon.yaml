@@ -19,6 +19,11 @@ scale:
     side_length_m: 0.150    # measure the printed marker, do not trust the PDF
     min_markers_detected: 3
     min_detection_frame_fraction: 0.50   # below this, R-02 fallback triggers
+    # Markers should all imply the same scale. If they disagree by more than this
+    # fraction ((max - min) / median of the per-marker scales), something is wrong with one of
+    # them - a misprinted sheet, a curled marker, a bad triangulation - and it is
+    # reported rather than averaged in (R-02).
+    max_spread_frac: 0.02
   # P1-T6 acceptance: length, width, height, wheelbase each within +/- 2 cm.
   max_dimension_error_m: 0.02
   validate_against: ["length", "width", "height", "wheelbase"]
