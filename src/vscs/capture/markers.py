@@ -263,3 +263,39 @@ def write_marker_sheets(
         )
         logger.info("wrote %s", path.name)
     return sheets
+
+
+# --------------------------------------------------------------------------- #
+# Detection                                                                    #
+# --------------------------------------------------------------------------- #
+def detect_markers(image: np.ndarray, dictionary: str = "DICT_4X4_50") -> dict[int, np.ndarray]:
+    """Detect ArUco markers and return ``{marker_id: corners (4, 2)}`` in image pixels.
+
+    Corners come in ArUco's order - top-left, top-right, bottom-right, bottom-left *of the
+    marker itself* - so the same physical corner has the same index in every view, which is
+    what lets a corner be triangulated across images.
+
+    Sub-pixel corner refinement is switched on. Marker size is what sets the metric scale
+    (R-02), and whole-pixel corners on a marker only 30-60 px across would put percent-level
+    error straight into every dimension of the van.
+
+    If one id is detected more than once in an image (a duplicated print), neither copy is
+    returned: there is no way to tell which physical marker each detection is.
+    """
+    grey = image if image.ndim == 2 else cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    params = cv2.aruco.DetectorParameters()
+    params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_SUBPIX
+    detector = cv2.aruco.ArucoDetector(_dictionary(dictionary), params)
+    corners, ids, _ = detector.detectMarkers(grey)
+    if ids is None:
+        return {}
+    flat = np.asarray(ids).reshape(-1)
+    out: dict[int, np.ndarray] = {}
+    dupes = {int(i) for i in flat if (flat == i).sum() > 1}
+    for mid, c in zip(flat, corners, strict=True):
+        if int(mid) in dupes:
+            continue
+        out[int(mid)] = np.asarray(c, dtype=np.float64).reshape(4, 2)
+    if dupes:
+        logger.warning("marker id(s) %s seen more than once in one image; ignored", sorted(dupes))
+    return out
