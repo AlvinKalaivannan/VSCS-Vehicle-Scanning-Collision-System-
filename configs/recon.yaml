@@ -16,6 +16,22 @@ scale:
   method: "markers"         # markers | known_dimension | spec_sheet  (§8.2)
   marker:
     dictionary: "DICT_4X4_50"
+    # Detection quality gates. Both were set from measurement on synthetic views and from
+    # the marker's geometry, not tuned to one test.
+    #
+    # min_side_px: mean marker side in the image. A 4x4 ArUco marker is 6 modules across;
+    # below ~7 px per module the corners can no longer be located reliably. At 4K a
+    # 150 mm marker clears this out to roughly 9 m.
+    min_side_px: 42
+    # min_corner_angle_deg: smallest interior angle of the detected quad. A marker seen
+    # at a grazing angle projects to a thin trapezoid whose corners are sharply acute; a
+    # corner is where two edges meet, and when they meet at a shallow angle its position
+    # along the edges is poorly determined (error grows like 1 / sin(angle)). 30 deg caps
+    # that at twice the square-on error. Measured: this was the best single predictor of
+    # corner error (r = -0.63); ungated grazing views were off by up to 5 px, gated views
+    # stayed at or below ~1.2 px. Flat ground markers seen from a standing walk-round mostly
+    # fail it - see docs/devlog 2026-09-25 for the capture implication.
+    min_corner_angle_deg: 30
     side_length_m: 0.150    # measure the printed marker, do not trust the PDF
     min_markers_detected: 3
     min_detection_frame_fraction: 0.50   # below this, R-02 fallback triggers
