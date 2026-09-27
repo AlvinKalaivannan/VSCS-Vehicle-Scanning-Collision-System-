@@ -28,7 +28,7 @@ This file governs how Claude works in this repository. Read it fully at the star
 
 Default: **pair mode.** VSCS is the developer's portfolio project and they must be able to explain every core algorithm in an interview.
 
-- For **core contribution modules** — `seg/fusion3d.py`, `recon/scale.py`, `risk/sweep.py`, `risk/probability.py` — explain the approach, the math, and pseudo-code first; let the developer write the first draft if they want to; then review and harden it.
+- For **core contribution modules** — `seg/fusion3d.py`, `recon/scale.py`, `risk/sweep.py`, `risk/probability.py`, the pseudo-label projection in `seg/train/dataset.py` (P4-T8), and the student-vs-teacher evaluation metrics in `seg/train/evaluate.py` (P4-T11) — explain the approach, the math, and pseudo-code first; let the developer write the first draft if they want to; then review and harden it. The training loop, data loaders (Dataset/DataLoader wrappers) and the training notebook count as plumbing.
 - For **plumbing** (I/O, CLI, configs, tests, viz, wrappers around third-party tools), write it directly.
 - When a concept leans on linear algebra (projections, rigid transforms, frames), give a short explanation tied to MAT188-level notation.
 - The developer can switch to `mode: build` in `docs/STATUS.md` to have Claude write everything; respect that field.
@@ -44,6 +44,7 @@ VSCS is a software-only, advisory computer-vision system that:
 3. Processes recorded manoeuvring sequences (reversing and low-speed manoeuvring) to build a 3D representation of obstacles around the vehicle.
 4. Computes **per-component collision risk** (distance, time-to-contact, probability, severity) and an aggregate risk, then produces warnings.
 5. Establishes its value through controlled comparison against a **single-bounding-box baseline**.
+6. Includes **one trained model**: a vehicle-part segmenter ("student") fine-tuned on pseudo-labels produced by the scan pipeline's Grounding DINO + SAM 2 + 3D fusion ("teacher"). The risk engine stays pure geometry and is never learned.
 
 ### Hard boundaries
 
@@ -117,6 +118,7 @@ vscs/
 │   ├── severity.yaml          # component + component×obstacle severity table
 │   ├── perception.yaml
 │   ├── risk.yaml              # horizon, dt, path fan, margins, alert thresholds
+│   ├── train_seg.yaml         # student segmenter: model, augmentation, schedule, seeds (P4-T10)
 │   └── eval.yaml              # dataset splits
 ├── data/                      # GITIGNORED except MANIFEST.md
 │   ├── MANIFEST.md            # every raw file: id, date, sha256, description, backup locations
@@ -128,6 +130,7 @@ vscs/
 │   ├── capture/               # ingest.py, frames.py (VFR→CFR/timestamps), calib.py, sync.py
 │   ├── recon/                 # sfm.py, scale.py, ground.py, vehicle_frame.py
 │   ├── seg/                   # masks2d.py, fusion3d.py, cleanup.py
+│   │   └── train/             # dataset.py (pseudo-labels), train.py, evaluate.py (P4-T8 to P4-T11)
 │   ├── model/                 # decompose.py, severity.py, joints.py, urdf.py
 │   ├── perception/            # depth.py, occupancy.py, detect.py, track.py, egomotion.py
 │   ├── risk/                  # motion.py, sweep.py, metrics.py, probability.py, aggregate.py, alerts.py
@@ -135,6 +138,7 @@ vscs/
 │   └── eval/                  # metrics.py, baseline_bbox.py, report.py
 ├── scripts/                   # thin CLI entry points only (argparse/typer → src/vscs)
 ├── notebooks/colab/           # thin wrappers: install, mount Drive, call src/vscs. NO logic here.
+│   └── train_seg.ipynb        # student training on T4 - thin wrapper only, per §4.3
 ├── tests/
 │   ├── unit/
 │   └── fixtures/              # tiny synthetic data (a box "vehicle", a pole, a 20-frame clip)
@@ -232,7 +236,7 @@ Serialize `RiskFrame` streams as JSON Lines. Every schema change requires: versi
 ## 5. Testing requirements
 
 - `tests/fixtures/` holds a synthetic world: a box-shaped "vehicle" with labeled sub-boxes as components, a thin pole, a curb, and a short synthetic camera trajectory with known poses. Every module must have at least one test against it with an analytically known answer (e.g. known distance from rear-right corner to pole = 0.500 m ± 1e-6).
-- Required unit tests: transform inverse/composition; pinhole projection round-trip; scale recovery from a known marker; label fusion on synthetic multi-view masks; swept-distance on the fixture; `p_any_contact` math; alert hysteresis state machine.
+- Required unit tests: transform inverse/composition; pinhole projection round-trip; scale recovery from a known marker; label fusion on synthetic multi-view masks; swept-distance on the fixture; `p_any_contact` math; alert hysteresis state machine; pseudo-label projection on the fixture (a known box component projects to a known pixel mask; an occluded point is not labeled).
 - `pytest -q` must pass before any commit to `main`. Coverage target for `common/` and `risk/`: ≥80%.
 - Integration test (`tests/test_pipeline_smoke.py`): fixture scene end-to-end → produces a valid `RiskFrame` stream in < 60 s on laptop CPU.
 
@@ -267,6 +271,7 @@ A phase is complete only when every task's acceptance criterion is met and `docs
 | P1-T5 | SfM reconstruction of van (COLMAP) | ≥90% of extracted frames registered; mean reprojection error < 1.5 px |
 | P1-T6 | Metric scale from markers + ground plane (RANSAC) + vehicle frame | Length, width, height, wheelbase each within **±2 cm** of tape measurements (`scale_error_m` logged) |
 | P1-T7 | Dense geometry (point cloud/mesh) + splat for visuals | Both viewable in Rerun in `veh` frame |
+| P1-T8 | Capture a short walkaround video of a second vehicle (any family car, same capture rules as P1-T2, no markers needed). Needed later for P4-T11 cross-vehicle evaluation, and must be captured before snow | Raw files ingested, checksummed in `MANIFEST.md`, backed up |
 
 ### Phase 2 — Component segmentation + model export (November; reading-week push)
 
@@ -307,6 +312,11 @@ A phase is complete only when every task's acceptance criterion is met and `docs
 | P4-T5 | 3D sweep with FCL/trimesh using URDF + joint states | Fixture 3D known-answer tests pass |
 | P4-T6 | Underbody clearance vs height map | Curb/speed-bump fixture flagged for correct component |
 | P4-T7 | Uncertainty-aware `p_contact = Φ(-d/σ)` | Unit tests; σ grows with range as configured |
+| P4-T8 | **Build pseudo-label dataset**: project cleaned 3D component labels (P2-T5 output) back into every posed scan frame, using a depth test for occlusion, to produce per-pixel masks. Split train/val/test by contiguous frame segments or by scan loop, never by random frame (adjacent frames leak) | Dataset builds from one command; split files saved in `configs/`; a visual check on 20 frames is logged |
+| P4-T9 | Hand-correct a gold set: at least 50 van frames from the test split, plus at least 30 frames from the second vehicle (P1-T8). Gold frames are never used for training | Gold masks saved; counts per component logged |
+| P4-T10 | Fine-tune a small semantic segmentation model on Colab T4. Checkpoint to Drive every epoch, seed everything, log compute units used. Model choice follows the trained-segmenter rules in §10 and is recorded in an ADR | Training runs end to end and resumes after a disconnect; best checkpoint saved with its config and git hash |
+| P4-T11 | **Evaluate student vs teacher** | Report to `metrics/results.jsonl`: per-component IoU and mIoU on van gold frames (student and teacher), mIoU on second-vehicle gold frames, and FPS on T4 (student and teacher). Pass: student mIoU is at least teacher mIoU on van gold frames, OR within 5 points while at least 5× faster. Cross-vehicle transfer is reported honestly with no pass threshold |
+| P4-T12 (optional) | Use student masks as the 2D input to 3D fusion and re-run P2-T3/P2-T5 | 3D IoU compared against the teacher-based result |
 
 ### Phase 5 — Evaluate + ship (March)
 
@@ -325,7 +335,7 @@ CARLA simulation with the scanned van imported · auto hinge-axis detection from
 
 ### Cut order if behind schedule
 
-1. P5-T5 user test → 2. P4-T4 dynamic tracking (static only) → 3. P4-T7 probabilities (use clearance/TTC thresholds). **Never cut P5-T1/P5-T2 (baseline comparison)** — it is the core result.
+1. P5-T5 user test → 2. Trained segmenter (P4-T8 to P4-T12; report teacher-only results) → 3. P4-T4 dynamic tracking (static only) → 4. P4-T7 probabilities (use clearance/TTC thresholds). **Never cut P5-T1/P5-T2 (baseline comparison)** — it is the core result. P1-T8 (second-vehicle capture) is not cut: it is cheap and cannot be redone after snow.
 
 ---
 
@@ -421,6 +431,9 @@ Seed `docs/RISKS.md` from this table. Columns: ID · risk · likelihood · impac
 | R-14 | Scope creep / time crunch with coursework | Health AT RISK two sessions in a row | Cut order in §6; Phase 3 MVP protected |
 | R-15 | Articulated joint states unknown during drives | Wrong geometry used (door open vs closed) | Manual joint-state input per run in v0.1; auto-detect is stretch |
 | R-16 | Schema/convention drift between modules | Integration test fails; frames mismatched | §4 contracts, version field, smoke test on every merge |
+| R-17 | Student learns the teacher's mistakes (pseudo-label errors baked in) | Student and teacher fail on the same regions | Gold set is hand-corrected and never derived from pseudo-labels; review the worst components |
+| R-18 | Data leakage between near-identical adjacent frames | Val score much higher than test score | Split by contiguous segments or loops only |
+| R-19 | Overfitting to one van | Big drop on second-vehicle gold set | Augmentation (color, blur, crop, flip where the label side is swapped correctly), early stopping; report the drop as a finding |
 
 ### 8.2 Fallback ladder (propose to the developer when trigger fires; record in ADR)
 
@@ -440,6 +453,9 @@ Seed `docs/RISKS.md` from this table. Columns: ID · risk · likelihood · impac
 | Visualization | Rerun | Open3D | matplotlib top-down plots | — |
 | Simulation (stretch) | CARLA | Custom synthetic scenes (Blender/fixture generator) | Skip | CARLA setup > 2 sessions |
 | Data (if van unavailable) | The project van | Another family vehicle | Synthetic/CARLA-only evaluation (clearly labeled) | Vehicle unavailable for capture month |
+| Trained segmenter | Full fine-tune | Freeze the backbone, train only the head | Drop the student and report teacher-only results (core project unaffected) | Student mIoU more than 10 points below the teacher after tuning |
+
+**Flip augmentation and left/right components.** Left/right components (e.g. left vs right mirror) must not be merged by horizontal-flip augmentation. Either swap the labels on flip or disable flip.
 
 ---
 
@@ -485,6 +501,14 @@ Prefer permissive licenses (MIT, BSD, Apache-2.0). Check before adding anything;
 | Rerun | visualization | MIT / Apache-2.0 |
 | CARLA (stretch) | simulation | MIT (assets under separate terms) |
 | Ultralytics YOLO | detection | **AGPL-3.0 — avoid unless the developer accepts open-sourcing obligations; prefer Apache/MIT alternatives** |
+| torchvision (DeepLabV3 / LR-ASPP) | student segmenter candidate (P4-T10) | Code BSD-3-Clause; pretrained weights: verify separately |
+| Mask2Former | student segmenter candidate (P4-T10) | Reported MIT; verify code and pretrained weights separately |
+
+**Trained segmenter (P4-T10) model rules.**
+
+- Prefer a small model with a permissive license *and* permissive pretrained weights (MIT/BSD/Apache), e.g. torchvision DeepLabV3 / LR-ASPP, or Mask2Former. Verify both the code and the weights licenses at install time.
+- Avoid AGPL (Ultralytics) and non-commercial licenses. Ask the developer before adding anything with an unclear license.
+- Record the model choice in an ADR.
 
 ---
 
@@ -496,6 +520,8 @@ Prefer permissive licenses (MIT, BSD, Apache-2.0). Check before adding anything;
   - Perception: depth error by range bucket, detection recall by obstacle type, ego-motion drift %.
   - Risk: **component attribution accuracy** (flagged component == component that actually passes closest), TTC error (s), false alarms per minute, lead time (s) of first warning before closest approach.
   - System: per-stage and end-to-end FPS on Colab T4.
+  - **Trained model** (P4-T11, computed by `seg/train/evaluate.py`): per-component IoU and mIoU on van gold frames for student and teacher; mIoU on second-vehicle gold frames; FPS on T4 for student and teacher. Pass: student mIoU ≥ teacher mIoU on van gold frames, or within 5 points while ≥5× faster. Cross-vehicle transfer is reported with no pass threshold.
+- **Gold sets (P4-T9):** used once, for the final student/teacher numbers, like the `test` split. Only the val split is used for tuning. Gold frames are never trained on.
 - **Baseline:** identical pipeline with the vehicle modeled as one oriented bounding box. Report VSCS vs baseline on every risk metric.
 - Report failures and limitations as prominently as successes.
 
