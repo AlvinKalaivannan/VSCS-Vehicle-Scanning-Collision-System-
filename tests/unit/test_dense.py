@@ -43,6 +43,9 @@ def _runner(banner: str, n_points: int | None = 50_000):
     [
         ("COLMAP 3.9.1 (Commit 0d9a4e3 on 2024-01-01 with CUDA)", "cuda"),
         ("COLMAP 3.9.1 (Commit 0d9a4e3 on 2024-01-01 without CUDA)", "no_cuda"),
+        # COLMAP 4.x wording; the no-GPU line is verbatim from the 4.2.0 Windows release.
+        ("COLMAP 4.2.0 (Commit be5e291 on 2026-08-31 without GPU support)", "no_cuda"),
+        ("COLMAP 4.2.0 (Commit be5e291 on 2026-08-31 with GPU support)", "cuda"),
         ("COLMAP 3.9.1", "unknown"),
         ("", "unknown"),
     ],
