@@ -72,3 +72,10 @@ Option 1, chosen by the developer.
   about one minute.
 - Result: `pytest -q` 238 passed / 1 skipped, `ruff check .` clean, coverage 95% on
   `common/` + `risk/` against the 80% requirement in section 5.
+
+## Addendum 2026-09-26: open3d and rerun-sdk installed
+
+Installed together with exact pins, `open3d==0.20.0` and `rerun-sdk==0.38.1`. They
+resolved directly with no backtracking, which confirms the pinning advice above. Both pins
+are now in `envs/requirements-core.txt` and `envs/core.yml`. `pytest -q` is unchanged
+after the install (574 passed, 1 skipped at the time).

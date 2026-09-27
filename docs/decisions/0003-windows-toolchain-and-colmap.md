@@ -115,3 +115,22 @@ Related toolchain facts settled this session:
 
 Nothing measured yet. Update this ADR with the installed COLMAP version and the
 observed P1-T5 runtime once P0-T6 runs.
+
+## Addendum 2026-09-26: installed
+
+- **COLMAP 4.2.0** (commit be5e291), `colmap-x64-windows-nocuda.zip` from the official
+  GitHub release, sha256 `7dd1e72f9632199b7f6d80ab6f545fa8d2a2ea023e4802cab3a4624e309f18a1`
+  matching the digest the release publishes. Extracted to
+  `%LOCALAPPDATA%\Programs\colmap`, with `bin\` on the user PATH. COLMAP is no longer
+  listed in winget, so the release zip is the route (option 1, as decided).
+- Every option `recon/sfm.py` and `recon/dense.py` pass exists in the 4.2 help text.
+- **COLMAP 4.x changed its banner** from "with/without CUDA" to "with/without GPU
+  support". `parse_cuda_status` read the 4.2 banner as `unknown`, so the dense guard
+  warned instead of refusing. Fixed on `p1-t7-colmap42-banner`; the real binary now
+  reads as `no_cuda`. The Colab CUDA build's exact wording is still unverified until the
+  first P1-T7 run.
+- **ffmpeg / ffprobe 9.0.1** (`Gyan.FFmpeg.Essentials`, winget). `ffprobe_available()` is
+  True. On an ffmpeg-generated variable-frame-rate clip, the ffprobe and OpenCV backends
+  agree and both report VFR. That is not evidence about real iPhone footage; P1-T4
+  still needs that.
+- P1-T5 runtime is not measured yet (needs the P0-T6 warm-up video).
