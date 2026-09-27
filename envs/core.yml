@@ -47,8 +47,6 @@ dependencies:
       # lagged, and the pip wheel bundles the contrib modules including ArUco.
       - opencv-python==5.0.0.93
 
-      # Deferred until the tasks that need them (ADR 0001):
-      #   open3d     -> P1-T6, P1-T7
-      #   rerun-sdk  -> P1-T7, P3-T1
-      # - open3d
-      # - rerun-sdk
+      # Installed 2026-09-26 with exact pins (ADR 0001 addendum):
+      - open3d==0.20.0      # P1-T6, P1-T7
+      - rerun-sdk==0.38.1   # P1-T7, P3-T1
