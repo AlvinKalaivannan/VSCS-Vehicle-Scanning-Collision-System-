@@ -50,14 +50,16 @@ class DenseResult:
 
 
 def parse_cuda_status(banner: str) -> CudaStatus:
-    """Read CUDA support from COLMAP's banner, e.g. ``COLMAP 3.9 (Commit ... with CUDA)``.
+    """Read CUDA support from COLMAP's banner.
 
-    "without CUDA" is checked first, since it contains "with CUDA" as a substring.
+    COLMAP 3.x says ``... with CUDA)`` / ``... without CUDA)``; COLMAP 4.x says
+    ``... with GPU support)`` / ``... without GPU support)`` (seen on 4.2.0). The "without"
+    forms are checked first, since each contains its "with" form as a substring.
     """
     text = banner.lower()
-    if "without cuda" in text:
+    if "without cuda" in text or "without gpu support" in text:
         return "no_cuda"
-    if "with cuda" in text:
+    if "with cuda" in text or "with gpu support" in text:
         return "cuda"
     return "unknown"
 
