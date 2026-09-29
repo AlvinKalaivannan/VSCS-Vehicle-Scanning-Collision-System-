@@ -73,7 +73,7 @@ uCO3D's `personal_vehicles` category: 289 GB of RGB video in 18 archives. The ca
 names are only in the 13 GB `metadata.sqlite`, so the category could not be inspected
 without a large download. Tests: `tests/unit/test_datasets.py`.
 
-## Addendum 2026-09-30: Roboflow sets downloaded; provenance rule added
+## Addendum 2026-09-29: Roboflow sets downloaded; provenance rule added
 
 - Licences read from the Roboflow API with the developer's key: both report
   "CC BY 4.0". Neither says where its photos came from.

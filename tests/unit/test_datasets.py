@@ -70,7 +70,7 @@ def test_the_known_licence_conflicts_are_private_only():
         assert D.allowed_uses(REGISTRY[ds], POLICY) == {"rehearsal", "private_eval"}
 
 
-def test_roboflow_sets_match_what_the_api_reported_on_2026_09_30():
+def test_roboflow_sets_match_what_the_api_reported_on_2026_09_29():
     """21-class: clear CC BY, but undocumented photos -> never shown publicly.
     19-class: DSMLR's unlicensed classes re-uploaded as CC BY -> private only."""
     assert D.allowed_uses(REGISTRY["roboflow_car_parts_21"], POLICY) == {
