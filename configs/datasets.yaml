@@ -1,0 +1,137 @@
+# External (third-party) datasets: what each may be used for. ADR 0006.
+#
+# Developer's decision 2026-09-29: use existing licensed datasets first; fill the gaps
+# with our own footage or by asking dataset owners for a licence.
+#
+# What a dataset may be used for is NOT set by hand. It is derived from
+# `license_status` and `license` by the `policy` block below, in
+# src/vscs/common/datasets.py, so a permissive-sounding entry cannot quietly grant
+# publication rights. Code that touches external data calls `require_use(id, use)`.
+#
+# External data lives in data/external/<id>/ (gitignored, like all of data/). It never
+# enters the dev/test lot splits (R-09) or the P4-T9 gold sets, which are ours.
+schema_version: 1
+
+# --- Uses ----------------------------------------------------------------------
+#   rehearsal        run pipeline stages on it privately, to shake out bugs
+#   private_eval     compute numbers on it for our own understanding
+#   publish_results  report numbers on it (README, writeup), with a citation
+#   train            train the student segmenter on it (the weights may be published)
+#   publish_media    show its images/video/renders in docs/evidence, the README or the demo
+policy:
+  permissive_licenses: [CC-BY-4.0, CC0-1.0, Apache-2.0, MIT, BSD-2-Clause, BSD-3-Clause]
+  noncommercial_licenses: [CC-BY-NC-4.0, CC-BY-NC-SA-4.0]
+  uses_by_class:
+    permissive: [rehearsal, private_eval, publish_results, train, publish_media]
+    noncommercial: [rehearsal, private_eval, publish_results]
+    conflicting: [rehearsal, private_eval]   # §9 third-party rule: private testing only
+    unverified: []                           # verify before any use (§0: unclear licence)
+    none: []                                 # no licence = no permission
+
+# --- Registry -------------------------------------------------------------------
+# license_status: clear | conflicting | unverified | none
+# adopted: whether we actually download it. A clear licence is not a reason to
+# download data that does not cover a gap.
+datasets:
+  uco3d:
+    name: "UnCommon Objects in 3D (Meta, CVPR 2025)"
+    url: "https://github.com/facebookresearch/uco3d"
+    license: CC-BY-4.0
+    license_url: "https://github.com/facebookresearch/uco3d"
+    license_status: clear
+    verified: 2026-09-29
+    adopted: false
+    covers: [sfm_rehearsal_consumer_video]
+    notes: >-
+      Licence clean and consistent. Not adopted: crowd-sourced, mostly handheld/tabletop
+      objects; no evidence of full-size vehicles; the personal_vehicles category is only
+      reachable in blind ~16 GB video archives (289 GB total), and the category list sits
+      in a 13 GB metadata database. Revisit if a vehicle subset is published.
+
+  roboflow_car_parts_21:
+    name: "Roboflow Universe 'car parts' (21 classes)"
+    url: "https://universe.roboflow.com/car-segmentation-iq9jj/car-parts-9vig8"
+    license: CC-BY-4.0
+    license_url: "https://universe.roboflow.com/car-segmentation-iq9jj/car-parts-9vig8"
+    license_status: unverified
+    verified: null
+    adopted: true
+    covers: [part_vocabulary, segmenter_cross_vehicle_test]
+    notes: >-
+      Listed as CC BY 4.0 in search results; confirm on the dataset page at download and
+      record where the underlying photos came from (user-uploaded sets may not say).
+      Download needs the developer's free Roboflow account.
+
+  roboflow_car_parts_19:
+    name: "Roboflow Universe 'Car Parts Segmentation' (19 classes, left/right kept)"
+    url: "https://universe.roboflow.com/person-detector/car-parts-segmentation"
+    license: CC-BY-4.0
+    license_url: "https://universe.roboflow.com/person-detector/car-parts-segmentation"
+    license_status: unverified
+    verified: null
+    adopted: true
+    covers: [part_vocabulary, segmenter_cross_vehicle_test]
+    notes: >-
+      Same caveats as roboflow_car_parts_21. Keeps left/right mirrors and doors separate,
+      which matches the flip rule in CLAUDE.md §8.2.
+
+  threedrealcar:
+    name: "3DRealCar (ICCV 2025): 2,500 smartphone 360-degree car scans"
+    url: "https://github.com/LiAutoAD/3DRealCar"
+    license: Apache-2.0
+    license_url: "https://github.com/xiaobiaodu/3DRealCar_Toolkit"
+    license_status: conflicting
+    verified: 2026-09-29
+    adopted: false
+    covers: [vehicle_360_scan, metric_scale_reference, part_labels_2d, vans]
+    notes: >-
+      Repos carry an Apache-2.0 LICENSE and the toolkit README says the dataset is free
+      for commercial use, but the download page says "Copyright Li Auto Inc. All Rights
+      Reserved". The best-fitting dataset found; pending the developer's decision to ask
+      the authors. Until resolved: private rehearsal/evaluation only.
+
+  tanks_and_temples:
+    name: "Tanks and Temples ('Truck' scene)"
+    url: "https://www.tanksandtemples.org/download/"
+    license: CC-BY-4.0
+    license_url: "https://www.tanksandtemples.org/license/"
+    license_status: conflicting
+    verified: 2026-09-29
+    adopted: false
+    covers: [vehicle_360_scan]
+    notes: >-
+      Licence page states CC BY 4.0 and also a non-commercial research licence that
+      forbids redistribution without permission.
+
+  co3d:
+    name: "Common Objects in 3D v2 (Meta)"
+    url: "https://github.com/facebookresearch/co3d"
+    license: CC-BY-NC-4.0
+    license_url: "https://github.com/facebookresearch/co3d"
+    license_status: clear
+    verified: 2026-09-29
+    adopted: false
+    covers: [sfm_rehearsal_consumer_video]
+    notes: "Non-commercial. Superseded for our purposes by uCO3D, which has the same gap."
+
+  mvimgnet:
+    name: "MVImgNet / MVImgNet2.0"
+    url: "https://github.com/GAP-LAB-CUHK-SZ/MVImgNet"
+    license: CC-BY-NC-4.0
+    license_url: "https://github.com/GAP-LAB-CUHK-SZ/MVImgNet"
+    license_status: clear
+    verified: 2026-09-29
+    adopted: false
+    covers: [sfm_rehearsal_consumer_video]
+    notes: "Non-commercial, plus its own terms of use. Handheld objects."
+
+  dsmlr_car_parts:
+    name: "DSMLR Car-Parts-Segmentation (500 images, 18 classes)"
+    url: "https://github.com/dsmlr/Car-Parts-Segmentation"
+    license: null
+    license_url: null
+    license_status: none
+    verified: 2026-09-29
+    adopted: false
+    covers: [part_vocabulary]
+    notes: "No licence stated, which legally means no permission. Ask the authors or skip."
