@@ -21,6 +21,10 @@ schema_version: 1
 # =============================================================================
 vocabulary_status: "APPROVED_2026-09-24"
 
+# Stage-wide seed for every random process in seg/ (e.g. sampling the 20 frames for the
+# P2-T2 visual check). Fusion and cleanup are deterministic and do not use it.
+seed: 20260924
+
 components:
   # machine_name: text prompt fed to the open-vocabulary detector
   front_bumper: "front bumper of a van"
@@ -57,8 +61,14 @@ fusion3d:
   target_mean_iou: 0.70
 
 cleanup:
-  # P2-T5: must not make IoU worse.
+  # P2-T5: must not make IoU worse. Deterministic (no random process, so no seed).
+  # Two same-label points closer than this belong to the same cluster.
   cluster_eps_m: 0.05
-  cluster_min_points: 20
+  # A cluster smaller than this is a stray label - unless it is that component's largest
+  # cluster, so a small, sparsely seen part (a mirror) is never deleted outright.
   remove_clusters_smaller_than: 50
-  seed: 20260924
+  # A stray point takes the majority label of kept points within this radius, if at
+  # least this many are there; otherwise it becomes "none". Unlabelled points are never
+  # given a label (cleanup removes errors; it does not guess new coverage).
+  reassign_radius_m: 0.10
+  reassign_min_neighbours: 5
