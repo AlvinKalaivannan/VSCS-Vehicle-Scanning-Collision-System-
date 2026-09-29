@@ -72,3 +72,23 @@ Licences checked on 2026-09-29 against:
 uCO3D's `personal_vehicles` category: 289 GB of RGB video in 18 archives. The category
 names are only in the 13 GB `metadata.sqlite`, so the category could not be inspected
 without a large download. Tests: `tests/unit/test_datasets.py`.
+
+## Addendum 2026-09-30: Roboflow sets downloaded; provenance rule added
+
+- Licences read from the Roboflow API with the developer's key: both report
+  "CC BY 4.0". Neither says where its photos came from.
+- **New rule:** `provenance: undocumented` removes `publish_media`, whatever licence the
+  uploader attached. An uploader cannot license photos they do not own.
+- `roboflow_car_parts_21` (998 source images, 21 classes, a single Mirror class):
+  `clear` + undocumented → rehearsal, private_eval, publish_results, train.
+- `roboflow_car_parts_19` (603 source images, 19 classes, left/right kept apart): its
+  classes are exactly DSMLR's (which states no licence) plus "car", so the CC BY claim is
+  treated as **conflicting** → rehearsal and private_eval only.
+- Fetched with `scripts/fetch_dataset.py` (COCO segmentation, version 2), into
+  `data/external/<id>/` with `PROVENANCE.json` and a sha256:
+  - 21-class: 63.0 MB zip, sha256 `ef43d4f1eb0f165a...`; train 2394 / valid 100 / test 100.
+  - 19-class: 175.0 MB zip, sha256 `6817be25b92a1946...`; train 1350 / valid 75 / test 78.
+- Both train splits contain Roboflow augmentations (copies of the same photos). **Evaluate
+  on valid/test only.** The 19-class images were resized to 640x640, which changes their
+  aspect ratio.
+- The downloaded files contain no copy of the API key (scanned after download).

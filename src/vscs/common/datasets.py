@@ -24,6 +24,7 @@ from vscs.common.config import load_config, repo_root
 Use = Literal["rehearsal", "private_eval", "publish_results", "train", "publish_media"]
 USES: tuple[str, ...] = ("rehearsal", "private_eval", "publish_results", "train", "publish_media")
 LICENSE_STATUSES: tuple[str, ...] = ("clear", "conflicting", "unverified", "none")
+PROVENANCES: tuple[str, ...] = ("documented", "undocumented")
 
 EXTERNAL_DATA_DIR = Path("data") / "external"
 
@@ -40,16 +41,21 @@ class DatasetEntry:
     license: str | None
     license_url: str | None
     license_status: str
+    provenance: str
     verified: date | None
     adopted: bool
     covers: tuple[str, ...]
     notes: str
+    source: dict[str, Any]
 
 
 def _parse_entry(dataset_id: str, raw: dict[str, Any]) -> DatasetEntry:
     status = raw.get("license_status")
     if status not in LICENSE_STATUSES:
         raise ValueError(f"{dataset_id}: license_status must be one of {LICENSE_STATUSES}")
+    provenance = raw.get("provenance", "documented")
+    if provenance not in PROVENANCES:
+        raise ValueError(f"{dataset_id}: provenance must be one of {PROVENANCES}")
     verified = raw.get("verified")
     if verified is not None and not isinstance(verified, date):
         raise ValueError(f"{dataset_id}: verified must be a YYYY-MM-DD date or null")
@@ -60,10 +66,12 @@ def _parse_entry(dataset_id: str, raw: dict[str, Any]) -> DatasetEntry:
         license=raw.get("license"),
         license_url=raw.get("license_url"),
         license_status=status,
+        provenance=provenance,
         verified=verified,
         adopted=bool(raw.get("adopted", False)),
         covers=tuple(raw.get("covers") or ()),
         notes=str(raw.get("notes") or ""),
+        source=dict(raw.get("source") or {}),
     )
 
 
@@ -89,7 +97,11 @@ def license_class(entry: DatasetEntry, policy: dict[str, Any]) -> str:
 
 
 def allowed_uses(entry: DatasetEntry, policy: dict[str, Any]) -> frozenset[str]:
-    return frozenset(policy["uses_by_class"].get(license_class(entry, policy), []))
+    """Uses granted by the licence class, minus what undocumented image provenance removes."""
+    uses = set(policy["uses_by_class"].get(license_class(entry, policy), []))
+    if entry.provenance == "undocumented":
+        uses -= set(policy.get("undocumented_provenance_removes", []))
+    return frozenset(uses)
 
 
 def require_use(dataset_id: str, use: str, *, cfg: dict[str, Any] | None = None) -> Path:

@@ -70,6 +70,21 @@ def test_the_known_licence_conflicts_are_private_only():
         assert D.allowed_uses(REGISTRY[ds], POLICY) == {"rehearsal", "private_eval"}
 
 
+def test_roboflow_sets_match_what_the_api_reported_on_2026_09_30():
+    """21-class: clear CC BY, but undocumented photos -> never shown publicly.
+    19-class: DSMLR's unlicensed classes re-uploaded as CC BY -> private only."""
+    assert D.allowed_uses(REGISTRY["roboflow_car_parts_21"], POLICY) == {
+        "rehearsal",
+        "private_eval",
+        "publish_results",
+        "train",
+    }
+    assert D.allowed_uses(REGISTRY["roboflow_car_parts_19"], POLICY) == {
+        "rehearsal",
+        "private_eval",
+    }
+
+
 def test_external_data_never_enters_our_lot_splits():
     """R-09: dev/test are our lot passes only."""
     splits = load_config("eval")["splits"]
@@ -133,6 +148,18 @@ def test_unregistered_dataset_is_refused():
 def test_unknown_use_is_a_programming_error():
     with pytest.raises(ValueError, match="unknown use"):
         D.require_use("uco3d", "sell")
+
+
+def test_undocumented_provenance_blocks_publishing_images_only():
+    e = D.load_registry(_cfg_with(_entry(provenance="undocumented")))["x"]
+    uses = D.allowed_uses(e, POLICY)
+    assert "publish_media" not in uses
+    assert {"train", "publish_results"} <= uses
+
+
+def test_bad_provenance_is_rejected_at_load():
+    with pytest.raises(ValueError, match="provenance"):
+        D.load_registry(_cfg_with(_entry(provenance="trust_me")))
 
 
 def test_bad_status_is_rejected_at_load():
