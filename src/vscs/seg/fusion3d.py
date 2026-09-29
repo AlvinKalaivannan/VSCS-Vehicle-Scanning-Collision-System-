@@ -86,11 +86,10 @@ from typing import Any
 import numpy as np
 import numpy.typing as npt
 
+from vscs.seg.labels import NONE_LABEL as NONE_LABEL  # shared with cleanup and training
+
 FloatArray = npt.NDArray[np.float64]
 IntArray = npt.NDArray[np.int64]
-
-#: Mask value and fused label meaning "no component".
-NONE_LABEL = -1
 
 
 @dataclass(frozen=True)
