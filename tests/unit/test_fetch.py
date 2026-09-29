@@ -27,7 +27,7 @@ def _cfg(**over):
         "license_url": "https://example.org/l",
         "license_status": "clear",
         "provenance": "undocumented",
-        "verified": date(2026, 9, 30),
+        "verified": date(2026, 9, 29),
         "adopted": True,
         "covers": ["part_vocabulary"],
         "source": {"workspace": "ws", "project": "proj", "version": 2},
