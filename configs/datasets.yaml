@@ -60,7 +60,7 @@ datasets:
     license_url: "https://universe.roboflow.com/car-segmentation-iq9jj/car-parts-9vig8"
     license_status: clear
     provenance: undocumented
-    verified: 2026-09-30
+    verified: 2026-09-29
     adopted: true
     covers: [part_vocabulary, segmenter_cross_vehicle_test]
     source: {workspace: car-segmentation-iq9jj, project: car-parts-9vig8, version: 2}
@@ -78,7 +78,7 @@ datasets:
     license_url: "https://universe.roboflow.com/person-detector/car-parts-segmentation"
     license_status: conflicting
     provenance: undocumented
-    verified: 2026-09-30
+    verified: 2026-09-29
     adopted: true
     covers: [part_vocabulary, segmenter_cross_vehicle_test]
     source: {workspace: person-detector, project: car-parts-segmentation, version: 2}
