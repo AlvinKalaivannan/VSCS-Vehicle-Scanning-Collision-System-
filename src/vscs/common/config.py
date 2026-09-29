@@ -34,6 +34,7 @@ KNOWN_CONFIGS = (
     "perception",
     "risk",
     "eval",
+    "datasets",
 )
 
 
