@@ -27,9 +27,14 @@ policy:
     conflicting: [rehearsal, private_eval]   # §9 third-party rule: private testing only
     unverified: []                           # verify before any use (§0: unclear licence)
     none: []                                 # no licence = no permission
+  # A licence can only be granted by whoever owns the photos. When a dataset does not say
+  # where its images came from (typical of user uploads), its images are never shown
+  # publicly, whatever licence the uploader attached.
+  undocumented_provenance_removes: [publish_media]
 
 # --- Registry -------------------------------------------------------------------
 # license_status: clear | conflicting | unverified | none
+# provenance: documented | undocumented  (where the underlying images came from)
 # adopted: whether we actually download it. A clear licence is not a reason to
 # download data that does not cover a gap.
 datasets:
@@ -49,31 +54,42 @@ datasets:
       in a 13 GB metadata database. Revisit if a vehicle subset is published.
 
   roboflow_car_parts_21:
-    name: "Roboflow Universe 'car parts' (21 classes)"
+    name: "Roboflow Universe 'car parts' (21 classes, 998 source images)"
     url: "https://universe.roboflow.com/car-segmentation-iq9jj/car-parts-9vig8"
     license: CC-BY-4.0
     license_url: "https://universe.roboflow.com/car-segmentation-iq9jj/car-parts-9vig8"
-    license_status: unverified
-    verified: null
+    license_status: clear
+    provenance: undocumented
+    verified: 2026-09-30
     adopted: true
     covers: [part_vocabulary, segmenter_cross_vehicle_test]
+    source: {workspace: car-segmentation-iq9jj, project: car-parts-9vig8, version: 2}
     notes: >-
-      Listed as CC BY 4.0 in search results; confirm on the dataset page at download and
-      record where the underlying photos came from (user-uploaded sets may not say).
-      Download needs the developer's free Roboflow account.
+      Roboflow API reports "CC BY 4.0", public, 998 source images, instance segmentation,
+      21 classes (Back-bumper .. Windshield). Mirror is ONE class (no left/right). Version 2
+      holds 2,594 images: the train split is augmented copies (saturation, brightness),
+      valid (100) and test (100) are not - evaluate on valid/test only. The uploader does
+      not say where the photos came from, so images are never shown publicly.
 
   roboflow_car_parts_19:
-    name: "Roboflow Universe 'Car Parts Segmentation' (19 classes, left/right kept)"
+    name: "Roboflow Universe 'Car Parts Segmentation' (19 classes, 603 source images)"
     url: "https://universe.roboflow.com/person-detector/car-parts-segmentation"
     license: CC-BY-4.0
     license_url: "https://universe.roboflow.com/person-detector/car-parts-segmentation"
-    license_status: unverified
-    verified: null
+    license_status: conflicting
+    provenance: undocumented
+    verified: 2026-09-30
     adopted: true
     covers: [part_vocabulary, segmenter_cross_vehicle_test]
+    source: {workspace: person-detector, project: car-parts-segmentation, version: 2}
     notes: >-
-      Same caveats as roboflow_car_parts_21. Keeps left/right mirrors and doors separate,
-      which matches the flip rule in CLAUDE.md §8.2.
+      Roboflow API reports "CC BY 4.0", but the 19 classes are exactly the DSMLR
+      Car-Parts-Segmentation classes plus "car", and DSMLR states no licence (see
+      dsmlr_car_parts). An uploader cannot license photos they do not own, so the CC BY
+      claim is treated as conflicting: private rehearsal/evaluation only. Useful because
+      it keeps left/right mirrors and doors apart (CLAUDE.md §8.2 flip rule). Version 2's
+      train split is heavily augmented (rotate, mosaic, noise, cutout); use valid (75)
+      and test (78) for evaluation.
 
   threedrealcar:
     name: "3DRealCar (ICCV 2025): 2,500 smartphone 360-degree car scans"
