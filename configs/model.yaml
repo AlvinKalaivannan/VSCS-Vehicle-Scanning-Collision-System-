@@ -7,6 +7,10 @@ decompose:
   max_convex_hulls: 16
   preprocess_resolution: 50
   seed: 20260924
+  # Points -> solid (src/vscs/model/decompose.py). The voxel sets the reference volume's
+  # resolution: an open sheet becomes a solid about one to two voxels thick.
+  voxel_m: 0.02
+  close_iterations: 1       # bridges gaps up to ~2 voxels between neighbouring points
   # P2-T6 acceptance: hull volume within +/- 15% of the point-cloud-derived volume.
   max_volume_error_fraction: 0.15
 
