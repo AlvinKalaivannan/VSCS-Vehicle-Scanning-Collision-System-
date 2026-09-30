@@ -1,7 +1,7 @@
 # VSCS Status — updated 2026-09-29
 mode: pair            # pair | build
 phase: P1 (capture prep); Phase 2 plumbing built early on the fixture (developer's go-ahead)
-current_task: Wave 1 of the fixture build (P2); October captures remain the critical path
+current_task: Wave 1 (P2 plumbing) complete on the fixture; Wave 2 next. October captures remain the critical path
 health: ON TRACK
 
 ## Done since last update
@@ -17,13 +17,15 @@ health: ON TRACK
 - **P2-T6** decomposition: CoACD, pinned and MIT-licensed; done on the fixture.
 - **P2-T7** joint kinematics: done on the fixture.
 - **P2-T8** URDF export and load: done on the fixture, with `scripts/export_model.py`.
+- **P2-T2** masks stage (Colab; streamed Grounding DINO + SAM 2): done on the fixture,
+  with `scripts/seg.py` and `notebooks/colab/20_seg.ipynb`.
 - None of these is *accepted*: every §6 gate needs the real van scan.
 
 ## Verified metrics (link to metrics/results.jsonl entries)
 
 **None.** `metrics/results.jsonl` is empty; nothing has been measured on real data.
 
-Session evidence (tests, not metrics): `main` **657 passed, 1 skipped**; ruff clean.
+Session evidence (tests, not metrics): `main` **668 passed, 1 skipped**; ruff clean.
 
 ## Blockers — decisions and work only you can do
 
@@ -46,8 +48,7 @@ None triggered.
 
 ## Next 3 tasks
 
-1. **Me:** P2-T2 masks wrapper (Colab, Grounding DINO + SAM 2), then Wave 2 (Rerun view,
-   perception v0, occupancy, baseline, metrics).
+1. **Me:** Wave 2 (Rerun view, perception v0, occupancy, baseline, risk metrics).
 2. **You:** the rear-doors decision; the three drafts; the Phase 0 captures.
 3. **October:** van scan, lot day, second vehicle.
 
