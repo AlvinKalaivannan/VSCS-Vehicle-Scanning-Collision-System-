@@ -21,6 +21,7 @@ pydantic==2.13.5
 opencv-python==5.0.0.93     # calibration, ArUco markers, image I/O
 shapely==2.1.2              # 2D component footprints (P3-T4)
 trimesh==5.1.0              # meshes, proximity queries
+coacd==1.0.14               # convex decomposition, MIT (P2-T6; verified 2026-09-29)
 
 # --- CLI ----------------------------------------------------------------------
 typer==0.27.2
