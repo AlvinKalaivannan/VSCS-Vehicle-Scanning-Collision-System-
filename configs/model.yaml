@@ -11,6 +11,13 @@ decompose:
   # resolution: an open sheet becomes a solid about one to two voxels thick.
   voxel_m: 0.02
   close_iterations: 1       # bridges gaps up to ~2 voxels between neighbouring points
+  # Filling a closed surface needs a voxel shell without holes. With random point spacing
+  # s, each voxel face (voxel_m^2) holds about 0.25 * (voxel_m / s)^2 points; below ~3,
+  # empty voxels cluster and closing cannot bridge them. So warn when s > 0.3 * voxel_m
+  # (0.6 cm at 2 cm voxels). Measured on the fixture 2026-09-29 (half-voxel grid offset):
+  # thick parts fill 0/5 at ~1.1 cm spacing, 2-4/5 at ~0.87 cm, 5/5 at ~0.67 cm and below;
+  # thin parts (door, underbody) always fill.
+  max_spacing_fraction_of_voxel: 0.3
   # P2-T6 acceptance: hull volume within +/- 15% of the point-cloud-derived volume.
   max_volume_error_fraction: 0.15
 

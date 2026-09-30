@@ -54,6 +54,11 @@ import numpy as np
 import numpy.typing as npt
 import trimesh
 from scipy import ndimage
+from scipy.spatial import cKDTree
+
+from vscs.common.log import get_logger
+
+logger = get_logger("model.decompose")
 
 FloatArray = npt.NDArray[np.float64]
 
@@ -87,6 +92,7 @@ class DecomposedComponent:
     parts: list[trimesh.Trimesh]
     reference_volume: float
     max_error: float
+    point_spacing_m: float = float("nan")
 
     @property
     def parts_volume(self) -> float:
@@ -106,8 +112,21 @@ class DecomposedComponent:
         return (
             f"{self.name}: {len(self.parts)} part(s) via {self.engine}, volume "
             f"{self.parts_volume:.4f} vs {self.reference_volume:.4f} m^3 "
-            f"({self.volume_error_fraction:+.1%}, limit {self.max_error:.0%}) {verdict}"
+            f"({self.volume_error_fraction:+.1%}, limit {self.max_error:.0%}) {verdict}; "
+            f"point spacing {self.point_spacing_m * 100:.1f} cm"
         )
+
+
+def median_point_spacing(points: npt.ArrayLike, max_queries: int = 5000) -> float:
+    """Median distance from a point to its nearest neighbour.
+
+    At most ``max_queries`` points are *queried*, but always against the full cloud:
+    thinning the cloud itself would inflate every nearest-neighbour distance.
+    """
+    pts = np.asarray(points, dtype=np.float64)
+    queries = pts[:: max(1, int(np.ceil(len(pts) / max_queries)))]
+    d, _ = cKDTree(pts).query(queries, k=2)
+    return float(np.median(d[:, 1]))
 
 
 def solidify(points: npt.ArrayLike, voxel_m: float, close_iterations: int) -> VoxelSolid:
@@ -116,7 +135,11 @@ def solidify(points: npt.ArrayLike, voxel_m: float, close_iterations: int) -> Vo
     if pts.ndim != 2 or pts.shape[1] != 3 or len(pts) < 4:
         raise ValueError(f"need at least 4 points of shape (N, 3); got {pts.shape}")
     pad = close_iterations + 1  # room for closing to work at the edges
-    origin = pts.min(axis=0) - pad * voxel_m
+    # Half-voxel offset: a flat face through the extreme points then lies on voxel
+    # *centres*. On a boundary instead, rounding scatters its points between two voxel
+    # layers, leaving both half-empty and full of holes (found on the fixture's
+    # axis-aligned faces; a van's flat sides are near axis-aligned in veh too).
+    origin = pts.min(axis=0) - (pad + 0.5) * voxel_m
     idx = np.floor((pts - origin) / voxel_m).astype(np.int64)
     shape = idx.max(axis=0) + pad + 1
     occ = np.zeros(shape, dtype=bool)
@@ -169,10 +192,26 @@ def _coacd_parts(mesh: trimesh.Trimesh, cfg: dict[str, Any]) -> list[trimesh.Tri
 def decompose_component(
     name: str, points: npt.ArrayLike, decompose_cfg: dict[str, Any]
 ) -> DecomposedComponent:
-    """Points of one component -> convex parts, with the P2-T6 volume check."""
-    solid = solidify(
-        points, float(decompose_cfg["voxel_m"]), int(decompose_cfg["close_iterations"])
-    )
+    """Points of one component -> convex parts, with the P2-T6 volume check.
+
+    Filling a closed surface is all-or-nothing: one hole in the voxel shell and the
+    interior stays hollow, so the reference volume collapses to the shell's. Holes appear
+    when points are too sparse for every voxel face to catch a few (see
+    ``max_spacing_fraction_of_voxel`` in ``model.yaml``). That is logged as a warning
+    rather than guessed around.
+    """
+    voxel_m = float(decompose_cfg["voxel_m"])
+    close_iterations = int(decompose_cfg["close_iterations"])
+    spacing = median_point_spacing(points)
+    if spacing > float(decompose_cfg["max_spacing_fraction_of_voxel"]) * voxel_m:
+        logger.warning(
+            "%s: median point spacing %.1f cm is coarse for %.1f cm voxels; closed surfaces "
+            "may not fill, and the reference volume will then be the shell's",
+            name,
+            spacing * 100,
+            voxel_m * 100,
+        )
+    solid = solidify(points, voxel_m, close_iterations)
     engine = str(decompose_cfg["engine"])
     if engine == "coacd":
         parts = _coacd_parts(boundary_mesh(solid), decompose_cfg)
@@ -193,4 +232,5 @@ def decompose_component(
         parts=parts,
         reference_volume=solid.volume,
         max_error=float(decompose_cfg["max_volume_error_fraction"]),
+        point_spacing_m=spacing,
     )
