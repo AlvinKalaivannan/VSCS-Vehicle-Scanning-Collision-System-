@@ -85,6 +85,18 @@ def test_roboflow_sets_match_what_the_api_reported_on_2026_09_29():
     }
 
 
+def test_streaming_datasets_match_their_licences():
+    """ADR 0008: nuScenes is CC BY-NC-SA (no public media, no training under current
+    policy); the crash datasets are unverified, so nothing is allowed yet."""
+    assert D.allowed_uses(REGISTRY["nuscenes"], POLICY) == {
+        "rehearsal",
+        "private_eval",
+        "publish_results",
+    }
+    for ds in ("dota", "ccd", "dad"):
+        assert D.allowed_uses(REGISTRY[ds], POLICY) == frozenset()
+
+
 def test_external_data_never_enters_our_lot_splits():
     """R-09: dev/test are our lot passes only."""
     splits = load_config("eval")["splits"]

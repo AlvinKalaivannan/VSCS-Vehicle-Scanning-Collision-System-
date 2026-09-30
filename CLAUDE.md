@@ -45,18 +45,20 @@ VSCS is a software-only, advisory computer-vision system that:
 4. Computes **per-component collision risk** (distance, time-to-contact, probability, severity) and an aggregate risk, then produces warnings.
 5. Establishes its value through controlled comparison against a **single-bounding-box baseline**.
 6. Includes **one trained model**: a vehicle-part segmenter ("student") fine-tuned on pseudo-labels produced by the scan pipeline's Grounding DINO + SAM 2 + 3D fusion ("teacher"). The risk engine stays pure geometry and is never learned.
+7. Runs as a **near-real-time streaming pipeline** over recorded sequences replayed as live streams (public driving datasets, then the developer's own footage), with an explicit latency budget: target ~15 fps and < 150 ms end to end, *measured on the hardware actually available* and reported honestly (ADR 0008). Risk is per **zone**: the van's scanned components are its zones; other vehicles get template zones (ADR 0009, proposed).
 
 ### Hard boundaries
 
 - **Advisory only.** VSCS never controls steering, throttle, or brakes. No code in this repo may send commands to a vehicle.
 - **Not a safety device.** The README and demo must state this. Never let a test depend on VSCS to prevent a real collision.
-- **Offline-first.** The system operates on recorded sequences. Real-time *feasibility* is characterised by measured throughput on a Colab T4, not demonstrated by in-vehicle deployment.
-- **Single monocular instrument.** Acquisition uses one calibrated monocular camera. No depth sensor, structured light or stereo rig is assumed, and no custom hardware is built. The current instrument is a consumer smartphone camera; this is recorded explicitly because the constraints it imposes — variable frame rate, rolling shutter, autofocus drift — are the stated cause of R-03, R-04 and R-06, and of the P0-T7 calibration gate. A USB stereo camera is an optional later upgrade (Tier 1), only with the developer's approval.
+- **Recorded input only.** The system operates on recorded sequences. "Live" means a recording *replayed* as a stream (RTSP) at its native frame rate. No live in-vehicle camera or in-vehicle deployment without the developer's approval. Real-time performance is characterised by measured latency and throughput on the available hardware (laptop CPU, Colab T4; a desktop GPU or Jetson only if the developer acquires one).
+- **Single monocular instrument (van capture).** The developer's own acquisition uses one calibrated monocular camera. Public datasets (§10) bring their own calibrated rigs and are used as recorded. No depth sensor, structured light or stereo rig is assumed, and no custom hardware is built. The current instrument is a consumer smartphone camera; this is recorded explicitly because the constraints it imposes — variable frame rate, rolling shutter, autofocus drift — are the stated cause of R-03, R-04 and R-06, and of the P0-T7 calibration gate. A USB stereo camera is an optional later upgrade (Tier 1), only with the developer's approval.
 
 ### Compute
 
-- **Laptop (no NVIDIA GPU):** COLMAP (CPU), risk engine, collision checks, Rerun viz, tests, scripting.
-- **Colab Pro (T4 preferred; do not request A100 unless justified in an ADR):** Gaussian splatting, SAM 2, Grounding DINO, depth models, detection.
+- **Laptop (no NVIDIA GPU):** COLMAP (CPU), risk engine, collision checks, Rerun viz, tests, scripting, and development of the streaming pipeline (replay, queues, backpressure, metrics) with small or stub models.
+- **Colab Pro (T4 preferred; do not request A100 unless justified in an ADR):** Gaussian splatting, SAM 2, Grounding DINO, depth models, detection, and per-stage model throughput benchmarks.
+- **Desktop NVIDIA GPU / Jetson Orin:** not available. Phase 7 (acceleration) is conditional on the developer acquiring one; purchases are the developer's decision (§0).
 - Budget awareness: log approximate GPU time per job in the devlog. Warn the developer if a planned job will exceed ~10 compute units.
 
 ---
@@ -96,6 +98,17 @@ VSCS is a software-only, advisory computer-vision system that:
 **Offline pipeline (once per vehicle):** capture → recon → seg → model.
 **Per-drive pipeline:** capture → perception → risk → ui/eval.
 
+**Streaming pipeline (Phase 6, ADR 0008):** the per-drive pipeline run as concurrent stages over a replayed stream:
+
+```
+ RTSP replay ──▶ ingest ──▶ decode ──▶ detect ──▶ track ──▶ depth/3D ──▶ risk ──▶ output
+ (recording at     │ bounded queue between every pair of stages; a full queue drops
+  native fps)      │ the STALEST frame, never blocks upstream (latency must not grow)
+                   └ every frame carries its capture t_ns; each stage records its latency
+```
+
+Latency budget: ~15 fps, < 150 ms end to end, split across stages in `configs/stream.yaml`. Observability (per-stage latency p50/p95/p99, fps, dropped frames) is surfaced live. The offline van pipeline is unchanged and produces the ego vehicle's zone model.
+
 Modules communicate only through the schemas in §4. No module imports another module's internals.
 
 ---
@@ -119,6 +132,9 @@ vscs/
 │   ├── perception.yaml
 │   ├── risk.yaml              # horizon, dt, path fan, margins, alert thresholds
 │   ├── train_seg.yaml         # student segmenter: model, augmentation, schedule, seeds (P4-T10)
+│   ├── datasets.yaml          # external datasets + licences; uses derived by policy (ADR 0006)
+│   ├── zones.yaml             # zone templates for vehicles without a scan (ADR 0009)
+│   ├── stream.yaml            # stages, queue sizes, per-stage latency budget (Phase 6)
 │   └── eval.yaml              # dataset splits
 ├── data/                      # GITIGNORED except MANIFEST.md
 │   ├── MANIFEST.md            # every raw file: id, date, sha256, description, backup locations
@@ -134,9 +150,12 @@ vscs/
 │   ├── model/                 # decompose.py, severity.py, joints.py, urdf.py
 │   ├── perception/            # depth.py, occupancy.py, detect.py, track.py, egomotion.py
 │   ├── risk/                  # motion.py, sweep.py, metrics.py, probability.py, aggregate.py, alerts.py
+│   ├── zones/                 # model.py (ZoneModel), template.py (box -> zones) - ADR 0009
+│   ├── stream/                # replay.py, queues.py, stages.py, metrics.py, pipeline.py (Phase 6)
 │   ├── ui/                    # rerun_view.py, driver_replay.py, audio.py
 │   └── eval/                  # metrics.py, baseline_bbox.py, report.py
 ├── scripts/                   # thin CLI entry points only (argparse/typer → src/vscs)
+├── docker/                    # Dockerfile + compose: the whole streaming demo, one command (Phase 6)
 ├── notebooks/colab/           # thin wrappers: install, mount Drive, call src/vscs. NO logic here.
 │   └── train_seg.ipynb        # student training on T4 - thin wrapper only, per §4.3
 ├── tests/
@@ -215,6 +234,8 @@ RiskFrame:
 
 Serialize `RiskFrame` streams as JSON Lines. Every schema change requires: version bump in `types.py`, migration note in an ADR, and updated tests.
 
+**Zones (ADR 0009, PROPOSED - not yet in `types.py`).** A `Component` is one *zone* of a vehicle. A `ZoneModel` supplies zones at three fidelities: scanned (the van's URDF, P2-T8), template (a box subdivided into named zones, for the nuScenes ego car and every tracked vehicle), and single box (the baseline). `ComponentRisk` / `RiskFrame` would gain optional target-vehicle zone fields (which zone of the *other* vehicle is at risk). Nothing changes in the schemas until the developer approves ADR 0009.
+
 ### 4.3 Code standards
 
 - Python 3.11 locally (conda env `vscs`). On Colab, use the provided runtime; if a dependency breaks on it, record the workaround in an ADR.
@@ -236,7 +257,7 @@ Serialize `RiskFrame` streams as JSON Lines. Every schema change requires: versi
 ## 5. Testing requirements
 
 - `tests/fixtures/` holds a synthetic world: a box-shaped "vehicle" with labeled sub-boxes as components, a thin pole, a curb, and a short synthetic camera trajectory with known poses. Every module must have at least one test against it with an analytically known answer (e.g. known distance from rear-right corner to pole = 0.500 m ± 1e-6).
-- Required unit tests: transform inverse/composition; pinhole projection round-trip; scale recovery from a known marker; label fusion on synthetic multi-view masks; swept-distance on the fixture; `p_any_contact` math; alert hysteresis state machine; pseudo-label projection on the fixture (a known box component projects to a known pixel mask; an occluded point is not labeled).
+- Required unit tests: transform inverse/composition; pinhole projection round-trip; scale recovery from a known marker; label fusion on synthetic multi-view masks; swept-distance on the fixture; `p_any_contact` math; alert hysteresis state machine; pseudo-label projection on the fixture (a known box component projects to a known pixel mask; an occluded point is not labeled); zone template known answer (a box of known size yields zones of known size and position); stream queue backpressure (bounded; when full the stalest frame is dropped; end-to-end latency does not grow under overload); per-stage latency accounting (stage latencies sum to the end-to-end latency within tolerance); replay timing (a recorded clip is replayed at its native timestamps).
 - `pytest -q` must pass before any commit to `main`. Coverage target for `common/` and `risk/`: ≥80%.
 - Integration test (`tests/test_pipeline_smoke.py`): fixture scene end-to-end → produces a valid `RiskFrame` stream in < 60 s on laptop CPU.
 
@@ -317,6 +338,9 @@ A phase is complete only when every task's acceptance criterion is met and `docs
 | P4-T10 | Fine-tune a small semantic segmentation model on Colab T4. Checkpoint to Drive every epoch, seed everything, log compute units used. Model choice follows the trained-segmenter rules in §10 and is recorded in an ADR | Training runs end to end and resumes after a disconnect; best checkpoint saved with its config and git hash |
 | P4-T11 | **Evaluate student vs teacher** | Report to `metrics/results.jsonl`: per-component IoU and mIoU on van gold frames (student and teacher), mIoU on second-vehicle gold frames, and FPS on T4 (student and teacher). Pass: student mIoU is at least teacher mIoU on van gold frames, OR within 5 points while at least 5× faster. Cross-vehicle transfer is reported honestly with no pass threshold |
 | P4-T12 (optional) | Use student masks as the 2D input to 3D fusion and re-run P2-T3/P2-T5 | 3D IoU compared against the teacher-based result |
+| P4-T13 | Zone model + templates (ADR 0009, after the developer approves it) | Zone template known-answer test passes; the van's URDF loads as a ZoneModel; the single-box baseline is a ZoneModel too |
+| P4-T14 | nuScenes-mini offline: ingest, replay its camera + 3D ground truth through the per-drive pipeline with template zones | Per-zone TTC and zone attribution computed against ground-truth tracks and logged to `metrics/results.jsonl`; scanned vs template vs single-box comparison where applicable |
+| P4-T15 | Crash / near-miss datasets (DoTA, CCD or DAD) for **private** evaluation, after their licences are checked (ADR 0006) | Lead time of first warning before the annotated event, on a stated number of clips; never republished (§9) |
 
 ### Phase 5 — Evaluate + ship (March)
 
@@ -329,13 +353,32 @@ A phase is complete only when every task's acceptance criterion is met and `docs
 | P5-T5 | User test (3–5 drivers watch replays / optional stationary demo) | Notes and quotes in `docs/evidence/` |
 | P5-T6 | Demo video + README/writeup with limitations | Published only after privacy scrub (§9) and the developer's approval |
 
+### Phase 6 — Streaming pipeline (April → May; ADR 0008)
+
+| ID | Task | Acceptance criteria |
+|---|---|---|
+| P6-T1 | Replay server: a recording (nuScenes camera sequence, lot run) served as an RTSP stream at native frame rate (ffmpeg; GStreamer optional) | Replay timing test passes; received frame timestamps match the recording within one frame |
+| P6-T2 | Staged concurrent pipeline with bounded queues and drop-stale backpressure | Backpressure test passes; under 2× overload end-to-end latency stays bounded and drops are counted |
+| P6-T3 | Observability: per-stage latency p50/p95/p99, fps, dropped frames, surfaced live (Rerun or a small web view) and logged | Metrics visible during a replay; per-stage latencies sum to end-to-end within tolerance |
+| P6-T4 | Latency budget per stage in `configs/stream.yaml`; budget report | Measured latency per stage vs budget, on laptop CPU and (model stages) Colab T4, logged to `metrics/results.jsonl` |
+| P6-T5 | Docker packaging: config-driven, single command runs replay + pipeline + view | `docker compose up` on a clean machine runs the nuScenes replay demo |
+| P6-T6 | Demo: replayed nuScenes with per-zone risk overlay; "advisory research prototype" on screen | Runs end to end; published only per §9 and §10 licence terms and the developer's approval |
+
+### Phase 7 — Acceleration (CONDITIONAL: only if the developer acquires an NVIDIA GPU or Jetson)
+
+| ID | Task | Acceptance criteria |
+|---|---|---|
+| P7-T1 | Export perception models to ONNX; ONNX Runtime baseline | Same outputs as PyTorch within tolerance; latency logged |
+| P7-T2 | TensorRT FP16, then INT8 (calibrated) | Accuracy drop and speed-up reported per stage |
+| P7-T3 | Jetson Orin deployment of the streaming pipeline | Live replay demo on the Jetson; latency budget report |
+
 ### Stretch (summer 2027, only after Phase 5)
 
 CARLA simulation with the scanned van imported · auto hinge-axis detection from open/closed scans · stereo camera (Tier 1) · live in-vehicle compute.
 
 ### Cut order if behind schedule
 
-1. P5-T5 user test → 2. Trained segmenter (P4-T8 to P4-T12; report teacher-only results) → 3. P4-T4 dynamic tracking (static only) → 4. P4-T7 probabilities (use clearance/TTC thresholds). **Never cut P5-T1/P5-T2 (baseline comparison)** — it is the core result. P1-T8 (second-vehicle capture) is not cut: it is cheap and cannot be redone after snow.
+Phase 7 is conditional and is cut first. Then: 1. P5-T5 user test → 2. Trained segmenter (P4-T8 to P4-T12; report teacher-only results) → 3. P4-T4 dynamic tracking (static only) → 4. P4-T7 probabilities (use clearance/TTC thresholds). **Never cut P5-T1/P5-T2 (baseline comparison)** — it is the core result. P1-T8 (second-vehicle capture) is not cut: it is cheap and cannot be redone after snow. Phase 6 is cut back to P6-T1..T3 (replay, backpressure, metrics) before any Phase 3 MVP work is cut.
 
 ---
 
@@ -434,6 +477,11 @@ Seed `docs/RISKS.md` from this table. Columns: ID · risk · likelihood · impac
 | R-17 | Student learns the teacher's mistakes (pseudo-label errors baked in) | Student and teacher fail on the same regions | Gold set is hand-corrected and never derived from pseudo-labels; review the worst components |
 | R-18 | Data leakage between near-identical adjacent frames | Val score much higher than test score | Split by contiguous segments or loops only |
 | R-19 | Overfitting to one van | Big drop on second-vehicle gold set | Augmentation (color, blur, crop, flip where the label side is swapped correctly), early stopping; report the drop as a finding |
+| R-20 | No NVIDIA GPU: live fps cannot be measured locally | Model stages far below 15 fps on laptop CPU | Develop streaming with stub/small models on CPU; benchmark model stages on Colab T4; report numbers per hardware, never extrapolate |
+| R-21 | Latency grows under load (queues fill, stale frames processed) | End-to-end latency trends upward during a replay | Bounded queues, drop-stale backpressure, per-stage budget, backpressure test on every merge |
+| R-22 | Dataset licences (nuScenes, KITTI, AV2: CC BY-NC-SA; Waymo: non-commercial) vs a public demo | A demo or README shows dataset media outside licence terms | Registry + `require_use` guard (ADR 0006); attribution; non-commercial only; the developer approves every publication |
+| R-23 | Crash-footage privacy and republication (DoTA/CCD/DAD are compiled from public dashcam videos) | Crash clips appear in evidence, README or the demo reel | Private evaluation only (§9); never republished; registry marks them non-publishable |
+| R-24 | Scope creep from the streaming track at 5–8 h/week | Phase 6 starts before the Phase 3 MVP is demo-able | Phase 3 MVP protected; Phase 7 conditional and cut first; Phase 6 cut to P6-T1..T3 |
 
 ### 8.2 Fallback ladder (propose to the developer when trigger fires; record in ADR)
 
@@ -453,6 +501,8 @@ Seed `docs/RISKS.md` from this table. Columns: ID · risk · likelihood · impac
 | Visualization | Rerun | Open3D | matplotlib top-down plots | — |
 | Simulation (stretch) | CARLA | Custom synthetic scenes (Blender/fixture generator) | Skip | CARLA setup > 2 sessions |
 | Data (if van unavailable) | The project van | Another family vehicle | Synthetic/CARLA-only evaluation (clearly labeled) | Vehicle unavailable for capture month |
+| Stream ingest | GStreamer RTSP | ffmpeg RTSP | Direct file replay at native timestamps (no network) | RTSP setup > 1 session, or frames dropped at the source |
+| Model acceleration (Phase 7) | TensorRT FP16/INT8 | ONNX Runtime | PyTorch eager | Export or accuracy failure |
 | Trained segmenter | Full fine-tune | Freeze the backbone, train only the head | Drop the student and report teacher-only results (core project unaffected) | Student mIoU more than 10 points below the teacher after tuning |
 
 **Flip augmentation and left/right components.** Left/right components (e.g. left vs right mirror) must not be merged by horizontal-flip augmentation. Either swap the labels on flip or disable flip.
@@ -474,12 +524,14 @@ Seed `docs/RISKS.md` from this table. Columns: ID · risk · likelihood · impac
 
 - Recordings may contain bystanders' faces and license plates. **Before anything leaves `data/`** (evidence folder, README, demo video), run a blur pass (face + plate detection) and have the developer visually confirm.
 - Do not commit raw recordings, GPS tracks, or anything revealing the developer's home address or routine. Strip location metadata from any published image/video.
-- Third-party footage (e.g. online videos) may be used for private testing only, never republished.
+- Third-party footage (e.g. online videos) may be used for private testing only, never republished. This includes crash / near-miss datasets compiled from public dashcam videos (DoTA, CCD, DAD): **private evaluation only, never in a published demo reel.**
+- Public driving datasets (nuScenes, KITTI, Argoverse 2, Waymo) may appear in a demo only within their licence terms (non-commercial, attribution, share-alike where required) and after the developer's approval. The registry decides what is allowed (ADR 0006).
 
 ### Honest claims
 
 - Never describe VSCS as preventing collisions or as a safety system. Use "advisory," "research prototype," "evaluated on N recorded passes."
 - Every number in the README must trace to a line in `metrics/results.jsonl`.
+- Latency and fps claims always name the hardware they were measured on. Never make a real-time claim for hardware VSCS was not run on.
 
 ---
 
@@ -503,6 +555,15 @@ Prefer permissive licenses (MIT, BSD, Apache-2.0). Check before adding anything;
 | Ultralytics YOLO | detection | **AGPL-3.0 — avoid unless the developer accepts open-sourcing obligations; prefer Apache/MIT alternatives** |
 | torchvision (DeepLabV3 / LR-ASPP) | student segmenter candidate (P4-T10) | Code BSD-3-Clause; pretrained weights: verify separately |
 | Mask2Former | student segmenter candidate (P4-T10) | Reported MIT; verify code and pretrained weights separately |
+| nuScenes | primary public dataset (P4-T14, Phase 6 demo) | CC BY-NC-SA 4.0; account and terms acceptance required |
+| KITTI / Argoverse 2 | optional public datasets | CC BY-NC-SA 3.0 / CC BY-NC-SA 4.0 |
+| Waymo Open Dataset | optional public dataset | Waymo non-commercial licence (own terms; verify) |
+| DoTA / CCD / DAD | crash / near-miss evaluation (P4-T15) | Verify each; compiled from public videos, so treat as **no republication rights** |
+| ffmpeg | decode, RTSP replay | LGPL-2.1+ (GPL if built with GPL parts): **flag for review**; used as a separate process, not linked |
+| GStreamer (optional) | RTSP / pipelines | LGPL-2.1+: **flag for review**; used as a separate process, not linked |
+| Docker / Compose | packaging | Apache-2.0 (engine) |
+| ONNX Runtime | inference (Phase 7) | MIT |
+| TensorRT | inference (Phase 7, conditional) | NVIDIA proprietary, free to use; not redistributed |
 
 **Trained segmenter (P4-T10) model rules.**
 
@@ -520,6 +581,8 @@ Prefer permissive licenses (MIT, BSD, Apache-2.0). Check before adding anything;
   - Perception: depth error by range bucket, detection recall by obstacle type, ego-motion drift %.
   - Risk: **component attribution accuracy** (flagged component == component that actually passes closest), TTC error (s), false alarms per minute, lead time (s) of first warning before closest approach.
   - System: per-stage and end-to-end FPS on Colab T4.
+  - **Streaming** (Phase 6): per-stage and end-to-end latency p50/p95/p99, fps, dropped-frame rate, each tagged with the hardware it ran on.
+  - **Zones** (P4-T14): per-zone TTC error and zone attribution accuracy on nuScenes ground-truth tracks; scanned vs template vs single-box zone models.
   - **Trained model** (P4-T11, computed by `seg/train/evaluate.py`): per-component IoU and mIoU on van gold frames for student and teacher; mIoU on second-vehicle gold frames; FPS on T4 for student and teacher. Pass: student mIoU ≥ teacher mIoU on van gold frames, or within 5 points while ≥5× faster. Cross-vehicle transfer is reported with no pass threshold.
 - **Gold sets (P4-T9):** used once, for the final student/teacher numbers, like the `test` split. Only the val split is used for tuning. Gold frames are never trained on.
 - **Baseline:** identical pipeline with the vehicle modeled as one oriented bounding box. Report VSCS vs baseline on every risk metric.
@@ -553,6 +616,7 @@ python scripts/report.py                                                    # re
 ```
 
 Planned, not yet created (added as their phases begin): `perceive.py`, `risk.py`,
-`view.py` (Rerun), `evaluate.py`.
+`view.py` (Rerun), `evaluate.py`, `stream.py` (Phase 6 pipeline) and `docker compose up`
+(Phase 6 demo).
 
 (Keep this list in sync with reality.)

@@ -151,3 +151,58 @@ datasets:
     adopted: false
     covers: [part_vocabulary]
     notes: "No licence stated, which legally means no permission. Ask the authors or skip."
+
+  # --- Streaming direction (ADR 0008) ---------------------------------------------
+
+  nuscenes:
+    name: "nuScenes (Motional): calibrated cameras, 3D boxes, ego poses"
+    url: "https://www.nuscenes.org/nuscenes"
+    license: CC-BY-NC-SA-4.0
+    license_url: "https://www.nuscenes.org/terms-of-use"
+    license_status: clear
+    verified: 2026-09-30
+    adopted: true
+    covers: [calibrated_driving_video, ground_truth_3d_tracks, streaming_replay_source]
+    source: {subset: "v1.0-mini"}
+    notes: >-
+      CC BY-NC-SA 4.0: non-commercial use only (personal, educational, some research);
+      commercial licences via Motional. Download needs the developer's account and
+      acceptance of the terms (the developer does this; not automated). Start with
+      v1.0-mini (P4-T14). Showing its frames in a demo is currently blocked by this
+      registry's non-commercial policy class; loosening that is the developer's call.
+
+  dota:
+    name: "DoTA - Detection of Traffic Anomaly (dashcam accident clips)"
+    url: "https://github.com/MoonBlvd/Detection-of-Traffic-Anomaly"
+    license: null
+    license_url: null
+    license_status: unverified
+    verified: null
+    adopted: false
+    covers: [crash_near_miss_eval]
+    notes: >-
+      Compiled from public online dashcam videos. Check the terms before any use; even if
+      the annotations are licensed, treat the video as having no republication rights
+      (CLAUDE.md §9). Private evaluation only (P4-T15).
+
+  ccd:
+    name: "CCD - Car Crash Dataset"
+    url: "https://github.com/Cogito2012/CarCrashDataset"
+    license: null
+    license_url: null
+    license_status: unverified
+    verified: null
+    adopted: false
+    covers: [crash_near_miss_eval]
+    notes: "As dota: verify terms first; video has no republication rights; private only."
+
+  dad:
+    name: "DAD - Dashcam Accident Dataset"
+    url: "https://aliensunmin.github.io/project/dashcam/"
+    license: null
+    license_url: null
+    license_status: unverified
+    verified: null
+    adopted: false
+    covers: [crash_near_miss_eval]
+    notes: "As dota: verify terms first; video has no republication rights; private only."
