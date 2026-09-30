@@ -32,6 +32,7 @@ of y (see ``seg.yaml``).
 
 from __future__ import annotations
 
+import contextlib
 import json
 import shutil
 from collections.abc import Iterator, Sequence
@@ -305,13 +306,82 @@ def run_masks(
 # --------------------------------------------------------------------------- #
 # Real adapters - Colab only (GPU). Not exercised by the laptop tests.         #
 # --------------------------------------------------------------------------- #
+def autocast_for(torch, device: str):
+    """Mixed precision the hardware actually supports.
+
+    SAM 2's examples use bfloat16, but the Colab T4 (Turing) has no bfloat16 support, and
+    ``torch.autocast`` refuses it there ("Current CUDA Device does not support bfloat16").
+    So: bfloat16 where supported, float16 on older GPUs, full precision on CPU.
+    """
+    if not str(device).startswith("cuda"):
+        return contextlib.nullcontext()
+    dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+    return torch.autocast("cuda", dtype=dtype)
+
+
+def filter_grounded(
+    boxes: Sequence[Sequence[float]],
+    scores: Sequence[float],
+    labels: Sequence[str],
+    image_hw: tuple[int, int],
+    ignore_labels: Sequence[str],
+) -> list[tuple[tuple[float, float, float, float], float]]:
+    """Clean Grounding DINO's raw output for one prompt.
+
+    * A box whose matched text is only a whole-vehicle word ("car", "van", ...) is
+      dropped. Found on real photos: for "side mirror of a car" the top box (0.64) was the
+      whole car, labelled "car". Prompts name only the part, and this keeps a future
+      prompt from reintroducing the problem.
+    * Boxes are clipped to the image, and degenerate ones dropped.
+    """
+    h, w = image_hw
+    ignore = {x.strip().lower() for x in ignore_labels}
+    out = []
+    for b, sc, lab in zip(boxes, scores, labels, strict=True):
+        if str(lab).strip().lower() in ignore:
+            continue
+        x0, y0, x1, y1 = (float(v) for v in b)
+        x0, x1 = min(max(x0, 0.0), w - 1.0), min(max(x1, 0.0), w - 1.0)
+        y0, y1 = min(max(y0, 0.0), h - 1.0), min(max(y1, 0.0), h - 1.0)
+        if x1 > x0 and y1 > y0:
+            out.append(((x0, y0, x1, y1), float(sc)))
+    return out
+
+
+def grounded_to_hits(
+    res: dict[str, Any], image_hw: tuple[int, int], ignore_labels: Sequence[str]
+) -> list[tuple[tuple[float, float, float, float], float]]:
+    """One post-processed Grounding DINO result -> filtered ``(box, score)`` hits.
+
+    transformers 5.17 returns ``text_labels == ['']`` beside *zero* boxes when nothing
+    passes the threshold (seen on CPU, 2026-09-29), so "no boxes" is handled before
+    labels are paired with boxes. Any other length mismatch is an error, not a guess.
+    """
+    boxes = res["boxes"].tolist()
+    if not boxes:
+        return []
+    labels = list(res["text_labels"] if "text_labels" in res else res["labels"])
+    if len(labels) != len(boxes):
+        raise ValueError(f"{len(boxes)} boxes but {len(labels)} labels from post-processing")
+    return filter_grounded(boxes, res["scores"].tolist(), labels, image_hw, ignore_labels)
+
+
 class GroundingDinoDetector:
     """Grounding DINO through Hugging Face ``transformers`` (code and weights Apache-2.0).
 
     One text query per component, lower-case and ending in ".", as the model expects.
+    ``box_threshold`` is applied inside post-processing: with 0 it returns every one of
+    the model's 900 query boxes. Verified on CPU against transformers 5.17 (2026-09-29).
     """
 
-    def __init__(self, model_id: str, text_threshold: float, device: str = "cuda") -> None:
+    def __init__(
+        self,
+        model_id: str,
+        box_threshold: float,
+        text_threshold: float,
+        ignore_labels: Sequence[str] = (),
+        device: str = "cuda",
+    ) -> None:
         import torch
         from transformers import AutoModelForZeroShotObjectDetection, AutoProcessor
 
@@ -319,7 +389,9 @@ class GroundingDinoDetector:
         self.processor = AutoProcessor.from_pretrained(model_id)
         self.model = AutoModelForZeroShotObjectDetection.from_pretrained(model_id).to(device).eval()
         self.device = device
+        self.box_threshold = box_threshold
         self.text_threshold = text_threshold
+        self.ignore_labels = tuple(ignore_labels)
 
     def detect(self, image: ImageArray, prompt: str):
         text = prompt.lower().strip().rstrip(".") + "."
@@ -329,13 +401,11 @@ class GroundingDinoDetector:
         res = self.processor.post_process_grounded_object_detection(
             outputs,
             inputs.input_ids,
-            threshold=0.0,  # box threshold is applied (and logged) in detect_components
+            threshold=self.box_threshold,
             text_threshold=self.text_threshold,
             target_sizes=[image.shape[:2]],
         )[0]
-        return [
-            (tuple(b.tolist()), float(s)) for b, s in zip(res["boxes"], res["scores"], strict=True)
-        ]
+        return grounded_to_hits(res, image.shape[:2], self.ignore_labels)
 
 
 class Sam2VideoSegmenter:
@@ -352,6 +422,7 @@ class Sam2VideoSegmenter:
 
         self.predictor = build_sam2_video_predictor(model_cfg, checkpoint, device=device)
         self.work_dir = Path(work_dir)
+        self.device = device
 
     def segment(self, frame_paths, box_prompts):
         import torch
@@ -367,7 +438,7 @@ class Sam2VideoSegmenter:
             shutil.rmtree(jpg_dir, ignore_errors=True)  # temporary copies, not outputs
 
     def _track(self, torch, jpg_dir, box_prompts):
-        with torch.inference_mode(), torch.autocast("cuda", dtype=torch.bfloat16):
+        with torch.inference_mode(), autocast_for(torch, self.device):
             # Keep frames and per-frame state in CPU RAM: a few hundred frames would
             # otherwise take several GB of the T4's 16 GB.
             state = self.predictor.init_state(

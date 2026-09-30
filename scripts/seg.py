@@ -48,7 +48,9 @@ def main(argv: list[str] | None = None) -> int:
 
     detector = GroundingDinoDetector(
         seg_cfg["detector"]["model_id"],
+        float(seg_cfg["detector"]["box_threshold"]),
         float(seg_cfg["detector"]["text_threshold"]),
+        ignore_labels=seg_cfg["detector"].get("ignore_labels", ()),
         device=args.device,
     )
     segmenter = Sam2VideoSegmenter(
