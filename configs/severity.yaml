@@ -26,7 +26,8 @@ components:
   left_mirror: 2.0                # cheap part, but protrudes and breaks outright
   right_mirror: 2.0
   sliding_door_right: 2.5         # large panel, mechanism damage possible
-  rear_doors: 2.5
+  rear_door_left: 2.5             # split from rear_doors 2026-09-29, same weight
+  rear_door_right: 2.5
   wheel_front_left: 0.6           # kerbing a tyre/rim is common and cheap
   wheel_front_right: 0.6
   wheel_rear_left: 0.6

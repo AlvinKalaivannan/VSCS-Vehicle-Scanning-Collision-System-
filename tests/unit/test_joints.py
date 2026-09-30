@@ -102,13 +102,23 @@ def test_config_joints_are_built_once_measured():
 
 
 def test_validation_catches_joints_without_matching_components():
-    """E.g. the config's rear_door_left/right against the vocabulary's single rear_doors."""
+    """E.g. hinges for rear_door_left/right against a single rear_doors component (the
+    mismatch that led to splitting the rear doors on 2026-09-29)."""
     doors = {
         n: JointSpec(type="revolute", parent_link="base_link", child_link=n, limit_upper=1.0)
         for n in ("rear_door_left", "rear_door_right")
     }
     with pytest.raises(ValueError, match=r"rear_door_left.*not a component"):
         validate_joints(doors, {"rear_doors", "rear_bumper"}, "base_link")
+
+
+def test_the_shipped_hinges_match_the_approved_components():
+    """Once measured, every hinge in model.yaml must attach to a component in seg.yaml."""
+    cfg = load_config("model")
+    links = set(load_config("seg")["components"])
+    for name, j in cfg["joints"].items():
+        if isinstance(j, dict):
+            assert j.get("child_link", name) in links, name
 
 
 def test_validation_catches_two_joints_moving_one_link():

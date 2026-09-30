@@ -27,10 +27,8 @@ Session evidence (tests, not metrics): `main` **657 passed, 1 skipped**; ruff cl
 
 ## Blockers — decisions and work only you can do
 
-1. **Rear doors:** the approved vocabulary has one `rear_doors` component, but
-   `model.yaml` has two hinges (`rear_door_left`, `rear_door_right`). Two hinges need two
-   links. Options: split the component into left/right, or treat the doors as one
-   fixed part (no swing).
+1. ~~Rear doors~~ **decided 2026-09-29: split into `rear_door_left` / `rear_door_right`**
+   (14 components; seg.yaml and severity.yaml amended, both 2.5).
 2. **Voxel size:** the collision solid runs ~1 cm large per side at 2 cm voxels. It errs
    on the safe side. 1 cm voxels halve it at ~8× compute.
 3. **Your drafts:** `seg/fusion3d.py` (`p2-t3-fusion`), `risk/sweep.py` (`p3-t4-sweep`),
