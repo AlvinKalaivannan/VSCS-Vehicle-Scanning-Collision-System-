@@ -35,25 +35,31 @@ components:
   # Left/right follow the veh frame (+y = left, §4.1), NOT the image: seen from the front,
   # the van's left parts appear on the image's right. So a detector's left/right text is
   # a hint only; the side is settled in 3D by the sign of y.
-  front_bumper: "front bumper of a van"
-  rear_bumper: "rear bumper of a van"
+  # Prompts name the PART only, never "... of a van": Grounding DINO then grounds the
+  # vehicle word and returns the whole van as the top box (verified on real car photos
+  # 2026-09-29: "side mirror of a car" -> whole car, 0.64). detector.ignore_labels also
+  # drops such boxes.
+  front_bumper: "front bumper"
+  rear_bumper: "rear bumper"
   rear_left_bumper_corner: "left corner of the rear bumper"
   rear_right_bumper_corner: "right corner of the rear bumper"
   left_mirror: "left side mirror"
   right_mirror: "right side mirror"
-  sliding_door_right: "sliding side door of a van"
-  rear_door_left: "left rear cargo door of a van"
-  rear_door_right: "right rear cargo door of a van"
+  sliding_door_right: "sliding side door"
+  rear_door_left: "left rear cargo door"
+  rear_door_right: "right rear cargo door"
   wheel_front_left: "front left wheel and tyre"
   wheel_front_right: "front right wheel and tyre"
   wheel_rear_left: "rear left wheel and tyre"
   wheel_rear_right: "rear right wheel and tyre"
-  underbody: "underside of a van"
+  underbody: "vehicle underbody"
 
 detector:
   engine: "grounding_dino"
   # Hugging Face transformers; code and weights Apache-2.0 (verify on first Colab run).
   model_id: "IDEA-Research/grounding-dino-tiny"
+  # Boxes whose matched text is only one of these are the whole vehicle, not a part.
+  ignore_labels: ["car", "van", "vehicle", "truck", "automobile"]
   box_threshold: 0.30
   text_threshold: 0.25
 

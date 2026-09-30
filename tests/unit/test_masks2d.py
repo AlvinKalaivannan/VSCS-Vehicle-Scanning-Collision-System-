@@ -6,6 +6,7 @@ them pixel for pixel. The real Grounding DINO / SAM 2 adapters run only on Colab
 
 from __future__ import annotations
 
+import contextlib
 import json
 
 import numpy as np
@@ -162,3 +163,77 @@ def test_overlay_colours_only_labelled_pixels():
     out = M.overlay(img, np.array([[NONE_LABEL, 0]]), 3, alpha=1.0)
     assert out[0, 0].tolist() == [0, 0, 0]
     assert out[0, 1].tolist() == M.palette(3)[0].tolist()
+
+
+class _FakeTorch:
+    """Just enough of torch to check which autocast the adapter would ask for."""
+
+    bfloat16, float16 = "bf16", "fp16"
+
+    def __init__(self, bf16_ok):
+        self.cuda = type("cuda", (), {"is_bf16_supported": staticmethod(lambda: bf16_ok)})
+        self.requested = None
+
+    def autocast(self, device_type, dtype):
+        self.requested = (device_type, dtype)
+        return contextlib.nullcontext()
+
+
+@pytest.mark.parametrize(
+    "device,bf16_ok,expected",
+    [
+        ("cuda", True, ("cuda", "bf16")),  # Ampere and newer (e.g. A100)
+        ("cuda", False, ("cuda", "fp16")),  # the Colab T4: bfloat16 would raise
+        ("cpu", True, None),  # no autocast at all
+    ],
+)
+def test_autocast_matches_the_hardware(device, bf16_ok, expected):
+    torch = _FakeTorch(bf16_ok)
+    with M.autocast_for(torch, device):
+        pass
+    assert torch.requested == expected
+
+
+def test_filter_drops_whole_vehicle_boxes_and_clips():
+    """The real-photo finding: 'side mirror of a car' put the whole car on top, as 'car'."""
+    kept = M.filter_grounded(
+        boxes=[[27, 32, 354, 279], [326, 69, 354, 87], [-5, 10, 20, 400], [50, 50, 50, 60]],
+        scores=[0.64, 0.45, 0.4, 0.9],
+        labels=["car", "side mirror", "side mirror", "side mirror"],
+        image_hw=(308, 414),
+        ignore_labels=["car", "van"],
+    )
+    assert kept == [((326.0, 69.0, 354.0, 87.0), 0.45), ((0.0, 10.0, 20.0, 307.0), 0.4)]
+
+
+def test_no_prompt_names_the_whole_vehicle():
+    """A prompt like '... of a van' makes the detector return the whole van (see above).
+
+    'vehicle' is allowed inside a longer part name ('vehicle underbody'): a box matched to
+    that phrase is kept, and one matched to 'vehicle' alone is dropped by ignore_labels.
+    """
+    seg = load_config("seg")
+    whole_vehicle = set(seg["detector"]["ignore_labels"]) - {"vehicle"}
+    for name, prompt in seg["components"].items():
+        words = prompt.lower().replace(".", "").split()
+        assert not whole_vehicle & set(words), (name, prompt)
+        assert " of a " not in f" {prompt.lower()} ", (name, prompt)
+
+
+class _T(list):
+    """Stands in for a tensor: only ``.tolist()`` is used."""
+
+    def tolist(self):
+        return list(self)
+
+
+def test_empty_result_with_a_stray_label_is_no_detections():
+    """transformers 5.17 returns labels [''] beside zero boxes."""
+    res = {"boxes": _T([]), "scores": _T([]), "text_labels": [""], "labels": [""]}
+    assert M.grounded_to_hits(res, (10, 10), ["car"]) == []
+
+
+def test_mismatched_labels_are_an_error_not_a_guess():
+    res = {"boxes": _T([[0, 0, 5, 5]]), "scores": _T([0.9]), "text_labels": ["a", "b"]}
+    with pytest.raises(ValueError, match="1 boxes but 2 labels"):
+        M.grounded_to_hits(res, (10, 10), [])
