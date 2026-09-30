@@ -18,8 +18,13 @@ schema_version: 1
 #
 # Changing this list after P2-T3 has run invalidates the per-component IoU
 # measurements, so treat it as frozen for the phase.
+#
+# AMENDED by the developer on 2026-09-29: `rear_doors` split into `rear_door_left` and
+# `rear_door_right` (now 14 components). Each rear door swings on its own hinge
+# (model.yaml joints), and a URDF joint moves exactly one link, so one component could
+# not carry two hinges. Made before P2-T3 has run on real data, so nothing is invalidated.
 # =============================================================================
-vocabulary_status: "APPROVED_2026-09-24"
+vocabulary_status: "APPROVED_2026-09-24_AMENDED_2026-09-29"
 
 # Stage-wide seed for every random process in seg/ (e.g. sampling the 20 frames for the
 # P2-T2 visual check). Fusion and cleanup are deterministic and do not use it.
@@ -27,6 +32,9 @@ seed: 20260924
 
 components:
   # machine_name: text prompt fed to the open-vocabulary detector
+  # Left/right follow the veh frame (+y = left, §4.1), NOT the image: seen from the front,
+  # the van's left parts appear on the image's right. So a detector's left/right text is
+  # a hint only; the side is settled in 3D by the sign of y.
   front_bumper: "front bumper of a van"
   rear_bumper: "rear bumper of a van"
   rear_left_bumper_corner: "left corner of the rear bumper"
@@ -34,7 +42,8 @@ components:
   left_mirror: "left side mirror"
   right_mirror: "right side mirror"
   sliding_door_right: "sliding side door of a van"
-  rear_doors: "rear cargo doors of a van"
+  rear_door_left: "left rear cargo door of a van"
+  rear_door_right: "right rear cargo door of a van"
   wheel_front_left: "front left wheel and tyre"
   wheel_front_right: "front right wheel and tyre"
   wheel_rear_left: "rear left wheel and tyre"
