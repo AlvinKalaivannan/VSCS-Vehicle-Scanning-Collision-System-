@@ -543,6 +543,7 @@ python scripts/ingest.py --src <path> --kind scan|lot|calib                 # P1
 python scripts/extract_frames.py --video data/raw/<id>/<clip>              # P1-T4
 python scripts/recon.py --frames-run data/processed/capture/<run>          # P1-T5, needs COLMAP
 python scripts/dense.py --recon-run <run> --images <frames>              # P1-T7, Colab (notebooks/colab/10_dense.ipynb)
+python scripts/seg.py --frames <frames> --sam2-dir <sam2 checkout>         # P2-T2, Colab (notebooks/colab/20_seg.ipynb)
 python scripts/export_model.py --labelled <cleaned.npz> --scale-error-m <m> # P2-T6..T8: decompose + URDF
 
 # External datasets (ADR 0006; licence-checked, private by default)
@@ -551,7 +552,7 @@ python scripts/fetch_dataset.py <id>                                        # id
 python scripts/report.py                                                    # regenerates docs/REPORT.md
 ```
 
-Planned, not yet created (added as their phases begin): `seg.py` (GPU stage, Colab),
-`perceive.py`, `risk.py`, `view.py` (Rerun), `evaluate.py`.
+Planned, not yet created (added as their phases begin): `perceive.py`, `risk.py`,
+`view.py` (Rerun), `evaluate.py`.
 
 (Keep this list in sync with reality.)

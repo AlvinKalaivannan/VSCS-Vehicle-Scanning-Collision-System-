@@ -52,11 +52,16 @@ components:
 
 detector:
   engine: "grounding_dino"
+  # Hugging Face transformers; code and weights Apache-2.0 (verify on first Colab run).
+  model_id: "IDEA-Research/grounding-dino-tiny"
   box_threshold: 0.30
   text_threshold: 0.25
 
 segmenter:
   engine: "sam2"
+  # facebookresearch/sam2 (Apache-2.0, code and checkpoints). "Small" fits a T4 comfortably.
+  model_cfg: "configs/sam2.1/sam2.1_hiera_s.yaml"
+  checkpoint: "checkpoints/sam2.1_hiera_small.pt"   # relative to the sam2 checkout
   # Propagate masks through the scan video instead of prompting every frame.
   track_across_frames: true
   keyframe_stride: 15
