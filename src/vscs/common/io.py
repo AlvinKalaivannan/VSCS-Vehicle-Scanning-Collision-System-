@@ -22,7 +22,7 @@ from typing import Any
 from vscs.common.config import dump_config, repo_root
 
 #: Stages that get their own subtree under ``data/processed/``.
-STAGES = ("capture", "recon", "seg", "model", "perception", "risk", "eval")
+STAGES = ("capture", "recon", "seg", "model", "perception", "risk", "eval", "stream")
 
 _RUN_STAMP_FMT = "%Y%m%d-%H%M"
 

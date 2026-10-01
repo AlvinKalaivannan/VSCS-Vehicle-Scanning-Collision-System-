@@ -93,3 +93,35 @@ def test_latency_stays_bounded_under_2x_overload_on_real_threads():
     third = len(e2e_ms) // 3
     assert e2e_ms[-third:].mean() <= e2e_ms[:third].mean() + 20
     assert s["fps"] > 0
+
+
+def test_stream_cli_runs_stub_stages_and_writes_a_summary(tmp_path):
+    import importlib.util
+    import json
+
+    from vscs.common.config import repo_root
+
+    spec = importlib.util.spec_from_file_location(
+        "stream_cli", repo_root() / "scripts" / "stream.py"
+    )
+    cli = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cli)
+    rc = cli.main(
+        [
+            "--synthetic",
+            "20",
+            "--fps",
+            "60",
+            "--load",
+            "0.05",
+            "--report-every",
+            "10",
+            "--out-root",
+            str(tmp_path),
+        ]
+    )
+    assert rc == 0
+    (run,) = list((tmp_path / "stream").iterdir())
+    summary = json.loads((run / "summary.json").read_text(encoding="utf-8"))
+    assert summary["note"].startswith("STUB") and summary["end_to_end"]["n"] > 0
+    assert set(summary["stages"]) == set(CFG["stages"])

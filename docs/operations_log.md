@@ -56,3 +56,6 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:49 | note | laptop CPU, 2x overload (200 fps into 10 ms stage, 400 frames): queue 2 -> p95 20 ms flat, 205 dropped; queue 8 -> p95 51 ms; unbounded -> p95 2052 ms and climbing; ~96 fps throughput in all
 - 2026-10-01 02:50 | test | full suite on p6-stream-scaffold green
 - 2026-10-01 02:50 | commit | P6-T2 pipeline (branch p6-stream-scaffold, unmerged)
+- 2026-10-01 02:52 | write | scripts/stream.py (stub-stage demo, live status, summary.json), io.STAGES += 'stream', CLAUDE.md §12 synced on branch, CLI test
+- 2026-10-01 02:52 | note | stub demo, laptop CPU, 15 fps source: load 0.5 -> 15 fps, p95 71 ms, 0 drops; load 2.0 -> 10 fps, p95 ~400 ms bounded, 49 drops, all stages flagged over budget. STUB numbers, not performance claims
+- 2026-10-01 02:52 | commit | Phase 6 stub demo (branch p6-stream-scaffold, unmerged)

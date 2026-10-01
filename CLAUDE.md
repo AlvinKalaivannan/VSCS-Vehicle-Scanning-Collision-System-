@@ -610,6 +610,9 @@ python scripts/seg.py --frames <frames> --sam2-dir <sam2 checkout>         # P2-
 python scripts/export_model.py --labelled <cleaned.npz> --scale-error-m <m> # P2-T6..T8: decompose + URDF
 python scripts/view.py --model <model run> --risk <frames.jsonl> [--obstacles <obs.jsonl>]  # P3-T1 -> drive.rrd
 
+# Streaming (Phase 6 scaffolding; STUB stages until P6-T4)
+python scripts/stream.py --synthetic 300 --fps 15 --load 1.0                # or --frames-run <capture run>
+
 # External datasets (ADR 0006; licence-checked, private by default)
 python scripts/fetch_dataset.py <id>                                        # id from configs/datasets.yaml
 
@@ -617,6 +620,6 @@ python scripts/report.py                                                    # re
 ```
 
 Planned, not yet created (added as their phases begin): `perceive.py`, `risk.py`,
-`evaluate.py`, `stream.py` (Phase 6 pipeline) and `docker compose up` (Phase 6 demo).
+`evaluate.py`, and `docker compose up` (Phase 6 demo).
 
 (Keep this list in sync with reality.)
