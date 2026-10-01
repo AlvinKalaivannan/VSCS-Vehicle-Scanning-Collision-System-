@@ -100,3 +100,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:19 | branch | p4-perceive-notebook from main
 - 2026-10-01 03:19 | write | notebooks/colab/30_perceive.ipynb (thin wrapper: GPU check, Drive, clone, install w/o torch pin, run scripts/perceive.py)
 - 2026-10-01 03:19 | commit | perceive notebook
+- 2026-10-01 03:19 | merge | p4-perceive-notebook -> main (local only)
