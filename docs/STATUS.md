@@ -48,7 +48,7 @@ health: ON TRACK
 
 **None.** `metrics/results.jsonl` is empty; nothing has been measured on real data.
 
-Session evidence (tests, not metrics): `main` **832 passed, 1 skipped**; ruff clean; coverage 94.6% at last measurement (common/ and risk/ above the 80% target).
+Session evidence (tests, not metrics): `main` **860 passed, 1 skipped**; ruff clean; coverage 94.6% at last measurement (common/ and risk/ above the 80% target).
 
 ## Blockers — decisions and work only you can do
 
@@ -62,7 +62,6 @@ Session evidence (tests, not metrics): `main` **832 passed, 1 skipped**; ruff cl
    - Rate R-17 to R-19.
    - Push OK, after you verify (`docs/operations_log.md` lists everything done autonomously).
    - Approve ADR 0009 (zones) and merge `docs-streaming-merge`; decide the NC media policy and LGPL ffmpeg.
-   - **ADR 0010 (proposed):** grade near misses by time of closest approach. The end-to-end fixture drive raises 'critical' 2.2 s early on a 0.30 m bumper near miss. Needs a schema field.
    - **Decided 2026-10-01:**
      - ADR 0012 accepted; the capture checklist now has the rear track (scan day) and the
        per-pass hub-mark poses (lot day).
@@ -71,6 +70,19 @@ Session evidence (tests, not metrics): `main` **832 passed, 1 skipped**; ruff cl
      - `body_select` approved.
      - Wheelbase is checked from the segmented wheels (`check_wheelbase.py`, ADR 0013), or
        the gate is narrowed if that proves less accurate. Decide on the first real scan.
+     - **ADR 0010 accepted and implemented:** schema 2, `ComponentRisk.t_closest_s`. On the
+       fixture drive, critical now comes at 1.6 s (contact 0.75 s away), not at 0.2 s.
+       Your `sweep.py` contract reports `t_closest_s` (3 new target tests).
+     - **Limits addressed:**
+       - P4-T1 depth error by range bucket now has a script that produces it;
+       - P4-T2 drift is gated on straight passes only;
+       - a third (front-left) hub mark catches swaps and across-misreads;
+       - the half-voxel inset prototype (`model.yaml decompose.surface`).
+     - `limits_policy: exhaust-first` added to CLAUDE.md §0.
+   - **Your call: collision surface.** `voxel_faces` (default) is 1–2 cm outside the true
+     surface on every side: conservative. `voxel_centres` removes that bias, but leaves
+     ±1 cm voxel quantization, sometimes on the inside. Fixture box volume error, faces →
+     centres: door +64% → +20%, front bumper +31% → +9%, wheel +16% → 0%.
    - Review `p6-stream-scaffold` (streaming replay, queues, metrics, pipeline): unmerged.
    - Measure the camera mount on lot day (`configs/capture.yaml mount`); `perceive.py` refuses until then.
    - Sign the Phase 0 report when P0-T5..T7 are done (`docs/phase_reports/phase-0.md`).

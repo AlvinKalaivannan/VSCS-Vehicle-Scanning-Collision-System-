@@ -223,3 +223,6 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 11:40 | write | decompose.surface voxel_centres prototype (half-voxel inset of the voxel surface; sheets keep faces); model.yaml surface: voxel_faces (default unchanged), inset_min_depth_voxels 2.0; 5 tests; fixture: faces +1..2 cm per side, centres 0 +/-1 cm
 - 2026-10-01 11:41 | write | CLAUDE.md §0 Limits policy: limits_policy: exhaust-first (developer instruction)
 - 2026-10-01 11:56 | write | ADR 0010 accepted+implemented: ComponentRisk.t_closest_s, SCHEMA_VERSION 2 (v1 streams load; None = distance-only), alerts near-miss 'close and soon', aggregate passthrough, oracle reports it; pinned e2e test flipped (critical now at 1.6 s, not 0.2 s); 860 passed
+- 2026-10-01 11:57 | write | p3-t4-sweep (developer's draft branch): SweepResult.t_closest_s contract + 3 red target tests; fast-forwarded
+- 2026-10-01 11:57 | merge | limits-drift-depth, limits-third-hub-mark, limits-voxel-inset, adr-0010-near-miss-timing -> main (local only)
+- 2026-10-01 11:57 | write | STATUS + devlog: limits session
