@@ -78,6 +78,12 @@ class SweepResult:
     negative, and exactly ``0.0`` whenever contact occurs. ``ttc_s`` is the first time the
     inflated shapes touch, ``0.0`` if they already overlap at ``t = 0``, and ``None`` if
     they never touch within the horizon. ``curvature`` records which fan path was swept.
+
+    ``t_closest_s`` (ADR 0010, accepted 2026-10-01) is *when* ``min_distance_m`` happens:
+    the earliest time the inflated clearance reaches its minimum, in seconds from now. It
+    equals ``ttc_s`` for a contact, and is ``0.0`` when the gap only grows (or never
+    changes). The alerts need it: a near miss 2 s ahead must not grade "critical" now.
+    Resolution of one path step (``motion.dt_s``) is enough; it is not bisected like TTC.
     """
 
     component: str
@@ -85,6 +91,7 @@ class SweepResult:
     min_distance_m: float
     ttc_s: float | None
     curvature: float
+    t_closest_s: float
 
 
 def box_footprint(name: str, lo: npt.ArrayLike, hi: npt.ArrayLike) -> Footprint:

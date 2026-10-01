@@ -344,3 +344,30 @@ def test_results_fit_the_component_risk_schema(scene):
             risk=0.0,
             obstacle_id=r.obstacle_id,
         )
+
+
+# --------------------------------------------------------------------------- #
+# ADR 0010: when the closest approach happens                                  #
+# --------------------------------------------------------------------------- #
+def test_t_closest_equals_ttc_for_a_contact(scene):
+    res = _pair(scene, "rear_right_bumper_corner", _pole(scene), -1.0)
+    assert res.t_closest_s == pytest.approx(res.ttc_s, abs=TOL)
+
+
+def test_t_closest_is_zero_when_the_gap_only_grows(scene):
+    res = _pair(scene, "rear_right_bumper_corner", _pole(scene), +1.0)
+    assert res.ttc_s is None and res.t_closest_s == 0.0
+
+
+def test_t_closest_of_a_near_miss_ahead(scene):
+    """A 6 cm post 0.47 m right of the corner's side and 0.47 m behind its rear face.
+
+    Reversing straight at 1 m/s, the gap shrinks until the post comes level with the
+    rear face at t = 0.47 s, then holds at 0.47 - 0.05 - 0.05 = 0.37 m: a near miss,
+    closest first at 0.47 s (to one path step).
+    """
+    post = S.obstacle_footprint(_obstacle(11, [-1.53, -1.53, 0.0], [-1.47, -1.47, 1.0]))
+    res = _pair(scene, "rear_right_bumper_corner", post, -1.0)
+    assert res.ttc_s is None
+    assert res.min_distance_m == pytest.approx(0.37, abs=1e-3)
+    assert res.t_closest_s == pytest.approx(0.47, abs=0.1)
