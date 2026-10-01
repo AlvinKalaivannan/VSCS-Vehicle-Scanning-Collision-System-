@@ -148,3 +148,7 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:42 | write | src/vscs/risk/drive.py (ego states from poses, obstacle/component shapes, assess_drive), scripts/risk.py (VSCS or --baseline; stops clearly until sweep.py exists), perceive.py writes ego.jsonl, tests; CLAUDE.md §12
 - 2026-10-01 03:42 | commit | risk CLI
 - 2026-10-01 03:42 | merge | p3-risk-cli -> main (local only)
+- 2026-10-01 03:42 | branch | p5-t2-evaluate-cli from main
+- 2026-10-01 03:44 | write | src/vscs/eval/evaluate.py (score_system VSCS vs baseline; R-09 guard_split + mark_test_split_used), scripts/evaluate.py (--split dev|test, --final once, --eval-config override), tests; CLAUDE.md §12 (all P0-P5 scripts now exist)
+- 2026-10-01 03:44 | note | verified: real configs/eval.yaml untouched by tests (test_split_used: false)
+- 2026-10-01 03:44 | commit | P5-T2 evaluate

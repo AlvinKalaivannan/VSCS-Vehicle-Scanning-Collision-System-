@@ -550,6 +550,7 @@ python scripts/export_model.py --labelled <cleaned.npz> --scale-error-m <m> # P2
 python scripts/perceive.py --frames-run <capture run> [--ego vo|stationary|file]  # detect + perception -> obstacles.jsonl (GPU env)
     #   add --imu <gyro.csv> --imu-offset-ms <P1-T4 offset> to fuse the phone gyro with VO (P4-T2)
 python scripts/risk.py --model <model run> --perception <perceive run> [--baseline]  # -> risk_frames.jsonl (needs sweep.py)
+python scripts/evaluate.py --passes <passes.yaml> --split dev [--log-metrics]   # VSCS vs baseline (§11); test split: --final, once
 python scripts/view.py --model <model run> --risk <frames.jsonl> [--obstacles <obs.jsonl>]  # P3-T1 -> drive.rrd
 python scripts/replay.py --model <model run> --risk <frames.jsonl> [--obstacles <obs.jsonl>]  # P5-T4 -> PNG frames + replay.wav
 
@@ -560,6 +561,6 @@ python scripts/benchmark.py --frames-run <run> [--detector] [--log-metrics]  # P
 python scripts/report.py                                                    # regenerates docs/REPORT.md
 ```
 
-Planned, not yet created (added as their phases begin): `evaluate.py`.
+Every script planned for Phases 0-5 now exists; Phase 6 adds `stream.py` and `docker compose up`.
 
 (Keep this list in sync with reality.)
