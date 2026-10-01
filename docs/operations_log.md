@@ -55,3 +55,7 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:56 | note | P4-T4 finding: a 99% gate rejects ~1% of genuine detections; each miss spawned a duplicate track. Added recovery stage (99.99% gate) before track birth. Crossing walkers, 0.15 m noise, 200 seeds: 0.6 m 200/200 clean, 0.4 m 198/200, 0.3 m 187/200; zero duplicate tracks
 - 2026-10-01 02:56 | commit | P4-T4 tracking
 - 2026-10-01 02:56 | merge | p4-t4-tracking -> main (local only)
+- 2026-10-01 02:56 | branch | p4-t6-underbody from main
+- 2026-10-01 02:58 | write | src/vscs/risk/underbody.py (swept footprint vs height map clearance), configs/risk.yaml underbody block, tests/unit/test_underbody.py
+- 2026-10-01 02:58 | note | P4-T6 fixture: kerb 0.12 m flags rear wheels only (ttc ~1.65 s); underbody clears by 0.13 m, rear bumper by 0.28 m; a 0.30 m bump reaches the underbody
+- 2026-10-01 02:58 | commit | P4-T6 underbody clearance
