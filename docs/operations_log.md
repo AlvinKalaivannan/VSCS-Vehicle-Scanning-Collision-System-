@@ -115,3 +115,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:25 | write | src/vscs/perception/egomotion.py (ground-plane VO: ORB on road pixels -> ground points -> RANSAC 2D Kabsch), configs/perception.yaml egomotion.vo, tests/unit/test_egomotion.py (rendered textured road via exact ground homography)
 - 2026-10-01 03:25 | note | VO on an ideal rendered road (flat, textured, perfect calibration): 2.0 m reversing arc, drift 0.20 cm (0.10%), yaw 20.03 vs 20.0 deg, ~1100 inliers/step. Real asphalt/blur/rolling shutter will be worse; IMU fusion still to come (P4-T2 visual-inertial)
 - 2026-10-01 03:25 | commit | P4-T2 ground VO
+- 2026-10-01 03:25 | merge | p4-t2-ground-vo -> main (local only)
