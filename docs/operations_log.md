@@ -26,3 +26,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:39 | write | src/vscs/perception/depth.py (ground-plane v0), tests/unit/test_depth_v0.py, configs/perception.yaml depth.pixel_sigma_px
 - 2026-10-01 02:39 | note | P3-T2 fixture finding: box bottom edge = near face; near-face anchoring puts cone near face within 2 cm (centre 5-13 cm); width/height read high (conservative)
 - 2026-10-01 02:39 | commit | P3-T2: perception v0
+- 2026-10-01 02:39 | merge | p3-t2-perception-v0 -> main (local only)
