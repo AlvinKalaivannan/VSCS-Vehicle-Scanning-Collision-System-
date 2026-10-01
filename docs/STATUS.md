@@ -25,6 +25,12 @@ health: ON TRACK
   - P4-T4 tracking, P4-T6 underbody, P5-T4 driver replay.
   - Perception glue with mask-based ground contact.
   - An end-to-end fixture drive.
+  - The RT-DETR detector (ADR 0011).
+  - Ground visual odometry + gyro fusion (P4-T2).
+  - The CLIs `perceive`, `risk` (with `--baseline`), `evaluate` (test split once, R-09)
+    and `benchmark`.
+  - The Phase 0 report draft.
+  - **Every script planned for Phases 0–5 now exists.**
   - All on the fixture, and all merged locally.
 - **ADR 0008 / proposed ADR 0009** (streaming merge) are on branch `docs-streaming-merge`,
   **not merged**, awaiting your OK.
@@ -34,7 +40,7 @@ health: ON TRACK
 
 **None.** `metrics/results.jsonl` is empty; nothing has been measured on real data.
 
-Session evidence (tests, not metrics): `main` **738 passed, 1 skipped**; ruff clean; coverage 94.6% (common/ and risk/ above the 80% target).
+Session evidence (tests, not metrics): `main` **776 passed, 1 skipped**; ruff clean; coverage 94.6% at last measurement (common/ and risk/ above the 80% target).
 
 ## Blockers — decisions and work only you can do
 
@@ -50,6 +56,8 @@ Session evidence (tests, not metrics): `main` **738 passed, 1 skipped**; ruff cl
    - Approve ADR 0009 (zones) and merge `docs-streaming-merge`; decide the NC media policy and LGPL ffmpeg.
    - **ADR 0010 (proposed):** grade near misses by time of closest approach. The end-to-end fixture drive raises 'critical' 2.2 s early on a 0.30 m bumper near miss. Needs a schema field.
    - Review `p6-stream-scaffold` (streaming replay, queues, metrics, pipeline): unmerged.
+   - Measure the camera mount on lot day (`configs/capture.yaml mount`); `perceive.py` refuses until then.
+   - Sign the Phase 0 report when P0-T5..T7 are done (`docs/phase_reports/phase-0.md`).
    - The Phase 0 captures: P0-T7 calibration, the pre-flight check, P0-T6 (a family car
      is the recommended warm-up).
    - The October captures, including P1-T8.
