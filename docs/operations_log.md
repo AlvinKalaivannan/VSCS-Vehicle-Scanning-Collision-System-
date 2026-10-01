@@ -170,3 +170,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 04:04 | write | recon/dense.py: model_converter step -> dense/sparse_txt; 20_seg.ipynb now masks the undistorted images; seg.yaml fusion3d.views_per_batch: 16 (memory only)
 - 2026-10-01 04:04 | test | 793 passed, 1 skipped; ruff clean
 - 2026-10-01 04:04 | commit | P2-T3 fusion plumbing
+- 2026-10-01 04:04 | merge | p2-t3-fuse-cli -> main (local only)
