@@ -152,3 +152,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:44 | write | src/vscs/eval/evaluate.py (score_system VSCS vs baseline; R-09 guard_split + mark_test_split_used), scripts/evaluate.py (--split dev|test, --final once, --eval-config override), tests; CLAUDE.md §12 (all P0-P5 scripts now exist)
 - 2026-10-01 03:44 | note | verified: real configs/eval.yaml untouched by tests (test_split_used: false)
 - 2026-10-01 03:44 | commit | P5-T2 evaluate
+- 2026-10-01 03:44 | merge | p5-t2-evaluate-cli -> main (local only)
