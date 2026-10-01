@@ -201,6 +201,11 @@ class Tracker:
             tr.history.append(int(t_ns))
         return self.confirmed()
 
+    @property
+    def next_id(self) -> int:
+        """The id the next new track will get (ids are never reused)."""
+        return self._next_id
+
     def confirmed(self) -> list[Track]:
         return [tr for tr in self.tracks if tr.hits >= self.min_hits]
 
