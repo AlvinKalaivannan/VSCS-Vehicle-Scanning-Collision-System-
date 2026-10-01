@@ -9,7 +9,8 @@ Thin CLI only - logic lives in src/vscs/perception/ (CLAUDE.md section 3).
 Each frame is undistorted (P0-T7 intrinsics), run through the RT-DETR detector (ADR 0011),
 then perception: static objects into the persistent height map, people/vehicles/cyclists
 into the tracker. Writes obstacles.jsonl (one §4.2 Obstacle per line, in each frame's
-veh frame) and detections.jsonl into a new data/processed/perception/<run>/.
+veh frame), ego.jsonl (each frame's T_world_veh) and detections.jsonl into a new
+data/processed/perception/<run>/. scripts/risk.py takes it from there.
 
 Needs the camera calibrated (configs/capture.yaml intrinsics.calibrated) and its mount
 measured (mount.measured), and refuses otherwise. Ego-motion (--ego): "vo" (default)
@@ -137,6 +138,7 @@ def main(argv: list[str] | None = None) -> int:
     import cv2
 
     prev_t = None
+    ego: list[tuple[int, np.ndarray]] = []
     for t_ns, path in read_frames_index(args.frames_run):
         img = load_image(path)
         if dist.size:
@@ -155,9 +157,13 @@ def main(argv: list[str] | None = None) -> int:
             prev_t = t_ns
         else:
             T_world_veh = poses.get(t_ns, np.eye(4))
+        ego.append((t_ns, np.array(T_world_veh)))
         obstacles.extend(perception.step(t_ns, boxes, T_world_veh))
 
     write_jsonl(run_dir / "obstacles.jsonl", obstacles)
+    write_jsonl(
+        run_dir / "ego.jsonl", [{"t_ns": t, "T_world_veh": T.ravel().tolist()} for t, T in ego]
+    )
     write_jsonl(run_dir / "detections.jsonl", detections)
     if fusion is not None:
         if fusion.axis is None:
