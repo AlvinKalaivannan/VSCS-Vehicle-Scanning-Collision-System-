@@ -34,3 +34,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:41 | branch | p5-eval-risk-metrics from main
 - 2026-10-01 02:42 | write | eval/metrics.py: attribution accuracy, lead time, TTC error, alert episodes, false alarms/min; configs/eval.yaml risk_metrics; tests
 - 2026-10-01 02:42 | commit | P5 eval risk metrics
+- 2026-10-01 02:42 | merge | p5-eval-risk-metrics -> main (local only)
