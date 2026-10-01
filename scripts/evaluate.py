@@ -100,6 +100,19 @@ def main(argv: list[str] | None = None) -> int:
                         run_dir=str(rel),
                         notes=f"{result[system]['n_passes']} passes",
                     )
+        acc = result["vscs"]["component_attribution_accuracy"]
+        if args.split == "dev" and acc is not None:
+            # P3-T6's gate (eval.yaml thresholds): the share of dev passes on which the right
+            # component was flagged before the closest approach - attribution accuracy.
+            append_metric(
+                task="P3-T6",
+                metric="component_flagged_frac",
+                value=float(acc),
+                split="dev",
+                run_dir=str(rel),
+                notes="= component_attribution_accuracy__vscs, "
+                f"{result['vscs']['n_passes']} passes",
+            )
     if args.split == "test":
         mark_test_split_used(eval_path, ev["splits"])
         print("test split marked as used in", eval_path)
