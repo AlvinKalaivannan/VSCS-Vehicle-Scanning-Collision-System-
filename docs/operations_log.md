@@ -144,3 +144,6 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:38 | note | test caught: a refused run left an empty run folder (validation was after make_run_dir) - moved arg checks first
 - 2026-10-01 03:38 | commit | perceive IMU wiring
 - 2026-10-01 03:39 | merge | p4-perceive-imu -> main (local only)
+- 2026-10-01 03:39 | branch | p3-risk-cli from main
+- 2026-10-01 03:42 | write | src/vscs/risk/drive.py (ego states from poses, obstacle/component shapes, assess_drive), scripts/risk.py (VSCS or --baseline; stops clearly until sweep.py exists), perceive.py writes ego.jsonl, tests; CLAUDE.md §12
+- 2026-10-01 03:42 | commit | risk CLI
