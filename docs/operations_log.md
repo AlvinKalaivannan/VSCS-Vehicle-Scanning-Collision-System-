@@ -147,3 +147,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:39 | branch | p3-risk-cli from main
 - 2026-10-01 03:42 | write | src/vscs/risk/drive.py (ego states from poses, obstacle/component shapes, assess_drive), scripts/risk.py (VSCS or --baseline; stops clearly until sweep.py exists), perceive.py writes ego.jsonl, tests; CLAUDE.md §12
 - 2026-10-01 03:42 | commit | risk CLI
+- 2026-10-01 03:42 | merge | p3-risk-cli -> main (local only)
