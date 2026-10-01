@@ -42,3 +42,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:44 | merge | p5-t1-baseline -> main (local only)
 - 2026-10-01 02:44 | write | docs/devlog/2026-10-01.md, docs/STATUS.md checkpoint
 - 2026-10-01 02:44 | commit | docs checkpoint
+- 2026-10-01 02:44 | merge | docs-1001 -> main (local only)
