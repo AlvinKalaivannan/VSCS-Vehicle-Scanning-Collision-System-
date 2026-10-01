@@ -60,3 +60,6 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:58 | note | P4-T6 fixture: kerb 0.12 m flags rear wheels only (ttc ~1.65 s); underbody clears by 0.13 m, rear bumper by 0.28 m; a 0.30 m bump reaches the underbody
 - 2026-10-01 02:58 | commit | P4-T6 underbody clearance
 - 2026-10-01 02:58 | merge | p4-t6-underbody -> main (local only)
+- 2026-10-01 02:58 | branch | p5-t4-driver-replay from main
+- 2026-10-01 03:01 | write | src/vscs/ui/driver_replay.py (silhouette PNGs + alert audio WAV, no ffmpeg), scripts/replay.py, configs/ui.yaml driver_replay, tests; CLAUDE.md §12 synced
+- 2026-10-01 03:01 | commit | P5-T4 driver replay
