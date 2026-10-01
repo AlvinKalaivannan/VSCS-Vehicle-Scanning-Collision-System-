@@ -92,3 +92,7 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:16 | note | RT-DETR r18 on laptop CPU: car found 18/20 Roboflow test photos, IoU median 0.98 vs labelled extent; ~750 ms/image (R-20 evidence)
 - 2026-10-01 03:16 | commit | P4-T4 detector
 - 2026-10-01 03:16 | merge | p4-t4-detector -> main (local only)
+- 2026-10-01 03:17 | branch | p4-perceive-cli from main
+- 2026-10-01 03:19 | write | scripts/perceive.py (frames -> undistort -> RT-DETR -> perception -> obstacles.jsonl; refuses without calibration/mount; stationary unless --ego-poses), capture/frames.read_frames_index, configs/capture.yaml mount block (unmeasured), tests; CLAUDE.md §12 synced
+- 2026-10-01 03:19 | deferred | camera mount measurement (configs/capture.yaml mount): developer, lot day
+- 2026-10-01 03:19 | commit | perceive CLI

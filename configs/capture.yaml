@@ -15,6 +15,18 @@ intrinsics:
   calibrated_at: null
   notes: "Lock focus and exposure, main lens only, no zoom (R-04)."
 
+# --- Camera mount on the van (lot runs, P1-T3) ---------------------------------
+# Where the rear-facing camera sits on the van, measured with a tape on lot day, in the
+# veh frame (x forward, y left, z up; origin on the ground below the rear-axle centre).
+# Two points define T_veh_cam: the camera centre, and any point the optical axis passes
+# through (e.g. a cone placed dead-centre in the live view, measured on the ground).
+# scripts/perceive.py REFUSES to run until measured: true.
+mount:
+  measured: false
+  position_veh_m: null    # [x, y, z]
+  look_at_veh_m: null     # [x, y, z]
+  measured_at: null
+
 checkerboard:
   # Inner corner counts, NOT square counts.
   pattern_size: [9, 6]

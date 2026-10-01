@@ -545,6 +545,9 @@ python scripts/recon.py --frames-run data/processed/capture/<run>          # P1-
 python scripts/dense.py --recon-run <run> --images <frames>              # P1-T7, Colab (notebooks/colab/10_dense.ipynb)
 python scripts/seg.py --frames <frames> --sam2-dir <sam2 checkout>         # P2-T2, Colab (notebooks/colab/20_seg.ipynb)
 python scripts/export_model.py --labelled <cleaned.npz> --scale-error-m <m> # P2-T6..T8: decompose + URDF
+
+# Per-drive pipeline
+python scripts/perceive.py --frames-run <capture run> [--ego-poses <poses.jsonl>]  # detect + perception -> obstacles.jsonl (GPU env)
 python scripts/view.py --model <model run> --risk <frames.jsonl> [--obstacles <obs.jsonl>]  # P3-T1 -> drive.rrd
 python scripts/replay.py --model <model run> --risk <frames.jsonl> [--obstacles <obs.jsonl>]  # P5-T4 -> PNG frames + replay.wav
 
@@ -554,7 +557,6 @@ python scripts/fetch_dataset.py <id>                                        # id
 python scripts/report.py                                                    # regenerates docs/REPORT.md
 ```
 
-Planned, not yet created (added as their phases begin): `perceive.py`, `risk.py`,
-`evaluate.py`.
+Planned, not yet created (added as their phases begin): `risk.py`, `evaluate.py`.
 
 (Keep this list in sync with reality.)
