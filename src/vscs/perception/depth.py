@@ -46,11 +46,10 @@ instead of -1.0 m/s. Treat side-clipped boxes with suspicion.
 
 Tall thin objects off to the side are the worst case (R-07). With the camera pitched down,
 a vertical pole projects as a *slanted* line, so its box is wide and its bottom-centre is
-not where the pole meets the ground. On the end-to-end fixture drive, a 6 cm pole came
-out 45 cm wide and 22 cm too far sideways. The error is conservative (more warnings), but
-it raises false criticals on neighbouring components. A box cannot say which side the base
-is on. A segmentation mask's lowest pixels can, so the fix belongs with the masks (P2-T2
-detector + SAM 2) and learned depth (P4-T1), not in a box heuristic here.
+not where the pole meets the ground. Over the end-to-end fixture drive, boxes placed a 6 cm
+pole a median 0.35 m off and 0.65 m wide. A box cannot say which side the base is on; a
+mask's lowest pixels can: ``obstacle_from_mask`` places the same pole a median 0.05 m off
+and 0.10 m wide. Use masks whenever the detector provides them (SAM 2, P2-T2).
 Learned and motion-stereo depth replace this at P4-T1.
 """
 
@@ -169,6 +168,72 @@ def obstacle_from_box(
         t_ns=int(t_ns),
         kind=kind,
         center_veh=(float(centre_xy[0]), float(centre_xy[1]), height / 2.0),
+        extent=(width, width, height),
+        velocity_veh=(0.0, 0.0, 0.0),
+        pos_sigma_m=sigma if np.isfinite(sigma) else max_range,
+        source="detector",
+    )
+
+
+def obstacle_from_mask(
+    mask: npt.ArrayLike,
+    K: npt.ArrayLike,
+    T_veh_cam: npt.ArrayLike,
+    depth_cfg: dict[str, Any],
+    *,
+    obstacle_id: int,
+    t_ns: int,
+    kind: ObstacleKind = "static_geom",
+) -> Obstacle | None:
+    """A §4.2 ``Obstacle`` from a segmentation mask, using where it actually meets the ground.
+
+    The mask's lowest pixels (within ``mask_base_rows_px`` rows of its bottom-most pixel)
+    are the object's ground contact. Put on the ground, their spread is the contact width
+    and their mean is the base, with no guess about which side of a box the base is on (the
+    box-only failure for slanted thin objects, R-07). Height comes from the mask's top-most
+    pixel above the base. If the mask touches the image's top row, that height is only a
+    lower bound, which is acceptable: a taller object is never less dangerous.
+
+    Returns ``None`` if the mask is empty, or its base touches the image bottom (the true
+    contact is out of view) or lies beyond ``max_range_m``.
+    """
+    m = np.asarray(mask, dtype=bool)
+    if not m.any():
+        return None
+    h_img = m.shape[0]
+    rows, cols = np.nonzero(m)
+    v_bottom = rows.max()
+    if v_bottom >= h_img - 1:
+        return None
+    base = rows >= v_bottom - int(depth_cfg["mask_base_rows_px"])
+    uv = np.column_stack([cols[base], rows[base]]).astype(np.float64)
+    pts, ok = ground_points(K, T_veh_cam, uv, float(depth_cfg["max_range_m"]))
+    if not ok.any():
+        return None
+    pts = pts[ok]
+    lo, hi = pts[:, :2].min(axis=0), pts[:, :2].max(axis=0)
+    width = float(max(hi[0] - lo[0], hi[1] - lo[1]))
+    # The lowest rows trace the base's NEAR edge (as a box's bottom edge does): anchor the
+    # near face and put the centre half a footprint further along the viewing direction.
+    near = (lo + hi) / 2.0
+    o, _ = rays_veh(K, T_veh_cam, [[0.0, 0.0]])
+    away = (near - o[:2]) / np.linalg.norm(near - o[:2])
+    centre = near + away * width / 2.0
+    top_row = rows.min()
+    u_top = float(cols[rows == top_row].mean())
+    height = max(0.0, height_above(K, T_veh_cam, [[u_top, float(top_row)]], centre))
+    u_base = float(cols[rows == v_bottom].mean())
+    sigma = float(
+        range_sigma(K, T_veh_cam, [[u_base, float(v_bottom)]], float(depth_cfg["pixel_sigma_px"]))[
+            0
+        ]
+    )
+    max_range = float(depth_cfg["max_range_m"])
+    return Obstacle(
+        id=obstacle_id,
+        t_ns=int(t_ns),
+        kind=kind,
+        center_veh=(float(centre[0]), float(centre[1]), height / 2.0),
         extent=(width, width, height),
         velocity_veh=(0.0, 0.0, 0.0),
         pos_sigma_m=sigma if np.isfinite(sigma) else max_range,

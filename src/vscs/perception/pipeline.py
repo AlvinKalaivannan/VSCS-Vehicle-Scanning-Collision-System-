@@ -29,18 +29,24 @@ import numpy.typing as npt
 
 from vscs.common.frames import invert, transform_points
 from vscs.common.types import Obstacle
-from vscs.perception.depth import obstacle_from_box
+from vscs.perception.depth import obstacle_from_box, obstacle_from_mask
 from vscs.perception.occupancy import HeightMap, visible_cells
 from vscs.perception.track import Detection, Tracker
 
 
 @dataclass(frozen=True)
 class Box2D:
-    """One detector output: pixel box, class name, score."""
+    """One detector output: pixel box, class name, score, and optionally its mask.
+
+    With a mask (e.g. from SAM 2), the object is placed from where it actually meets the
+    ground (``depth.obstacle_from_mask``); without one, from the box's bottom edge
+    (``depth.obstacle_from_box``), which fattens and shifts slanted thin objects (R-07).
+    """
 
     xyxy: tuple[float, float, float, float]
     cls: str
     score: float
+    mask: Any = None  # (H, W) bool, or None
 
 
 class Perception:
@@ -82,8 +88,15 @@ class Perception:
         static_pts, dynamic = [], []
         for i, b in enumerate(boxes):
             kind = self.kind_of(b.cls)
-            ob = obstacle_from_box(
-                b.xyxy, self.K, self.T_veh_cam, depth_cfg, obstacle_id=i, t_ns=t_ns, kind=kind
+            place = obstacle_from_mask if b.mask is not None else obstacle_from_box
+            ob = place(
+                b.mask if b.mask is not None else b.xyxy,
+                self.K,
+                self.T_veh_cam,
+                depth_cfg,
+                obstacle_id=i,
+                t_ns=t_ns,
+                kind=kind,
             )
             if ob is None:
                 continue

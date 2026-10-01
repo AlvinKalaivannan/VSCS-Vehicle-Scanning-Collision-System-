@@ -75,3 +75,9 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:08 | note | fixture drive (reverse 1 m/s to a pole behind the rear-right corner, contact 2.47 s): first warning at 0.2 s naming rear_right_bumper_corner, lead 2.27 s, TTC error median 0.16 s; BUT alert critical from 0.2 s because box-only v0 fattened the 6 cm pole to 0.45 m and shifted it 0.22 m sideways (rear bumper near miss graded critical). Pinned as known limitation; fix belongs with masks/learned depth
 - 2026-10-01 03:08 | commit | end-to-end fixture drive
 - 2026-10-01 03:08 | merge | p3-t6-fixture-e2e -> main (local only)
+- 2026-10-01 03:08 | branch | p4-mask-ground-contact from main
+- 2026-10-01 03:13 | write | perception/depth.py obstacle_from_mask (ground contact from mask's lowest pixels), pipeline uses masks when present, configs/perception.yaml mask_base_rows_px, tests
+- 2026-10-01 03:13 | note | CORRECTION of my earlier 'end-to-end fixture drive' entry: the early critical alert is NOT caused by the fattened pole. With mask-accurate placement (pole median 0.05 m off, 0.10 m wide vs boxes 0.35 m / 0.65 m) the rear bumper still reads 0.215 m and grades critical at t=0.2 s: the cause is near-miss grading by closest approach over the whole horizon (ADR 0005). Docs, RISKS row and tests corrected
+- 2026-10-01 03:13 | write | docs/decisions/0010-grade-near-misses-by-time-proposed.md (PROPOSED; needs schema field t_closest_s)
+- 2026-10-01 03:13 | deferred | ADR 0010 near-miss timing: schema change -> developer decision
+- 2026-10-01 03:13 | commit | mask-based ground contact + ADR 0010 proposal
