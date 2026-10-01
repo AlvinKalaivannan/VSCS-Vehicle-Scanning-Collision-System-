@@ -91,3 +91,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:16 | write | src/vscs/perception/detect.py (filter + RT-DETR adapter), configs/perception.yaml detect.model_id, tests/unit/test_detect.py, docs/decisions/0011-detector-rtdetr.md
 - 2026-10-01 03:16 | note | RT-DETR r18 on laptop CPU: car found 18/20 Roboflow test photos, IoU median 0.98 vs labelled extent; ~750 ms/image (R-20 evidence)
 - 2026-10-01 03:16 | commit | P4-T4 detector
+- 2026-10-01 03:16 | merge | p4-t4-detector -> main (local only)
