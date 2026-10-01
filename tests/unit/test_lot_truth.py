@@ -210,3 +210,39 @@ def test_cli_fails_on_error_and_on_a_miss(tmp_path, monkeypatch):
 def test_cli_refuses_test_split_passes(tmp_path, monkeypatch):
     cli, write = _setup(tmp_path, monkeypatch, offset_m=0.05)
     assert cli.main([*write("lot_101"), "--no-metrics"]) == 2
+
+
+def test_ego_drift_known_answer():
+    from vscs.eval.lot_truth import ego_drift
+
+    start = veh_pose_in_lot(_marks([5.0, 0.0], 0.0), TRACK, 0.03)
+    # Reversed 3 m and turned 10 deg left (heading +10 deg in the lot frame).
+    end = veh_pose_in_lot(_marks([2.0, 0.0], math.radians(10)), TRACK, 0.03)
+    yaw = math.radians(8)  # the estimate turned 8 deg and stopped 10 cm short, 5 cm left
+    T_last = np.eye(4)
+    T_last[:2, :2] = [[math.cos(yaw), -math.sin(yaw)], [math.sin(yaw), math.cos(yaw)]]
+    T_last[:2, 3] = [-2.9, 0.05]
+    d = ego_drift(np.eye(4), T_last, start, end)
+    assert d["displacement_m"] == pytest.approx(3.0)
+    assert d["endpoint_error_m"] == pytest.approx(math.hypot(0.1, 0.05))
+    assert d["drift_frac"] == pytest.approx(math.hypot(0.1, 0.05) / 3.0)
+    assert d["heading_error_deg"] == pytest.approx(-2.0)
+
+
+@pytest.mark.parametrize(("est_x", "code", "drift"), [(-2.9, 0, 0.1 / 3), (-2.7, 1, 0.3 / 3)])
+def test_cli_scores_ego_drift_from_the_end_pose(tmp_path, monkeypatch, est_x, code, drift):
+    cli, write = _setup(tmp_path, monkeypatch, offset_m=0.05)
+    g = copy.deepcopy(GT)
+    g["passes"][0]["end"] = {"rear_left_hub_m": [2.0, 0.86], "rear_right_hub_m": [2.0, -0.86]}
+    (tmp_path / "gt.yaml").write_text(yaml.safe_dump(g), encoding="utf-8")
+    ego = tmp_path / "perc" / "ego.jsonl"
+    rows = [__import__("json").loads(ln) for ln in ego.read_text(encoding="utf-8").splitlines()]
+    T = np.eye(4)
+    T[0, 3] = est_x
+    rows[-1]["T_world_veh"] = T.ravel().tolist()
+    write_jsonl(ego, rows)
+    logged = []
+    monkeypatch.setattr(cli, "append_metric", lambda **kw: logged.append(kw))
+    assert cli.main(write("lot_001")) == code
+    (m,) = [r for r in logged if r["metric"] == "egomotion_drift_frac"]
+    assert m["task"] == "P4-T2" and m["value"] == pytest.approx(drift)

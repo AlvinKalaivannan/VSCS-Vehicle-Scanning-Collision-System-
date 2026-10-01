@@ -90,6 +90,9 @@ The lot frame is right-handed and in metres, with z up and its origin at the cha
   appends `cone_position_error_m` (worst matched cone at ≤3 m, the gate's reading of
   "within ±25 cm"). It also reports the cones it missed (R-07), so a missed pole cannot
   hide behind a good error.
+- **The start and end poses give P4-T2 its truth too:** the true motion over the pass,
+  against the first and last ego-motion poses. `egomotion_drift_frac` is endpoint error
+  over displacement, which overstates drift on curved passes (the cautious direction).
 - **The end pose gives the closest approach** on the "reverse toward X and stop short"
   passes, which are most of the plan. For pass-by passes the end pose alone does not
   give the moment of closest approach. Two options for the developer: annotate it from a
