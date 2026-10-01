@@ -54,6 +54,25 @@ labels3d:
   # point can never be matched to a neighbour.
   match_tolerance_m: 0.001
 
+lot_truth:
+  # data/raw/lot_*/gt.yaml and scripts/score_perception.py (P3-T2). PROPOSED with ADR 0012.
+  # The two hub marks must be the scan-day rear track apart, to within this.
+  track_tolerance_m: 0.03
+  # P3-T2 is scored while the van is still parked at the start of a pass: skip the start
+  # sync shake/clap, then compare every frame in the window with the measured layout.
+  start_skip_s: 1.5
+  start_window_s: 1.0
+  # A perceived obstacle counts as a detection of a measured one if its centre is within
+  # this distance; the error is then the distance itself (the gate is 0.25 m).
+  match_gate_m: 1.0
+  # P3-T2's "at <= 3 m": horizontal range from the camera mount to the obstacle.
+  max_range_m: 3.0
+  # Detected in fewer than this fraction of the window's frames = missed (R-07), which
+  # fails P3-T2 rather than leaving the obstacle out of the error.
+  min_detected_frac: 0.5
+  # Kinds with a well-defined footprint centre. A kerb is a line; it is scored by P4-T6.
+  score_kinds: ["cone", "pole", "box"]
+
 risk_metrics:
   # The alert level that counts as "flagged" / "warned" for attribution and lead time.
   flag_level: "warning"

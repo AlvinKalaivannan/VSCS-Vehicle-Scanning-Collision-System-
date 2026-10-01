@@ -48,7 +48,7 @@ health: ON TRACK
 
 **None.** `metrics/results.jsonl` is empty; nothing has been measured on real data.
 
-Session evidence (tests, not metrics): `main` **802 passed, 1 skipped**; ruff clean; coverage 94.6% at last measurement (common/ and risk/ above the 80% target).
+Session evidence (tests, not metrics): `main` **832 passed, 1 skipped**; ruff clean; coverage 94.6% at last measurement (common/ and risk/ above the 80% target).
 
 ## Blockers — decisions and work only you can do
 
@@ -63,6 +63,10 @@ Session evidence (tests, not metrics): `main` **802 passed, 1 skipped**; ruff cl
    - Push OK, after you verify (`docs/operations_log.md` lists everything done autonomously).
    - Approve ADR 0009 (zones) and merge `docs-streaming-merge`; decide the NC media policy and LGPL ffmpeg.
    - **ADR 0010 (proposed):** grade near misses by time of closest approach. The end-to-end fixture drive raises 'critical' 2.2 s early on a 0.30 m bumper near miss. Needs a schema field.
+   - **ADR 0012 (proposed, TIME-CRITICAL for October):** the lot-day checklist never
+     records where the van stood, so P3-T2 and the `passes.yaml` truth cannot be computed.
+     The proposal is to plumb and tape the rear hubs at the start and end of each pass
+     (~30 min), and to add the rear track to the scan-day measurements.
    - **New, from the fuse/scale plumbing (devlog 2026-10-01):**
      - in your `fusion3d.observe`, should a pixel with no COLMAP depth count as visible
        (contract today) or as "cannot tell"?
