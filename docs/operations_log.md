@@ -15,3 +15,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:32 | branch | ops-log from main
 - 2026-10-01 02:32 | write | docs/operations_log.md (this file)
 - 2026-10-01 02:32 | commit | ops-log: add operations log
+- 2026-10-01 02:32 | merge | ops-log -> main (local only)
