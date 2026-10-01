@@ -608,6 +608,7 @@ python scripts/recon.py --frames-run data/processed/capture/<run>          # P1-
 python scripts/dense.py --recon-run <run> --images <frames>              # P1-T7, Colab (notebooks/colab/10_dense.ipynb)
 python scripts/seg.py --frames <frames> --sam2-dir <sam2 checkout>         # P2-T2, Colab (notebooks/colab/20_seg.ipynb)
 python scripts/export_model.py --labelled <cleaned.npz> --scale-error-m <m> # P2-T6..T8: decompose + URDF
+python scripts/view.py --model <model run> --risk <frames.jsonl> [--obstacles <obs.jsonl>]  # P3-T1 -> drive.rrd
 
 # External datasets (ADR 0006; licence-checked, private by default)
 python scripts/fetch_dataset.py <id>                                        # id from configs/datasets.yaml
@@ -616,7 +617,6 @@ python scripts/report.py                                                    # re
 ```
 
 Planned, not yet created (added as their phases begin): `perceive.py`, `risk.py`,
-`view.py` (Rerun), `evaluate.py`, `stream.py` (Phase 6 pipeline) and `docker compose up`
-(Phase 6 demo).
+`evaluate.py`, `stream.py` (Phase 6 pipeline) and `docker compose up` (Phase 6 demo).
 
 (Keep this list in sync with reality.)
