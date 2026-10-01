@@ -11,7 +11,16 @@ hubs. The marks give the pose directly (MAT188 notation, 2D):
 
 ``R_lot_veh = [x y]`` (columns) and a lot point maps into ``veh`` as
 ``p_veh = R_lot_veh^T (p_lot - o)``. ``|l - r|`` must equal the rear track measured on scan
-day, which checks every pose for a misread tape.
+day, which checks every pose for a misread tape *along* the hub line.
+
+A third mark, under the **front-left** hub, closes the two gaps that check leaves (ADR
+0012 amendment). In ``veh`` it must land at ``(wheelbase, +track/2)``:
+
+* a left/right **swap** reverses x and y, so it lands near ``(-wheelbase, -track/2)``;
+* a misread *across* the hub line turns the heading by ``e``, which moves the front mark
+  sideways by about ``wheelbase * e``: 10 cm across turns ~3.3 deg, i.e. ~17 cm at 3 m.
+
+Both fail ``front_mark_tolerance_m``.
 
 P3-T2 is scored on the stationary start of each pass, so ego-motion plays no part: every
 perceived obstacle in a short window after the start sync clap is compared with the
@@ -41,6 +50,7 @@ class _Strict(BaseModel):
 class HubMarks(_Strict):
     rear_left_hub_m: XY
     rear_right_hub_m: XY
+    front_left_hub_m: XY | None = None  # the cross-check mark (ADR 0012 amendment)
 
 
 class LotObstacle(_Strict):
@@ -70,6 +80,7 @@ class LotTruth(_Strict):
     schema_version: Literal[1]
     origin: str
     rear_track_m: float
+    wheelbase_m: float | None = None  # scan-day tape; needed to check front-left marks
     obstacles: list[LotObstacle]
     passes: list[LotPass]
 
@@ -85,6 +96,11 @@ class LotTruth(_Strict):
                 raise ValueError(f"pass {p.id}: unknown obstacle {p.designed_nearest.obstacle}")
         if not 0.5 < self.rear_track_m < 3.0:
             raise ValueError(f"rear_track_m {self.rear_track_m} - is this metres?")
+        if self.wheelbase_m is not None and not 1.0 < self.wheelbase_m < 8.0:
+            raise ValueError(f"wheelbase_m {self.wheelbase_m} - is this metres?")
+        marks = [m for p in self.passes for m in (p.start, p.end) if m is not None]
+        if self.wheelbase_m is None and any(m.front_left_hub_m for m in marks):
+            raise ValueError("front_left_hub_m marks need wheelbase_m to be checked against")
         return self
 
     def pass_(self, pass_id: str) -> LotPass:
@@ -99,9 +115,18 @@ def load_lot_truth(path: Path) -> LotTruth:
 
 
 def veh_pose_in_lot(
-    marks: HubMarks, rear_track_m: float, tolerance_m: float
+    marks: HubMarks,
+    rear_track_m: float,
+    tolerance_m: float,
+    *,
+    wheelbase_m: float | None = None,
+    front_tolerance_m: float | None = None,
 ) -> tuple[FloatArray, FloatArray]:
-    """``(R_lot_veh (2, 2), o (2,))`` from the two hub marks; checked against the track."""
+    """``(R_lot_veh (2, 2), o (2,))`` from the rear hub marks, checked against the track.
+
+    With a front-left mark (and the wheelbase), also checked for a swap or a heading
+    error: the mark must sit at ``(wheelbase, track / 2)`` in ``veh``.
+    """
     left = np.asarray(marks.rear_left_hub_m, dtype=np.float64)
     right = np.asarray(marks.rear_right_hub_m, dtype=np.float64)
     span = float(np.linalg.norm(left - right))
@@ -112,7 +137,24 @@ def veh_pose_in_lot(
         )
     y = (left - right) / span
     x = np.array([y[1], -y[0]])
-    return np.column_stack([x, y]), (left + right) / 2.0
+    R, o = np.column_stack([x, y]), (left + right) / 2.0
+    if marks.front_left_hub_m is not None:
+        if wheelbase_m is None or front_tolerance_m is None:
+            raise ValueError("a front-left mark needs the wheelbase and its tolerance")
+        fl = lot_to_veh(marks.front_left_hub_m, R, o)[0]
+        expected = np.array([wheelbase_m, rear_track_m / 2.0])
+        miss = float(np.linalg.norm(fl - expected))
+        if miss > front_tolerance_m:
+            why = (
+                "left and right look swapped (the front mark lands behind the axle)"
+                if fl[0] < 0
+                else "the heading is off: a rear mark was misread across the hub line"
+            )
+            raise ValueError(
+                f"front-left mark lands at ({fl[0]:.3f}, {fl[1]:.3f}) m in veh, "
+                f"{miss:.3f} m from the expected ({expected[0]:.3f}, {expected[1]:.3f}): {why}"
+            )
+    return R, o
 
 
 def lot_to_veh(points_lot: npt.ArrayLike, R_lot_veh: FloatArray, o: FloatArray) -> FloatArray:

@@ -74,7 +74,8 @@ obstacles:
   - {id: cone_1, kind: cone, position_m: [2.40, 1.20]}
 passes:
   - id: lot_20261018_03       # the raw id ingest gave the clip
-    start: {rear_left_hub_m: [5.21, 0.86], rear_right_hub_m: [5.20, -0.86]}
+    start: {rear_left_hub_m: [5.21, 0.86], rear_right_hub_m: [5.20, -0.86],
+            front_left_hub_m: [8.21, 0.87]}   # third mark (amendment)
     end:   {rear_left_hub_m: [4.02, 0.85], rear_right_hub_m: [4.01, -0.87]}
     designed_nearest: {component: rear_right_bumper_corner, obstacle: pole_1}
     shape: straight           # straight | curve (amendment 2026-10-01): P4-T2 gates straight only
@@ -122,3 +123,23 @@ The lot frame is right-handed and in metres, with z up and its origin at the cha
   `depth_error_m_at_3m` is gated at 0.25 m; the other buckets are reported.
 - Evidence: `tests/unit/test_lot_truth.py` (curved pass reported but not gated, range
   error and bucket known answers, CLI depth metric).
+
+## Amendment 2026-10-01 - a third hub mark (approved by the developer)
+
+The two rear marks check the span against the rear track, which catches a misread
+*along* the hub line but not one *across* it (10 cm turns the heading about 3.3°), and
+not a left/right swap (it turns the van around). The developer approved a **third mark
+under the front-left hub**, about 1 extra minute per pose.
+
+- `gt.yaml`: `wheelbase_m` once at the top (scan-day tape), and `front_left_hub_m` in each
+  `start` / `end`.
+- In `veh` the mark must land at `(wheelbase, +track/2)`, within
+  `eval.yaml lot_truth.front_mark_tolerance_m` (0.05 m):
+  - a swap lands it behind the axle;
+  - a 10 cm across-misread moves it about 17 cm sideways.
+
+  Both refusals name the likely cause.
+- The mark checks the pose; it does not refine it. A three-point fit would be possible
+  later, but a check is simpler to trust.
+- Evidence: `tests/unit/test_lot_truth.py`: three marks with 1 cm tape noise pass; a swap
+  and an across-misread are each refused; front marks require `wheelbase_m`.
