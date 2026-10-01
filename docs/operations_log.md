@@ -130,3 +130,6 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:32 | note | KF consistency: mean NEES 3.90 over 300 runs (chi2 4 dof -> 4.00), 95th pct 8.60 (theory 9.49): F, Q and update verified
 - 2026-10-01 03:32 | commit | self-check tests
 - 2026-10-01 03:32 | merge | p4-t4-kf-consistency -> main (local only)
+- 2026-10-01 03:32 | branch | p4-t6-turning-check from main
+- 2026-10-01 03:34 | write | test: underbody footprint motion equals frames.transform_points on turning paths (hardest left/right, mid and end of horizon)
+- 2026-10-01 03:34 | commit | turning-path check
