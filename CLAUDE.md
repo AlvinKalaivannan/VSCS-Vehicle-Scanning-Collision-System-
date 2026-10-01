@@ -33,6 +33,33 @@ Default: **pair mode.** VSCS is the developer's portfolio project and they must 
 - When a concept leans on linear algebra (projections, rigid transforms, frames), give a short explanation tied to MAT188-level notation.
 - The developer can switch to `mode: build` in `docs/STATUS.md` to have Claude write everything; respect that field.
 
+### Limits policy
+
+```
+limits_policy: exhaust-first        # set by the developer, 2026-10-01
+```
+
+A **limit** is anything recorded as a known limitation, accepted error, "won't fix",
+"out of scope", or residual inaccuracy, whether in a docstring, ADR, devlog, STATUS,
+the README or a hand-off summary. With `exhaust-first`, before recording one:
+
+1. **List the candidate fixes.** Consider code, config, method, extra data, the capture
+   procedure, and a different tool.
+2. **Try every candidate that is plumbing** and needs no decision, and **measure** the
+   result. Do not just reason about whether it might work.
+3. **Record a limit only if one of these holds:**
+   - **(a) No feasible fix exists.** Say why each candidate fails.
+   - **(b) The remaining fix is the developer's decision**: anything in the stop-and-ask
+     list, a schema change, a purchase, a capture-procedure change, or a compute
+     trade-off. Then *propose* the fix with its evidence; don't just list the limit.
+   - **(c) The error cannot be corrected or measured with what the project has**, for
+     example physics or the hardware VSCS runs on.
+4. **Every recorded limit states** what was tried, the evidence, which of (a), (b) or (c)
+   applies, and who or what would unblock it.
+
+Prefer conservative errors (more warnings, not fewer) only when no correction exists,
+and say which way the error leans.
+
 ---
 
 ## 1. Project summary
@@ -605,18 +632,30 @@ python scripts/make_markers.py --out <dir>                                  # pr
 python scripts/ingest.py --src <path> --kind scan|lot|calib                 # P1-T4
 python scripts/extract_frames.py --video data/raw/<id>/<clip>              # P1-T4
 python scripts/recon.py --frames-run data/processed/capture/<run>          # P1-T5, needs COLMAP
+python scripts/scale.py --recon-run <run> --images <frames> --measured <yaml> # P1-T6: needs scale.py; writes sfm_to_veh.json
 python scripts/dense.py --recon-run <run> --images <frames>              # P1-T7, Colab (notebooks/colab/10_dense.ipynb)
 python scripts/seg.py --frames <frames> --sam2-dir <sam2 checkout>         # P2-T2, Colab (notebooks/colab/20_seg.ipynb)
+python scripts/fuse.py --dense-run <run> --seg-run <run> --sfm-to-veh <json> # P2-T3/T5: needs fusion3d.py + P1-T6
+python scripts/score_labels.py --fuse-run <run> --gold <gold.txt>          # P2-T3/T4/T5 gates vs the hand-labelled subset
+python scripts/check_wheelbase.py --labelled <cleaned.npz> --measured <yaml>  # P1-T6 wheelbase from segmented wheels (ADR 0013)
 python scripts/export_model.py --labelled <cleaned.npz> --scale-error-m <m> # P2-T6..T8: decompose + URDF
 
+# Per-drive pipeline
+python scripts/perceive.py --frames-run <capture run> [--ego vo|stationary|file]  # detect + perception -> obstacles.jsonl (GPU env)
+    #   add --imu <gyro.csv> --imu-offset-ms <P1-T4 offset> to fuse the phone gyro with VO (P4-T2)
+python scripts/risk.py --model <model run> --perception <perceive run> [--baseline]  # -> risk_frames.jsonl (needs sweep.py)
+python scripts/evaluate.py --passes <passes.yaml> --split dev [--log-metrics]   # VSCS vs baseline (§11); test split: --final, once
+python scripts/view.py --model <model run> --risk <frames.jsonl> [--obstacles <obs.jsonl>]  # P3-T1 -> drive.rrd
+python scripts/replay.py --model <model run> --risk <frames.jsonl> [--obstacles <obs.jsonl>]  # P5-T4 -> PNG frames + replay.wav
+
 # External datasets (ADR 0006; licence-checked, private by default)
+python scripts/score_perception.py --gt data/raw/lot_<date>/gt.yaml --passes <dev passes.yaml>  # P3-T2 + P4-T2 drift (gt format: ADR 0012)
 python scripts/fetch_dataset.py <id>                                        # id from configs/datasets.yaml
 
+python scripts/benchmark.py --frames-run <run> [--detector] [--log-metrics]  # P5-T3, per-stage fps tagged with hardware
 python scripts/report.py                                                    # regenerates docs/REPORT.md
 ```
 
-Planned, not yet created (added as their phases begin): `perceive.py`, `risk.py`,
-`view.py` (Rerun), `evaluate.py`, `stream.py` (Phase 6 pipeline) and `docker compose up`
-(Phase 6 demo).
+Every script planned for Phases 0-5 now exists; Phase 6 adds `stream.py` and `docker compose up`.
 
 (Keep this list in sync with reality.)

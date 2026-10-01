@@ -1,0 +1,231 @@
+# Autonomous operations log
+
+Append-only record of every operation Claude performs without step-by-step supervision
+(developer's /goal of 2026-10-01). One line per operation, written as it happens and
+committed with the work it describes. **Nothing here has been pushed**: the developer
+verifies all of it first.
+
+Format: `- YYYY-MM-DD HH:MM | kind | detail`
+Kinds: branch, write, test, commit, merge, install, data, deferred, note.
+
+## 2026-10-01
+
+- 2026-10-01 02:32 | note | session start under /goal; main 59 commits ahead of origin; no push this session
+- 2026-10-01 02:32 | note | docs-streaming-merge (ADR 0008/0009) left UNMERGED pending developer OK
+- 2026-10-01 02:32 | branch | ops-log from main
+- 2026-10-01 02:32 | write | docs/operations_log.md (this file)
+- 2026-10-01 02:32 | commit | ops-log: add operations log
+- 2026-10-01 02:32 | merge | ops-log -> main (local only)
+- 2026-10-01 02:33 | branch | p3-t1-rerun-view from main
+- 2026-10-01 02:34 | write | src/vscs/ui/rerun_view.py, configs/ui.yaml (+ KNOWN_CONFIGS 'ui')
+- 2026-10-01 02:35 | write | scripts/view.py, tests/unit/test_rerun_view.py; CLAUDE.md §12 synced (view.py)
+- 2026-10-01 02:35 | test | full suite green; real .rrd verified by 'rerun rrd verify'
+- 2026-10-01 02:35 | commit | P3-T1: Rerun dev view
+- 2026-10-01 02:35 | merge | p3-t1-rerun-view -> main (local only)
+- 2026-10-01 02:36 | branch | p3-t2-perception-v0 from main
+- 2026-10-01 02:39 | write | src/vscs/perception/depth.py (ground-plane v0), tests/unit/test_depth_v0.py, configs/perception.yaml depth.pixel_sigma_px
+- 2026-10-01 02:39 | note | P3-T2 fixture finding: box bottom edge = near face; near-face anchoring puts cone near face within 2 cm (centre 5-13 cm); width/height read high (conservative)
+- 2026-10-01 02:39 | commit | P3-T2: perception v0
+- 2026-10-01 02:39 | merge | p3-t2-perception-v0 -> main (local only)
+- 2026-10-01 02:40 | branch | p4-t3-occupancy from main
+- 2026-10-01 02:40 | write | src/vscs/perception/occupancy.py (world height map: insert, carve, persist, expire, reset), tests/unit/test_occupancy.py
+- 2026-10-01 02:40 | commit | P4-T3: persistent height map
+- 2026-10-01 02:40 | merge | p4-t3-occupancy -> main (local only)
+- 2026-10-01 02:41 | branch | p5-eval-risk-metrics from main
+- 2026-10-01 02:42 | write | eval/metrics.py: attribution accuracy, lead time, TTC error, alert episodes, false alarms/min; configs/eval.yaml risk_metrics; tests
+- 2026-10-01 02:42 | commit | P5 eval risk metrics
+- 2026-10-01 02:42 | merge | p5-eval-risk-metrics -> main (local only)
+- 2026-10-01 02:42 | branch | p5-t1-baseline from main
+- 2026-10-01 02:44 | write | src/vscs/eval/baseline_bbox.py (single oriented box + baseline severity), tests/unit/test_baseline_bbox.py
+- 2026-10-01 02:44 | note | P5-T1 fixture finding: pole 0.40 m from sliding door reads 0.15 m to the single box (mirror protrusion 0.25 m); same engine, geometry only
+- 2026-10-01 02:44 | commit | P5-T1: single-box baseline
+- 2026-10-01 02:44 | merge | p5-t1-baseline -> main (local only)
+- 2026-10-01 02:44 | write | docs/devlog/2026-10-01.md, docs/STATUS.md checkpoint
+- 2026-10-01 02:44 | commit | docs checkpoint
+- 2026-10-01 02:44 | merge | docs-1001 -> main (local only)
+- 2026-10-01 02:44 | note | streaming scaffolding (Phase 6 setup) is done on branch p6-stream-scaffold (from docs-streaming-merge + main), UNMERGED; its operations are logged in that branch's copy of this file
+- 2026-10-01 02:52 | note | p6-stream-scaffold complete (replay, queues, metrics, pipeline, stub demo; 736 tests on branch) - UNMERGED, awaiting developer review together with docs-streaming-merge
+- 2026-10-01 02:52 | branch | risks-r17-r19 from main
+- 2026-10-01 02:52 | write | docs/RISKS.md: R-17..R-19 rows seeded UNRATED (ratings deferred to developer per §8; earlier proposals noted)
+- 2026-10-01 02:52 | deferred | R-17..R-19 likelihood/impact ratings: developer
+- 2026-10-01 02:52 | commit | risk register rows
+- 2026-10-01 02:52 | merge | risks-r17-r19 -> main (local only)
+- 2026-10-01 02:53 | branch | p4-t4-tracking from main
+- 2026-10-01 02:56 | write | src/vscs/perception/track.py (CV Kalman + 3-stage association after ByteTrack, Zhang et al. ECCV 2022 - idea only, no code/data), configs/perception.yaml track association keys, tests/unit/test_track.py
+- 2026-10-01 02:56 | note | P4-T4 finding: a 99% gate rejects ~1% of genuine detections; each miss spawned a duplicate track. Added recovery stage (99.99% gate) before track birth. Crossing walkers, 0.15 m noise, 200 seeds: 0.6 m 200/200 clean, 0.4 m 198/200, 0.3 m 187/200; zero duplicate tracks
+- 2026-10-01 02:56 | commit | P4-T4 tracking
+- 2026-10-01 02:56 | merge | p4-t4-tracking -> main (local only)
+- 2026-10-01 02:56 | branch | p4-t6-underbody from main
+- 2026-10-01 02:58 | write | src/vscs/risk/underbody.py (swept footprint vs height map clearance), configs/risk.yaml underbody block, tests/unit/test_underbody.py
+- 2026-10-01 02:58 | note | P4-T6 fixture: kerb 0.12 m flags rear wheels only (ttc ~1.65 s); underbody clears by 0.13 m, rear bumper by 0.28 m; a 0.30 m bump reaches the underbody
+- 2026-10-01 02:58 | commit | P4-T6 underbody clearance
+- 2026-10-01 02:58 | merge | p4-t6-underbody -> main (local only)
+- 2026-10-01 02:58 | branch | p5-t4-driver-replay from main
+- 2026-10-01 03:01 | write | src/vscs/ui/driver_replay.py (silhouette PNGs + alert audio WAV, no ffmpeg), scripts/replay.py, configs/ui.yaml driver_replay, tests; CLAUDE.md §12 synced
+- 2026-10-01 03:01 | commit | P5-T4 driver replay
+- 2026-10-01 03:01 | merge | p5-t4-driver-replay -> main (local only)
+- 2026-10-01 03:02 | test | coverage: total 94.6%; common/ 83-100%, risk/ 92-100% (>=80% §5 target met); seg/masks2d 80% (GPU adapters run on Colab only)
+- 2026-10-01 03:02 | branch | p4-perception-pipeline from main
+- 2026-10-01 03:04 | write | src/vscs/perception/pipeline.py (boxes -> static to height map, dynamic to tracker -> obstacles in veh), Tracker.next_id, configs/perception.yaml pipeline block, tests/unit/test_perception_pipeline.py
+- 2026-10-01 03:04 | note | finding: side-clipped detector boxes bias v0 position (walker read -0.69 m/s vs -1.0); top-clipped are harmless; documented in depth.py
+- 2026-10-01 03:04 | commit | perception pipeline glue
+- 2026-10-01 03:04 | merge | p4-perception-pipeline -> main (local only)
+- 2026-10-01 03:05 | branch | p3-t6-fixture-e2e from main
+- 2026-10-01 03:08 | write | tests/unit/test_drive_end_to_end.py (stub detector -> perception -> engine w/ reference sweep -> metrics), depth.py limitation note, RISKS.md near-miss row (R-07)
+- 2026-10-01 03:08 | note | fixture drive (reverse 1 m/s to a pole behind the rear-right corner, contact 2.47 s): first warning at 0.2 s naming rear_right_bumper_corner, lead 2.27 s, TTC error median 0.16 s; BUT alert critical from 0.2 s because box-only v0 fattened the 6 cm pole to 0.45 m and shifted it 0.22 m sideways (rear bumper near miss graded critical). Pinned as known limitation; fix belongs with masks/learned depth
+- 2026-10-01 03:08 | commit | end-to-end fixture drive
+- 2026-10-01 03:08 | merge | p3-t6-fixture-e2e -> main (local only)
+- 2026-10-01 03:08 | branch | p4-mask-ground-contact from main
+- 2026-10-01 03:13 | write | perception/depth.py obstacle_from_mask (ground contact from mask's lowest pixels), pipeline uses masks when present, configs/perception.yaml mask_base_rows_px, tests
+- 2026-10-01 03:13 | note | CORRECTION of my earlier 'end-to-end fixture drive' entry: the early critical alert is NOT caused by the fattened pole. With mask-accurate placement (pole median 0.05 m off, 0.10 m wide vs boxes 0.35 m / 0.65 m) the rear bumper still reads 0.215 m and grades critical at t=0.2 s: the cause is near-miss grading by closest approach over the whole horizon (ADR 0005). Docs, RISKS row and tests corrected
+- 2026-10-01 03:13 | write | docs/decisions/0010-grade-near-misses-by-time-proposed.md (PROPOSED; needs schema field t_closest_s)
+- 2026-10-01 03:13 | deferred | ADR 0010 near-miss timing: schema change -> developer decision
+- 2026-10-01 03:13 | commit | mask-based ground contact + ADR 0010 proposal
+- 2026-10-01 03:13 | merge | p4-mask-ground-contact -> main (local only)
+- 2026-10-01 03:13 | write | devlog 2026-10-01 continuation, STATUS checkpoint
+- 2026-10-01 03:13 | commit | docs checkpoint b
+- 2026-10-01 03:13 | merge | docs-1001-b -> main (local only)
+- 2026-10-01 03:13 | branch | p4-t4-detector from main
+- 2026-10-01 03:14 | note | citation corrected before commit: RT-DETR is Zhao et al., CVPR 2024 (not 'Lv et al.')
+- 2026-10-01 03:16 | data | model weights PekingU/rtdetr_r18vd downloaded to the HF cache (outside repo) for CPU verification; licence Apache-2.0 (HF model card, checked 2026-10-01); code lyuwenyu/RT-DETR Apache-2.0; cited: Zhao et al., CVPR 2024; trained on COCO (images Flickr-licensed; no images redistributed)
+- 2026-10-01 03:16 | write | src/vscs/perception/detect.py (filter + RT-DETR adapter), configs/perception.yaml detect.model_id, tests/unit/test_detect.py, docs/decisions/0011-detector-rtdetr.md
+- 2026-10-01 03:16 | note | RT-DETR r18 on laptop CPU: car found 18/20 Roboflow test photos, IoU median 0.98 vs labelled extent; ~750 ms/image (R-20 evidence)
+- 2026-10-01 03:16 | commit | P4-T4 detector
+- 2026-10-01 03:16 | merge | p4-t4-detector -> main (local only)
+- 2026-10-01 03:17 | branch | p4-perceive-cli from main
+- 2026-10-01 03:19 | write | scripts/perceive.py (frames -> undistort -> RT-DETR -> perception -> obstacles.jsonl; refuses without calibration/mount; stationary unless --ego-poses), capture/frames.read_frames_index, configs/capture.yaml mount block (unmeasured), tests; CLAUDE.md §12 synced
+- 2026-10-01 03:19 | deferred | camera mount measurement (configs/capture.yaml mount): developer, lot day
+- 2026-10-01 03:19 | commit | perceive CLI
+- 2026-10-01 03:19 | merge | p4-perceive-cli -> main (local only)
+- 2026-10-01 03:19 | branch | p4-perceive-notebook from main
+- 2026-10-01 03:19 | write | notebooks/colab/30_perceive.ipynb (thin wrapper: GPU check, Drive, clone, install w/o torch pin, run scripts/perceive.py)
+- 2026-10-01 03:19 | commit | perceive notebook
+- 2026-10-01 03:19 | merge | p4-perceive-notebook -> main (local only)
+- 2026-10-01 03:20 | branch | docs-readme-credits from main (README edit started on main, carried over uncommitted)
+- 2026-10-01 03:20 | data | licences re-verified at source 2026-10-01: Grounding DINO tiny weights + code Apache-2.0 (HF card, GitHub); SAM 2 code + checkpoints Apache-2.0 (repo README licence section); CoACD MIT
+- 2026-10-01 03:20 | write | README.md: 'Third-party models, datasets and methods' section with full citations (Grounding DINO ECCV 2024; SAM 2 ICLR 2025; RT-DETR CVPR 2024; COLMAP CVPR/ECCV 2016; CoACD TOG 2022; ByteTrack ECCV 2022) and dataset licence/provenance/allowed-use; nuScenes row omitted on main (registered only on unmerged docs-streaming-merge)
+- 2026-10-01 03:20 | commit | README credits
+- 2026-10-01 03:20 | merge | docs-readme-credits -> main (local only)
+- 2026-10-01 03:21 | branch | p5-t3-benchmark from main
+- 2026-10-01 03:22 | write | src/vscs/eval/benchmark.py (warm-up, p50/p95, fps, hardware tag), scripts/benchmark.py (metrics only with --log-metrics), tests; CLAUDE.md §12
+- 2026-10-01 03:22 | note | laptop CPU rehearsal (synthetic 1280x720): decode 0.8 ms, perception step 7.4 ms (136 fps); detector ~750 ms (ADR 0011) is the bottleneck. Not logged to metrics (rehearsal, not the T4 figure)
+- 2026-10-01 03:22 | commit | P5-T3 benchmark tool
+- 2026-10-01 03:22 | merge | p5-t3-benchmark -> main (local only)
+- 2026-10-01 03:23 | branch | p4-t2-ground-vo from main
+- 2026-10-01 03:25 | write | src/vscs/perception/egomotion.py (ground-plane VO: ORB on road pixels -> ground points -> RANSAC 2D Kabsch), configs/perception.yaml egomotion.vo, tests/unit/test_egomotion.py (rendered textured road via exact ground homography)
+- 2026-10-01 03:25 | note | VO on an ideal rendered road (flat, textured, perfect calibration): 2.0 m reversing arc, drift 0.20 cm (0.10%), yaw 20.03 vs 20.0 deg, ~1100 inliers/step. Real asphalt/blur/rolling shutter will be worse; IMU fusion still to come (P4-T2 visual-inertial)
+- 2026-10-01 03:25 | commit | P4-T2 ground VO
+- 2026-10-01 03:25 | merge | p4-t2-ground-vo -> main (local only)
+- 2026-10-01 03:26 | branch | p4-perceive-vo from main
+- 2026-10-01 03:30 | write | perceive.py --ego vo|stationary|file (default vo: ground-plane VO); GroundVO coasts on lost/featureless frames and counts them; tests; CLAUDE.md §12
+- 2026-10-01 03:30 | note | bugs caught by tests before commit: featureless frames returned early without coasting; my scripted edit adding the 'lost the road' warning had not applied (anchor reformatted)
+- 2026-10-01 03:30 | commit | perceive with VO
+- 2026-10-01 03:30 | merge | p4-perceive-vo -> main (local only)
+- 2026-10-01 03:30 | write | docs/phase_reports/phase-0.md DRAFT (P0-T1..T4 MET, T5/T7 PARTIAL, T6 UNMET; unsigned - developer signs at gate); re-ran scripts/report.py (REPORT.md regenerated, 0 measurements)
+- 2026-10-01 03:30 | deferred | Phase 0 gate sign-off and risk re-rating: developer
+- 2026-10-01 03:30 | commit | phase 0 draft
+- 2026-10-01 03:30 | merge | docs-phase0-draft -> main (local only)
+- 2026-10-01 03:31 | branch | p4-t4-kf-consistency from main
+- 2026-10-01 03:32 | write | tests: Kalman NEES Monte Carlo consistency (test_track.py); occupancy rotated-report conservatism (test_occupancy.py)
+- 2026-10-01 03:32 | note | KF consistency: mean NEES 3.90 over 300 runs (chi2 4 dof -> 4.00), 95th pct 8.60 (theory 9.49): F, Q and update verified
+- 2026-10-01 03:32 | commit | self-check tests
+- 2026-10-01 03:32 | merge | p4-t4-kf-consistency -> main (local only)
+- 2026-10-01 03:32 | branch | p4-t6-turning-check from main
+- 2026-10-01 03:34 | write | test: underbody footprint motion equals frames.transform_points on turning paths (hardest left/right, mid and end of horizon)
+- 2026-10-01 03:34 | commit | turning-path check
+- 2026-10-01 03:34 | merge | p4-t6-turning-check -> main (local only)
+- 2026-10-01 03:34 | branch | p4-t2-vio from main
+- 2026-10-01 03:36 | write | src/vscs/perception/vio.py (gyro up-axis self-calibration from turns, trapezoid yaw integration, fusion with VO), configs/perception.yaml egomotion.vio, tests/unit/test_vio.py
+- 2026-10-01 03:36 | note | VIO synthetic: unknown phone mounting (70 deg tilt) axis recovered < 3 deg; 1 s VO dropout during a turn reversal: fused 0.04 deg / 1.3 cm vs coasting 68.6 cm; no-dropout cost 0.04 cm. Not yet wired into perceive.py (needs IMU-video sync wiring)
+- 2026-10-01 03:36 | commit | P4-T2 gyro fusion
+- 2026-10-01 03:36 | merge | p4-t2-vio -> main (local only)
+- 2026-10-01 03:37 | branch | p4-perceive-imu from main
+- 2026-10-01 03:38 | write | perceive.py --imu/--imu-offset-ms (gyro fused with VO; refuses without an explicit sync offset; validated before any run folder is written); test; CLAUDE.md §12
+- 2026-10-01 03:38 | note | test caught: a refused run left an empty run folder (validation was after make_run_dir) - moved arg checks first
+- 2026-10-01 03:38 | commit | perceive IMU wiring
+- 2026-10-01 03:39 | merge | p4-perceive-imu -> main (local only)
+- 2026-10-01 03:39 | branch | p3-risk-cli from main
+- 2026-10-01 03:42 | write | src/vscs/risk/drive.py (ego states from poses, obstacle/component shapes, assess_drive), scripts/risk.py (VSCS or --baseline; stops clearly until sweep.py exists), perceive.py writes ego.jsonl, tests; CLAUDE.md §12
+- 2026-10-01 03:42 | commit | risk CLI
+- 2026-10-01 03:42 | merge | p3-risk-cli -> main (local only)
+- 2026-10-01 03:42 | branch | p5-t2-evaluate-cli from main
+- 2026-10-01 03:44 | write | src/vscs/eval/evaluate.py (score_system VSCS vs baseline; R-09 guard_split + mark_test_split_used), scripts/evaluate.py (--split dev|test, --final once, --eval-config override), tests; CLAUDE.md §12 (all P0-P5 scripts now exist)
+- 2026-10-01 03:44 | note | verified: real configs/eval.yaml untouched by tests (test_split_used: false)
+- 2026-10-01 03:44 | commit | P5-T2 evaluate
+- 2026-10-01 03:44 | merge | p5-t2-evaluate-cli -> main (local only)
+- 2026-10-01 03:45 | write | devlog + STATUS checkpoint c
+- 2026-10-01 03:45 | commit | docs checkpoint c
+- 2026-10-01 03:45 | merge | docs-1001-c -> main (local only)
+- 2026-10-01 03:45 | branch | test-cli-chain from main
+- 2026-10-01 03:47 | write | tests/test_cli_chain.py: full per-drive CLI chain on a synthetic drive (frames -> perceive w/ real ground VO -> risk VSCS + baseline -> evaluate dev -> view + replay)
+- 2026-10-01 03:47 | note | CLI chain passes in ~12 s: VO recovers the 2.4 m reverse within 5 cm; VSCS attribution 1.0 with >1 s lead; baseline attribution n/a
+- 2026-10-01 03:47 | commit | CLI chain integration test
+- 2026-10-01 03:47 | merge | test-cli-chain -> main (local only)
+- 2026-10-01 03:49 | note | p6-stream-scaffold brought up to date with main (805 passed on the branch); still unmerged
+- 2026-10-01 03:50 | write | docs/runbook.md: capture day -> evaluation, every command checked against --help; two chain gaps marked (P1-T6 vehicle frame needs scale.py; P2-T3/T5 fusion CLI needs fusion3d.py); warns that masks for fusion must be computed on the dense workspace's undistorted images
+- 2026-10-01 03:50 | commit | runbook
+- 2026-10-01 03:50 | merge | docs-runbook -> main (local only)
+- 2026-10-01 04:04 | branch | p2-t3-fuse-cli from main
+- 2026-10-01 04:04 | write | src/vscs/seg/fuse_inputs.py, scripts/fuse.py, tests/unit/test_fuse_inputs.py: fusion plumbing around the developer's fusion3d (exit 3 until it exists); no fusion algorithm written
+- 2026-10-01 04:04 | write | recon/dense.py: model_converter step -> dense/sparse_txt; 20_seg.ipynb now masks the undistorted images; seg.yaml fusion3d.views_per_batch: 16 (memory only)
+- 2026-10-01 04:04 | test | 793 passed, 1 skipped; ruff clean
+- 2026-10-01 04:04 | commit | P2-T3 fusion plumbing
+- 2026-10-01 04:04 | merge | p2-t3-fuse-cli -> main (local only)
+- 2026-10-01 04:11 | branch | p1-t6-scale-cli from main
+- 2026-10-01 04:11 | write | src/vscs/recon/metric.py, scripts/scale.py, tests/unit/test_metric_frame.py: P1-T6 plumbing around the developer's scale.py (exit 3 until it exists); writes sfm_to_veh.json for fuse.py
+- 2026-10-01 04:11 | write | configs/recon.yaml vehicle_frame.body_select (PROPOSED, flagged for review on the first real scan)
+- 2026-10-01 04:11 | test | 802 passed, 1 skipped; ruff clean
+- 2026-10-01 04:11 | commit | P1-T6 plumbing
+- 2026-10-01 04:11 | merge | p1-t6-scale-cli -> main (local only)
+- 2026-10-01 04:13 | note | p6-stream-scaffold refreshed with main; still unmerged
+- 2026-10-01 04:13 | write | docs/STATUS.md checkpoint (802 passed; fuse/scale plumbing; three new questions for the developer)
+- 2026-10-01 04:16 | branch | p2-t4-score-labels from main
+- 2026-10-01 04:16 | write | src/vscs/eval/labels3d.py, scripts/score_labels.py, tests/unit/test_labels3d.py; eval.yaml labels3d.match_tolerance_m: 0.001; fuse.py writes points_veh.ply for hand-labelling
+- 2026-10-01 04:16 | test | 814 passed, 1 skipped; ruff clean
+- 2026-10-01 04:16 | commit | label scoring
+- 2026-10-01 04:16 | merge | p2-t4-score-labels -> main (local only)
+- 2026-10-01 04:20 | branch | metrics-producers from main
+- 2026-10-01 04:20 | write | scripts/calibrate.py appends reprojection_error_px itself (run folder + calibration_result.json); scripts/evaluate.py appends component_flagged_frac (P3-T6) on dev; tests/unit/test_metric_producers.py
+- 2026-10-01 04:20 | test | 819 passed, 1 skipped; ruff clean
+- 2026-10-01 04:20 | commit | metric producers
+- 2026-10-01 04:20 | merge | metrics-producers -> main (local only)
+- 2026-10-01 04:24 | branch | r09-pass-split-guard from main
+- 2026-10-01 04:24 | write | eval/evaluate.py check_pass_split + scripts/evaluate.py refuses passes outside the requested split (R-09); tests declare their splits; runbook note
+- 2026-10-01 04:24 | test | 820 passed, 1 skipped; ruff clean
+- 2026-10-01 04:24 | commit | R-09 pass split guard
+- 2026-10-01 04:24 | merge | r09-pass-split-guard -> main (local only)
+- 2026-10-01 04:29 | branch | adr-0012-lot-truth from main
+- 2026-10-01 04:29 | write | docs/decisions/0012-lot-ground-truth-van-pose-proposed.md (PROPOSED: checklist change is the developer's decision; checklist NOT edited)
+- 2026-10-01 04:29 | write | src/vscs/eval/lot_truth.py, scripts/score_perception.py (P3-T2 producer), tests/unit/test_lot_truth.py; eval.yaml lot_truth (PROPOSED); runbook, §12, STATUS
+- 2026-10-01 04:29 | test | 832 passed, 1 skipped; ruff clean
+- 2026-10-01 04:29 | commit | ADR 0012 + P3-T2 scorer
+- 2026-10-01 04:29 | merge | adr-0012-lot-truth -> main (local only; ADR stays proposed)
+- 2026-10-01 08:43 | branch | p4-t2-drift-producer from main
+- 2026-10-01 08:43 | write | eval/lot_truth.ego_drift + score_perception.py appends egomotion_drift_frac (P4-T2) from ADR 0012 start/end poses; eval.yaml lot_truth.min_drift_displacement_m: 1.0 (PROPOSED)
+- 2026-10-01 08:43 | test | 835 passed, 1 skipped; ruff clean
+- 2026-10-01 08:43 | commit | P4-T2 drift producer
+- 2026-10-01 08:43 | merge | p4-t2-drift-producer -> main (local only)
+- 2026-10-01 10:49 | decision | developer: ADR 0012 approved; missing depth = can't tell; body_select approved; wheelbase via segmented wheels or a narrowed gate, whichever is more accurate
+- 2026-10-01 10:49 | branch | adr-0012-accept from main
+- 2026-10-01 10:49 | write | ADR 0012 accepted (renamed, status), capture checklist: rear track on scan day + per-pass hub-mark poses; recon.yaml body_select approved; PROPOSED tags removed
+- 2026-10-01 10:50 | write | fuse_inputs: missing COLMAP depth -> NaN ("cannot tell", developer's decision)
+- 2026-10-01 11:06 | write | eval/dimensions.py, scripts/check_wheelbase.py, tests/unit/test_wheelbase.py, ADR 0013 (accepted); eval.yaml wheelbase block + wheelbase_error_m gate; scale.py points to it; runbook, §12, STATUS
+- 2026-10-01 11:06 | test | 842 passed, 1 skipped; ruff clean
+- 2026-10-01 11:06 | commit | wheelbase check + decisions applied
+- 2026-10-01 11:06 | merge | adr-0012-accept -> main (local only)
+- 2026-10-01 11:07 | write | p2-t3-fusion (developer's draft branch): contract docstring + red target test test_a_pixel_without_depth_cannot_tell (NaN and inf); fast-forwarded; 13 targets red on the stub only
+- 2026-10-01 11:22 | write | .gitignore: docs/private/ (developer request); private technical guide lives there, never committed
+- 2026-10-01 11:22 | merge | docs-private-ignore -> main (local only)
+- 2026-10-01 11:29 | write | docs/private/TECHNICAL_GUIDE.md (gitignored, never committed): ~10.9k-word technical guide, every component, from code/branches/ADRs
+- 2026-10-01 11:36 | decision | developer approved addressing: own limits (depth producer, straight/curve drift gating, slow-test check), third hub mark, half-voxel inset prototype, ADR 0010
+- 2026-10-01 11:36 | write | P4-T1 depth_error producer + straight-only P4-T2 drift gating (score_perception, lot_truth, eval.yaml lot_truth depth buckets), ADR 0012 amendment, checklist note, runbook; pytest --durations: slowest test 38 s, the 14-min run was laptop load
+- 2026-10-01 11:37 | write | third (front-left) hub mark: HubMarks.front_left_hub_m + LotTruth.wheelbase_m, swap/heading check in veh_pose_in_lot, eval.yaml front_mark_tolerance_m 0.05, checklist + ADR 0012 amendment (approved)
+- 2026-10-01 11:40 | write | decompose.surface voxel_centres prototype (half-voxel inset of the voxel surface; sheets keep faces); model.yaml surface: voxel_faces (default unchanged), inset_min_depth_voxels 2.0; 5 tests; fixture: faces +1..2 cm per side, centres 0 +/-1 cm
+- 2026-10-01 11:41 | write | CLAUDE.md §0 Limits policy: limits_policy: exhaust-first (developer instruction)
+- 2026-10-01 11:56 | write | ADR 0010 accepted+implemented: ComponentRisk.t_closest_s, SCHEMA_VERSION 2 (v1 streams load; None = distance-only), alerts near-miss 'close and soon', aggregate passthrough, oracle reports it; pinned e2e test flipped (critical now at 1.6 s, not 0.2 s); 860 passed
+- 2026-10-01 11:57 | write | p3-t4-sweep (developer's draft branch): SweepResult.t_closest_s contract + 3 red target tests; fast-forwarded
+- 2026-10-01 11:57 | merge | limits-drift-depth, limits-third-hub-mark, limits-voxel-inset, adr-0010-near-miss-timing -> main (local only)
+- 2026-10-01 11:57 | write | STATUS + devlog: limits session
+- 2026-10-01 12:20 | decision | developer: use the most accurate collision surface -> measured 4 options; voxel_centres @ 2 cm chosen (ADR 0014); 1 cm fails at realistic density; details in the private guide
+- 2026-10-01 12:20 | merge | p2-t6-surface-voxel-centres -> main (local only)
+- 2026-10-01 12:46 | push | main -> origin (64ae48b..87bf565, 203 commits) on the developer's instruction, after checks: no data/.env/private files, no files >1 MB, no real secrets (one fake test key), no trailers, single author

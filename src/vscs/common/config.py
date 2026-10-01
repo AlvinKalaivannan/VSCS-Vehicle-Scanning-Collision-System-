@@ -35,6 +35,7 @@ KNOWN_CONFIGS = (
     "risk",
     "eval",
     "datasets",
+    "ui",
 )
 
 

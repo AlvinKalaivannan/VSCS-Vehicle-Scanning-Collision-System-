@@ -37,6 +37,8 @@ class ClearanceLike(Protocol):
     obstacle_id: int | None
     min_distance_m: float
     ttc_s: float | None
+    # Optional (ADR 0010): when the minimum clearance happens. Read with getattr, so a
+    # sweep that does not report it still works (near misses then grade by distance alone).
 
 
 def severity_for(component: str, obstacle_kind: str | None, severity_cfg: dict[str, Any]) -> float:
@@ -98,6 +100,7 @@ def component_risks(
                 component=c.component,
                 min_distance_m=float(c.min_distance_m),
                 ttc_s=c.ttc_s,
+                t_closest_s=getattr(c, "t_closest_s", None),
                 p_contact=p,
                 severity=severity,
                 risk=p * severity * sf,

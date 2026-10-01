@@ -38,6 +38,18 @@ voxelization. The bias is conservative (more warnings, not fewer), but it is ~1 
 margin nobody asked for, so it is reported in the P2-T6 log. ``voxel_m: 0.01`` halves it
 at roughly 8x the compute. That trade-off is the developer's call.
 
+**The correction: ``decompose.surface: voxel_centres``** (the default since ADR 0014;
+``voxel_faces`` is the behaviour above). The grid is offset so that flat faces' points
+sit on voxel *centres*;
+the true surface is therefore half a voxel inside the boundary faces. ``boundary_mesh(...,
+inset=True)`` moves every boundary vertex half a voxel toward the solid on each axis, by
+the sign of the vote of the eight voxels around it (occupied ones on the + side count +1,
+on the - side -1). For an orthogonal voxel surface that is an exact inward offset of every
+face, with no seams between later convex parts (insetting each convex part instead would
+open a one-voxel groove at every cut). The reference volume is then the inset surface's
+volume. A component with no voxel deeper than ``inset_min_depth_voxels`` (a scanned
+*sheet*) would collapse, so it keeps the face surface and says so.
+
 Engines (``decompose.engine``) follow the §8.2 ladder: ``coacd`` (primary), ``vhacd``
 (fallback 1, not available as a pip wheel here, see the error it raises), ``obb`` (fallback 2:
 one oriented bounding box). **This module never switches engine on its own.** A component
@@ -93,6 +105,7 @@ class DecomposedComponent:
     reference_volume: float
     max_error: float
     point_spacing_m: float = float("nan")
+    surface: str = "voxel_faces"  # or "voxel_centres" (the half-voxel inset prototype)
 
     @property
     def parts_volume(self) -> float:
@@ -152,8 +165,12 @@ def solidify(points: npt.ArrayLike, voxel_m: float, close_iterations: int) -> Vo
     return VoxelSolid(occ, origin, float(voxel_m))
 
 
-def boundary_mesh(solid: VoxelSolid) -> trimesh.Trimesh:
-    """Step 4: the watertight surface of the occupied voxels, in the veh frame."""
+def boundary_mesh(solid: VoxelSolid, *, inset: bool = False) -> trimesh.Trimesh:
+    """Step 4: the watertight surface of the occupied voxels, in the veh frame.
+
+    ``inset=True`` puts it through the outermost voxel centres instead of their faces
+    (module docstring, "The correction"; ADR 0014).
+    """
     occ = np.pad(solid.occupancy, 1)
     cells = np.argwhere(occ)
     verts: list[npt.NDArray[np.int64]] = []
@@ -165,13 +182,25 @@ def boundary_mesh(solid: VoxelSolid) -> trimesh.Trimesh:
             verts.append((exposed[:, None, :] + np.asarray(quad)[None, :, :]).reshape(-1, 3))
     if not verts:
         raise ValueError("solid is empty")
-    v = np.vstack(verts).astype(np.float64)
+    corners = np.vstack(verts)
+    v = corners.astype(np.float64)
+    if inset:
+        # Corner g touches voxels g + d, d in {-1, 0}^3. A voxel with d = 0 on an axis lies on
+        # that axis's + side of the corner, d = -1 on its - side.
+        vote = np.zeros(v.shape)
+        for d in np.array(np.meshgrid([-1, 0], [-1, 0], [-1, 0], indexing="ij")).reshape(3, -1).T:
+            g = corners + d
+            vote += occ[g[:, 0], g[:, 1], g[:, 2]][:, None] * np.where(d == 0, 1.0, -1.0)
+        v += 0.5 * np.sign(vote)
     n_quads = len(v) // 4
     b = np.arange(n_quads)[:, None] * 4
     faces = np.vstack([np.hstack([b, b + 1, b + 2]), np.hstack([b, b + 2, b + 3])])
     # -1 undoes the padding; the grid index becomes a veh-frame position.
     mesh = trimesh.Trimesh((v - 1.0) * solid.voxel_m + solid.origin, faces, process=False)
     mesh.merge_vertices()
+    if inset:
+        mesh.update_faces(mesh.nondegenerate_faces())  # thin flanges collapse to zero area
+        mesh.remove_unreferenced_vertices()
     return mesh
 
 
@@ -212,12 +241,27 @@ def decompose_component(
             voxel_m * 100,
         )
     solid = solidify(points, voxel_m, close_iterations)
+    surface = str(decompose_cfg.get("surface", "voxel_faces"))
+    if surface not in ("voxel_faces", "voxel_centres"):
+        raise ValueError(f"unknown decompose.surface {surface!r}")
+    if surface == "voxel_centres":
+        depth = float(ndimage.distance_transform_edt(solid.occupancy).max())
+        if depth < float(decompose_cfg["inset_min_depth_voxels"]):
+            logger.warning(
+                "%s: no voxel deeper than %.1f voxels (a scanned sheet); the inset would "
+                "collapse it, so the face surface is kept",
+                name,
+                depth,
+            )
+            surface = "voxel_faces"
+    mesh = boundary_mesh(solid, inset=surface == "voxel_centres")
+    reference = solid.volume if surface == "voxel_faces" else float(mesh.volume)
     engine = str(decompose_cfg["engine"])
     if engine == "coacd":
-        parts = _coacd_parts(boundary_mesh(solid), decompose_cfg)
+        parts = _coacd_parts(mesh, decompose_cfg)
     elif engine == "obb":
         # §8.2 fallback 2: one oriented box around the solid's surface.
-        parts = [boundary_mesh(solid).bounding_box_oriented]
+        parts = [mesh.bounding_box_oriented]
     elif engine == "vhacd":
         raise NotImplementedError(
             "V-HACD (§8.2 fallback 1) has no maintained pip wheel for this environment. "
@@ -230,7 +274,8 @@ def decompose_component(
         name=name,
         engine=engine,
         parts=parts,
-        reference_volume=solid.volume,
+        reference_volume=reference,
         max_error=float(decompose_cfg["max_volume_error_fraction"]),
         point_spacing_m=spacing,
+        surface=surface,
     )

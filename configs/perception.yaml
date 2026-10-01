@@ -9,6 +9,13 @@ depth:
   # R-06 detection signal: > 10 cm at 3 m. Ladder trigger: > 25 cm at 3 m.
   report_error_at_ranges_m: [1.0, 3.0, 5.0, 10.0]
   max_range_m: 12.0
+  # Ground-plane v0 (src/vscs/perception/depth.py): assumed 1-sigma vertical pixel noise of
+  # a detected box's bottom edge. Propagated to pos_sigma_m, which grows ~ range^2.
+  pixel_sigma_px: 1.0
+  # Mask-based ground contact (depth.obstacle_from_mask): the base is read from the mask's
+  # lowest pixels, within this many rows of its bottom-most pixel. A box cannot locate the
+  # base of a slanted thin object (R-07); a mask can.
+  mask_base_rows_px: 3
 
 occupancy:
   # Height map in the veh frame, persisted in world so obstacles survive leaving the
@@ -28,6 +35,9 @@ detect:
   # Must stay Apache/MIT licensed. Ultralytics YOLO is AGPL and is not an option
   # without the developer accepting open-sourcing obligations (CLAUDE.md §10).
   engine: "rtdetr"
+  # RT-DETR (Zhao et al., "DETRs Beat YOLOs on Real-time Object Detection", CVPR 2024); code and
+  # weights Apache-2.0 (verified 2026-10-01; ADR 0011). COCO-trained: class names are COCO's.
+  model_id: "PekingU/rtdetr_r18vd"
   score_threshold: 0.40
   classes: ["person", "bicycle", "car", "truck", "bus", "motorcycle"]
 
@@ -39,6 +49,31 @@ track:
     # Constant-velocity model; process noise is per-axis acceleration std.
     accel_std_mps2: 1.0
     measurement_std_m: 0.15
+  # Association (src/vscs/perception/track.py), after ByteTrack's two-stage idea
+  # (Zhang et al., ECCV 2022) applied on the ground plane rather than in image space.
+  high_score: 0.50          # detections at or above this are matched first and may start tracks
+  low_score: 0.10           # between low and high: may keep an existing track alive, never start one
+  gate_chi2: 9.21           # Mahalanobis gate, 99% for 2 degrees of freedom
+  # Before an unmatched confident detection may start a NEW track, it is offered to the
+  # tracks that went unmatched this frame under this looser gate (99.99%, 2 dof). A 99%
+  # gate rejects ~1% of genuine detections; without this stage each such miss spawned a
+  # duplicate track (found on the crossing-walkers test, 2026-10-01).
+  gate_recover_chi2: 18.42
+
+pipeline:
+  # Per-frame perception glue (src/vscs/perception/pipeline.py). Detector classes map to
+  # §4.2 obstacle kinds; static kinds go to the persistent height map (P4-T3), dynamic kinds
+  # to the tracker (P4-T4). Unlisted classes are treated as static_geom (cones, poles, boxes).
+  class_to_kind:
+    person: "person"
+    bicycle: "cyclist"
+    motorcycle: "cyclist"
+    car: "vehicle"
+    truck: "vehicle"
+    bus: "vehicle"
+  dynamic_kinds: ["person", "vehicle", "cyclist"]
+  # Static obstacles are written into the height map as a filled footprint at this spacing.
+  fill_step_m: 0.025
 
 egomotion:
   method: "visual_inertial"   # visual_inertial | visual_only | imu_plus_gt (§8.2)
@@ -46,6 +81,21 @@ egomotion:
   # Ladder trigger: > 10%.
   max_drift_fraction: 0.05
   keyframe_translation_m: 0.10
+  # Ground-plane visual odometry (src/vscs/perception/egomotion.py): ORB features on the
+  # road surface, put on the ground (known camera height = metric scale), aligned by a
+  # RANSAC 2D rigid fit. The visual half of visual-inertial; the IMU half joins at P4-T2.
+  vo:
+    orb_features: 2000
+    ratio_test: 0.75            # Lowe's ratio test on Hamming matches
+    ransac_iterations: 400
+    ransac_threshold_m: 0.03    # inlier if the aligned ground points agree within this
+    min_inliers: 25             # fewer than this: report the frame as lost, keep the old pose
+  # Gyro fusion (src/vscs/perception/vio.py): the phone's mounting is unknown, so the van's
+  # vertical axis in gyro coordinates is estimated from turns (gyro vector ~ yaw rate x axis).
+  vio:
+    min_turn_rate_radps: 0.05   # only frames turning at least this fast calibrate the axis
+    min_calibration_frames: 20
+    vo_yaw_weight: 0.7          # when VO is good: yaw = w * VO + (1 - w) * gyro
   seed: 20260924
 
 uncertainty:

@@ -59,11 +59,20 @@ def _meets(
     The sweep's ``min_distance_m`` is the minimum over the whole horizon, so it is 0 for
     every predicted contact however distant - comparing it against the distance thresholds
     would make every predicted contact "critical".
+
+    ADR 0010: the same is true of a near miss's *timing*. Its closest approach may be most
+    of the horizon away, so it must also be *soon*: ``t_closest_s`` below the level's TTC
+    threshold. Same ladders, no new numbers. A schema-1 risk without ``t_closest_s`` is
+    graded by distance alone, as before.
     """
     if r.ttc_s is not None:
         hit = r.ttc_s < float(thresholds["ttc_s_below"]) + ttc_offset_s
     else:
-        hit = r.min_distance_m < float(thresholds["min_distance_m_below"]) + distance_offset_m
+        close = r.min_distance_m < float(thresholds["min_distance_m_below"]) + distance_offset_m
+        soon = (
+            r.t_closest_s is None or r.t_closest_s < float(thresholds["ttc_s_below"]) + ttc_offset_s
+        )
+        hit = close and soon
     return hit or (use_p and r.p_contact > float(thresholds["p_contact_above"]))
 
 

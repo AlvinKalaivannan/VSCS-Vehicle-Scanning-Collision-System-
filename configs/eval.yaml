@@ -23,6 +23,7 @@ thresholds:
   frames_registered_frac:       { task: P1-T5, limit: 0.90,  direction: above }
   sfm_reprojection_error_px:    { task: P1-T5, limit: 1.5,   direction: below }
   scale_error_m:                { task: P1-T6, limit: 0.02,  direction: below }
+  wheelbase_error_m:            { task: P1-T6, limit: 0.02,  direction: below }  # ADR 0013
   component_iou_mean:           { task: P2-T3, limit: 0.70,  direction: above }
   labeled_points_count:         { task: P2-T4, limit: 2000,  direction: above }
   hull_volume_error_frac:       { task: P2-T6, limit: 0.15,  direction: below }
@@ -45,6 +46,59 @@ report_metrics:
   - recall_low_curb
   - depth_error_by_range
   - egomotion_drift_frac
+
+# How the risk metrics above are computed (src/vscs/eval/metrics.py).
+labels3d:
+  # scripts/score_labels.py (P2-T3/T4/T5). Gold points are exported from the fuse run's own
+  # points_veh.ply, so each has an exact twin in the cloud; this only absorbs the ASCII
+  # export's rounding. It must stay far below the point spacing (~1 cm dense) so a gold
+  # point can never be matched to a neighbour.
+  match_tolerance_m: 0.001
+
+wheelbase:
+  # scripts/check_wheelbase.py (P1-T6's wheelbase, ADR 0013): hub x = middle of each wheel's
+  # x-extent, trimmed by this percentage at each end against stray labels.
+  front_wheels: ["wheel_front_left", "wheel_front_right"]
+  rear_wheels: ["wheel_rear_left", "wheel_rear_right"]
+  trim_percentile: 2.0
+
+lot_truth:
+  # data/raw/lot_*/gt.yaml and scripts/score_perception.py (P3-T2, P4-T2). ADR 0012 (accepted).
+  # The two hub marks must be the scan-day rear track apart, to within this.
+  track_tolerance_m: 0.03
+  # The front-left hub mark must land within this of (wheelbase, track/2) in veh. Tape
+  # error (~1 cm per mark) over a ~3 m lever arm stays well inside; a 10 cm misread across
+  # the hub line (~17 cm at the front) or a left/right swap does not.
+  front_mark_tolerance_m: 0.05
+  # P3-T2 is scored while the van is still parked at the start of a pass: skip the start
+  # sync shake/clap, then compare every frame in the window with the measured layout.
+  start_skip_s: 1.5
+  start_window_s: 1.0
+  # A perceived obstacle counts as a detection of a measured one if its centre is within
+  # this distance; the error is then the distance itself (the gate is 0.25 m).
+  match_gate_m: 1.0
+  # P3-T2's "at <= 3 m": horizontal range from the camera mount to the obstacle.
+  max_range_m: 3.0
+  # Detected in fewer than this fraction of the window's frames = missed (R-07), which
+  # fails P3-T2 rather than leaving the obstacle out of the error.
+  min_detected_frac: 0.5
+  # Kinds with a well-defined footprint centre. A kerb is a line; it is scored by P4-T6.
+  score_kinds: ["cone", "pole", "box"]
+  # P4-T2 drift is endpoint error / displacement (start to end hub-mark poses). Passes that
+  # move less than this are left out: a small denominator turns centimetres into percent.
+  min_drift_displacement_m: 1.0
+  # P4-T1 depth error by range bucket (perception.yaml depth.report_error_at_ranges_m). An
+  # obstacle counts toward bucket b if its true range is within this fraction of b.
+  depth_buckets_m: [1.0, 3.0, 5.0, 10.0]
+  depth_bucket_rel_tol: 0.25
+
+risk_metrics:
+  # The alert level that counts as "flagged" / "warned" for attribution and lead time.
+  flag_level: "warning"
+  # An alert episode is a FALSE alarm if no true close approach (ground-truth clearance
+  # below event_distance_m) begins within this long after the episode starts.
+  false_alarm_horizon_s: 3.0
+  event_distance_m: 0.25
 
 baseline:
   # Identical pipeline, vehicle modelled as ONE oriented bounding box.

@@ -1,0 +1,32 @@
+# Developer view and driver replay presentation (P3-T1, P5-T4).
+schema_version: 1
+
+view:
+  # RGBA. Alert colours follow the usual traffic-light order; "none" is a neutral grey so
+  # the vehicle reads as unflagged rather than "safe" (VSCS is advisory, §1).
+  alert_colours:
+    none: [170, 170, 170, 255]
+    caution: [240, 200, 40, 255]
+    warning: [245, 130, 30, 255]
+    critical: [220, 40, 40, 255]
+  vehicle_colour: [170, 170, 170, 255]
+  obstacle_colour: [80, 160, 230, 255]
+  path_colour: [120, 220, 120, 255]
+
+driver_replay:
+  # Top-down silhouette (P5-T4). Vehicle frame: forward is UP the image, left is LEFT.
+  image_px: [480, 640]          # width, height
+  px_per_m: 60
+  # Where the veh origin (ground below the rear axle) sits in the image, as a fraction
+  # of width and height. Rear-biased: this is a reversing view.
+  origin_frac: [0.5, 0.45]
+  background: [24, 24, 28]
+  banner: "ADVISORY RESEARCH PROTOTYPE - NOT A SAFETY DEVICE"
+  banner_colour: [255, 255, 255]
+  # Audio: beeps speed up with the alert level; critical is continuous.
+  audio:
+    sample_rate_hz: 16000
+    tone_hz: 880
+    beeps_per_s: {none: 0, caution: 2, warning: 4, critical: -1}   # -1 = continuous
+    duty: 0.5
+    amplitude: 0.4

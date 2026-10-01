@@ -72,6 +72,21 @@ vehicle_frame:
   # Ignore this percentage of points at each extreme when taking length and height,
   # so a few stray reconstruction points cannot stretch the vehicle.
   trim_percentile: 0.5
+  # Which sparse points are the van (scripts/scale.py, recon/metric.py step 4). Approved by
+  # the developer 2026-10-01; still check body_points.ply on the first real scan.
+  # Kept: points between these heights above the fitted ground, inside the camera loop's
+  # footprint (the walk-round circles the van), in single-linkage clusters (points closer
+  # than cluster_eps_m are linked) of at least min_cluster_points, and farther than
+  # marker_exclusion_m from every triangulated marker centre. The exclusion removes the
+  # boards, ID 3's above all: it stands at the front bumper and would otherwise join the
+  # van's cluster and lengthen it. 0.25 m covers a clipboard-sized board around a 150 mm
+  # marker; a larger board needs a larger value.
+  body_select:
+    marker_exclusion_m: 0.25
+    min_height_m: 0.05        # above ground_plane.distance_threshold_m, so no ground
+    max_height_m: 4.0         # a van with a roof rack is under 3 m
+    cluster_eps_m: 0.30       # sparse SfM leaves gaps on glossy panels (R-01)
+    min_cluster_points: 200
 
 dense:
   engine: "colmap_patch_match"   # colmap_patch_match | openmvs | splat_points (§8.2)

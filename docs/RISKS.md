@@ -35,6 +35,14 @@ evidence and the developer decides, and the decision is recorded as an ADR (§0,
 | R-14 | Scope creep / time crunch with coursework | high | med | Health AT RISK two sessions in a row | Cut order in §6; Phase 3 MVP protected | **Cut order**: P5-T5 user test → P4-T4 dynamic tracking → P4-T7 probabilities. Never cut P5-T1/T2 | OPEN |
 | R-15 | Articulated joint states unknown during drives | med | low | Wrong geometry used (door open vs closed) | Manual joint-state input per run in v0.1. **The sliding door is now two scanned geometries rather than a joint (ADR 0004)**, so the hand-entered state selects a measured model instead of driving a kinematic approximation | — (auto-detection from open/closed scans is a stretch goal) | OPEN |
 | R-16 | Schema / convention drift between modules | med | med | Integration test fails; frames mismatched | §4 contracts, `SCHEMA_VERSION`, `extra="forbid"` on every schema, smoke test on every merge | — (enforced by tests) | OPEN |
+| R-17 | Student learns the teacher's mistakes (pseudo-label errors baked in) | *unrated* | *unrated* | Student and teacher fail on the same regions | Gold set hand-corrected and never derived from pseudo-labels; review the worst components | **Trained segmenter**: full fine-tune → freeze backbone → drop the student | OPEN |
+| R-18 | Data leakage between near-identical adjacent frames | *unrated* | *unrated* | Val score much higher than test score | Split by contiguous segments or scan loops only (P4-T8) | — (protocol control) | OPEN |
+| R-19 | Overfitting to one van | *unrated* | *unrated* | Big drop on the second-vehicle gold set | Augmentation (flip only with left/right labels swapped), early stopping; report the drop as a finding | **Trained segmenter** ladder, as R-17 | OPEN |
+
+R-17 to R-19 were added to CLAUDE.md on 2026-09-26 (trained segmenter) and seeded here on
+2026-10-01 **without ratings**: per §8, likelihood and impact are rated with the developer.
+Proposed when they were added, for the developer to accept or change: R-17 med/med,
+R-18 med/high, R-19 high/low.
 
 ## Ratings rationale (the non-obvious ones)
 
@@ -73,3 +81,4 @@ Not triggers, but the same failure mode caught early:
 |---|---|---|---|
 | 2026-09-24 | R-02 | The generated marker sheet's cut-guide rectangle was detected *instead of* the marker border, reporting the side 13% oversize. Unfixed, this would have scaled the entire van model by 13% and surfaced only as an unexplained P1-T6 failure. | A round-trip test that measured the detected square rather than only checking the decoded id |
 | 2026-09-24 | R-12 | `pip install` stalled >12 min backtracking through `open3d` wheels | Watching an install that should have taken one minute |
+| 2026-10-01 | R-07 | Box-only perception v0 placed a 6 cm pole a median 0.35 m off and 0.65 m wide over a fixture drive (a vertical pole projects slanted under a pitched camera). Mask-based placement (`obstacle_from_mask`) brings it to 0.05 m / 0.10 m. *Correction: an early 'critical' in that drive, first blamed on this, actually comes from near-miss grading - see proposed ADR 0010.* | The end-to-end fixture drive tests |

@@ -41,3 +41,6 @@ desktop.ini
 
 # --- Rerun recordings (can be large, may contain footage) ---
 *.rrd
+
+# --- Private notes: never committed (developer request 2026-10-01) ---
+docs/private/

@@ -144,3 +144,60 @@ def test_decomposition_is_deterministic(l_shape, l_coacd):
     b = decompose_component("l_part", pts, CFG)
     assert len(a.parts) == len(b.parts)
     assert a.parts_volume == pytest.approx(b.parts_volume, rel=1e-9)
+
+
+# --------------------------------------------------------------------------- #
+# Prototype: surface through the outermost voxel centres (half-voxel inset)    #
+# --------------------------------------------------------------------------- #
+def _wheel():
+    """The fixture rear-left wheel: 0.70 x 0.20 x 0.70 m, a whole number of 2 cm voxels."""
+    box = SCENE.component("wheel_rear_left")
+    mesh = trimesh.creation.box(extents=box.extent)
+    mesh.apply_translation(box.center)
+    return box, _surface_points(mesh)
+
+
+def test_default_surface_is_the_voxel_centres_adr_0014():
+    assert CFG["surface"] == "voxel_centres"
+
+
+# The collapsed slab below has zero volume, and trimesh divides by it for a centre of mass.
+@pytest.mark.filterwarnings("ignore:invalid value encountered in divide:RuntimeWarning")
+def test_inset_mesh_is_half_a_voxel_inside_on_every_side():
+    occ = np.zeros((5, 4, 3), dtype=bool)
+    occ[1:4, 1:3, 1:2] = True  # a 3 x 2 x 1 block of 0.1 m voxels
+    solid = VoxelSolid(occ, np.zeros(3), 0.1)
+    faces, centres = boundary_mesh(solid), boundary_mesh(solid, inset=True)
+    np.testing.assert_allclose(centres.bounds[0] - faces.bounds[0], [0.05, 0.05, 0.05])
+    np.testing.assert_allclose(faces.bounds[1] - centres.bounds[1], [0.05, 0.05, 0.05])
+    # A 1-voxel-thick slab collapses to zero thickness in z: why sheets keep their faces.
+    assert centres.volume == pytest.approx(0.0, abs=1e-9)
+
+
+def test_inset_removes_the_voxel_bias_on_the_fixture_wheel():
+    """Measured 2026-10-01: faces +16.4% by volume and 1 cm out on every side; centres 0."""
+    box, pts = _wheel()
+    true_v = float(np.prod(box.extent))
+    faces = decompose_component("wheel_rear_left", pts, {**CFG, "surface": "voxel_faces"})
+    centres = decompose_component("wheel_rear_left", pts, {**CFG, "surface": "voxel_centres"})
+    assert faces.parts_volume / true_v - 1 > 0.15
+    assert centres.surface == "voxel_centres" and centres.passed
+    assert centres.parts_volume / true_v - 1 == pytest.approx(0.0, abs=0.02)
+    lo = np.min([q.bounds[0] for q in centres.parts], axis=0)
+    hi = np.max([q.bounds[1] for q in centres.parts], axis=0)
+    np.testing.assert_allclose(lo, box.center - box.extent / 2, atol=0.002)
+    np.testing.assert_allclose(hi, box.center + box.extent / 2, atol=0.002)
+
+
+def test_a_scanned_sheet_keeps_its_faces():
+    """Points on one plane voxelize to a 1-voxel sheet; insetting would erase it."""
+    rng = np.random.default_rng(3)
+    pts = np.column_stack([rng.uniform(0, 0.5, 6000), rng.uniform(0, 0.5, 6000), np.zeros(6000)])
+    res = decompose_component("sheet", pts, {**CFG, "surface": "voxel_centres", "engine": "obb"})
+    assert res.surface == "voxel_faces" and res.reference_volume > 0
+
+
+def test_unknown_surface_is_refused():
+    _, pts = _wheel()
+    with pytest.raises(ValueError, match="surface"):
+        decompose_component("w", pts, {**CFG, "surface": "marching_cubes"})
