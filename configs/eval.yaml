@@ -72,6 +72,9 @@ lot_truth:
   min_detected_frac: 0.5
   # Kinds with a well-defined footprint centre. A kerb is a line; it is scored by P4-T6.
   score_kinds: ["cone", "pole", "box"]
+  # P4-T2 drift is endpoint error / displacement (start to end hub-mark poses). Passes that
+  # move less than this are left out: a small denominator turns centimetres into percent.
+  min_drift_displacement_m: 1.0
 
 risk_metrics:
   # The alert level that counts as "flagged" / "warned" for attribution and lead time.

@@ -200,3 +200,7 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 04:29 | test | 832 passed, 1 skipped; ruff clean
 - 2026-10-01 04:29 | commit | ADR 0012 + P3-T2 scorer
 - 2026-10-01 04:29 | merge | adr-0012-lot-truth -> main (local only; ADR stays proposed)
+- 2026-10-01 08:43 | branch | p4-t2-drift-producer from main
+- 2026-10-01 08:43 | write | eval/lot_truth.ego_drift + score_perception.py appends egomotion_drift_frac (P4-T2) from ADR 0012 start/end poses; eval.yaml lot_truth.min_drift_displacement_m: 1.0 (PROPOSED)
+- 2026-10-01 08:43 | test | 835 passed, 1 skipped; ruff clean
+- 2026-10-01 08:43 | commit | P4-T2 drift producer

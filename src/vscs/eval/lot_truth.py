@@ -160,3 +160,35 @@ def cone_errors(
             "median_error_m": float(np.median(errs)) if errs else None,
         }
     return out
+
+
+def ego_drift(
+    T_world_veh_first: npt.ArrayLike,
+    T_world_veh_last: npt.ArrayLike,
+    start: tuple[FloatArray, FloatArray],
+    end: tuple[FloatArray, FloatArray],
+) -> dict[str, float]:
+    """Ego-motion error over one pass, from its start and end hub-mark poses (P4-T2).
+
+    ``start`` and ``end`` are ``(R_lot_veh, o)`` from :func:`veh_pose_in_lot`. The true
+    motion is the end origin seen from the start pose; the estimate is the same quantity
+    from the ego-motion's first and last poses, ``T_first^-1 @ T_last``. Drift is the
+    endpoint error over the true displacement. The displacement is never longer than the
+    path driven, so this overstates drift on curved passes - the cautious direction.
+    """
+    T0 = np.asarray(T_world_veh_first, dtype=np.float64).reshape(4, 4)
+    T1 = np.asarray(T_world_veh_last, dtype=np.float64).reshape(4, 4)
+    rel = np.linalg.inv(T0) @ T1
+    est_xy, est_yaw = rel[:2, 3], float(np.arctan2(rel[1, 0], rel[0, 0]))
+    (R_s, o_s), (R_e, o_e) = start, end
+    true_xy = lot_to_veh(o_e, R_s, o_s)[0]
+    R_rel = R_s.T @ R_e
+    true_yaw = float(np.arctan2(R_rel[1, 0], R_rel[0, 0]))
+    disp = float(np.linalg.norm(true_xy))
+    err = float(np.linalg.norm(est_xy - true_xy))
+    return {
+        "displacement_m": disp,
+        "endpoint_error_m": err,
+        "drift_frac": err / disp if disp > 0 else float("nan"),
+        "heading_error_deg": float(np.degrees(np.angle(np.exp(1j * (est_yaw - true_yaw))))),
+    }
