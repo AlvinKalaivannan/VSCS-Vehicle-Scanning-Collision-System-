@@ -132,17 +132,23 @@ def test_masks_place_the_pole_accurately_throughout_the_drive():
         assert ob.extent[1] < 0.15
 
 
-def test_near_miss_grading_makes_it_critical_early_with_masks_too_adr_0010():
-    """Pinned for ADR 0010 (proposed): with correct perception, the rear bumper's 0.30 m
-    near miss 2.2 s ahead still grades 'critical' now. Update this test if the developer
-    approves grading near misses by time of closest approach."""
+def test_a_near_miss_far_ahead_no_longer_grades_critical_adr_0010():
+    """ADR 0010 (accepted 2026-10-01). The rear bumper's 0.30 m near miss is 2.2 s ahead
+    at t = 0.2 s. Before, its distance alone made the frame 'critical' there, 2.2 s early.
+    Now a near miss must also be *soon*: the level follows the TTC ladder, like contacts."""
     frames = _drive(with_mask=True)
     f = frames[1]
     bumper = next(c for c in f.per_component if c.component == "rear_bumper")
-    assert (
-        bumper.ttc_s is None
-        and bumper.min_distance_m < RISK["alerts"]["levels"]["critical"]["min_distance_m_below"]
+    crit = RISK["alerts"]["levels"]["critical"]
+    assert bumper.ttc_s is None and bumper.min_distance_m < crit["min_distance_m_below"]
+    assert bumper.t_closest_s is not None and bumper.t_closest_s > 2.0  # the miss is far off
+    assert f.alert_level == "caution"  # was "critical" before ADR 0010
+    first_critical = next(fr for fr in frames if fr.alert_level == "critical")
+    corner = next(
+        c for c in first_critical.per_component if c.component == "rear_right_bumper_corner"
     )
-    assert f.alert_level == "critical"
+    # Critical arrives with the real contact under 1 s away (plus the 2-frame escalation).
+    assert corner.ttc_s is not None and corner.ttc_s < float(crit["ttc_s_below"])
     truth = Mx.PassTruth(component="rear_right_bumper_corner", t_event_ns=round(T_EVENT_S * S))
     assert Mx.attribution_correct(frames, truth, FLAG)  # still names the right corner
+    assert Mx.lead_time_s(frames, truth, FLAG) > 1.5  # warning still well before contact
