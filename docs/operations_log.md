@@ -44,3 +44,6 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:44 | commit | docs checkpoint
 - 2026-10-01 02:44 | merge | docs-1001 -> main (local only)
 - 2026-10-01 02:44 | note | streaming scaffolding (Phase 6 setup) is done on branch p6-stream-scaffold (from docs-streaming-merge + main), UNMERGED; its operations are logged in that branch's copy of this file
+- 2026-10-01 02:45 | branch | p6-stream-scaffold from docs-streaming-merge; merged main in (resolved CLAUDE.md §12 conflict: kept view.py line and both planned lists)
+- 2026-10-01 02:46 | write | src/vscs/stream/queues.py (DropOldestQueue), tests/unit/test_stream_queues.py (P6-T2 required backpressure tests)
+- 2026-10-01 02:46 | commit | P6-T2 queue (branch p6-stream-scaffold, unmerged)
