@@ -35,3 +35,7 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:42 | write | eval/metrics.py: attribution accuracy, lead time, TTC error, alert episodes, false alarms/min; configs/eval.yaml risk_metrics; tests
 - 2026-10-01 02:42 | commit | P5 eval risk metrics
 - 2026-10-01 02:42 | merge | p5-eval-risk-metrics -> main (local only)
+- 2026-10-01 02:42 | branch | p5-t1-baseline from main
+- 2026-10-01 02:44 | write | src/vscs/eval/baseline_bbox.py (single oriented box + baseline severity), tests/unit/test_baseline_bbox.py
+- 2026-10-01 02:44 | note | P5-T1 fixture finding: pole 0.40 m from sliding door reads 0.15 m to the single box (mirror protrusion 0.25 m); same engine, geometry only
+- 2026-10-01 02:44 | commit | P5-T1: single-box baseline
