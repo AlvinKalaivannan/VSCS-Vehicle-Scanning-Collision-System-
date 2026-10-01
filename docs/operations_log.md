@@ -50,3 +50,7 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:52 | deferred | R-17..R-19 likelihood/impact ratings: developer
 - 2026-10-01 02:52 | commit | risk register rows
 - 2026-10-01 02:52 | merge | risks-r17-r19 -> main (local only)
+- 2026-10-01 02:53 | branch | p4-t4-tracking from main
+- 2026-10-01 02:56 | write | src/vscs/perception/track.py (CV Kalman + 3-stage association after ByteTrack, Zhang et al. ECCV 2022 - idea only, no code/data), configs/perception.yaml track association keys, tests/unit/test_track.py
+- 2026-10-01 02:56 | note | P4-T4 finding: a 99% gate rejects ~1% of genuine detections; each miss spawned a duplicate track. Added recovery stage (99.99% gate) before track birth. Crossing walkers, 0.15 m noise, 200 seeds: 0.6 m 200/200 clean, 0.4 m 198/200, 0.3 m 187/200; zero duplicate tracks
+- 2026-10-01 02:56 | commit | P4-T4 tracking

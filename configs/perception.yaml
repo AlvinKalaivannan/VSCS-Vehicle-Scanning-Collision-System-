@@ -42,6 +42,16 @@ track:
     # Constant-velocity model; process noise is per-axis acceleration std.
     accel_std_mps2: 1.0
     measurement_std_m: 0.15
+  # Association (src/vscs/perception/track.py), after ByteTrack's two-stage idea
+  # (Zhang et al., ECCV 2022) applied on the ground plane rather than in image space.
+  high_score: 0.50          # detections at or above this are matched first and may start tracks
+  low_score: 0.10           # between low and high: may keep an existing track alive, never start one
+  gate_chi2: 9.21           # Mahalanobis gate, 99% for 2 degrees of freedom
+  # Before an unmatched confident detection may start a NEW track, it is offered to the
+  # tracks that went unmatched this frame under this looser gate (99.99%, 2 dof). A 99%
+  # gate rejects ~1% of genuine detections; without this stage each such miss spawned a
+  # duplicate track (found on the crossing-walkers test, 2026-10-01).
+  gate_recover_chi2: 18.42
 
 egomotion:
   method: "visual_inertial"   # visual_inertial | visual_only | imu_plus_gt (§8.2)
