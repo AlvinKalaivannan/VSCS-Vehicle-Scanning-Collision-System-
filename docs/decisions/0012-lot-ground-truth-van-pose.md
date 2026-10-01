@@ -77,6 +77,7 @@ passes:
     start: {rear_left_hub_m: [5.21, 0.86], rear_right_hub_m: [5.20, -0.86]}
     end:   {rear_left_hub_m: [4.02, 0.85], rear_right_hub_m: [4.01, -0.87]}
     designed_nearest: {component: rear_right_bumper_corner, obstacle: pole_1}
+    shape: straight           # straight | curve (amendment 2026-10-01): P4-T2 gates straight only
     notes: ""
 ```
 
@@ -109,3 +110,15 @@ The lot frame is right-handed and in metres, with z up and its origin at the cha
   producer.
 - `tests/unit/test_lot_truth.py` (with this ADR): the pose from two hub marks, the
   track-length check, and the P3-T2 scorer on a synthetic layout with known answers.
+
+## Amendment 2026-10-01 - pass shape, and P4-T1 depth
+
+- **`shape: straight | curve`** per pass. P4-T2's drift is endpoint error over
+  displacement, and on a curve the displacement is shorter than the path driven. So only
+  `straight` passes gate `egomotion_drift_frac`. Curved and untagged passes are reported
+  beside it, never hidden.
+- The same parked-start window now also gives **P4-T1 depth error by range bucket**: the
+  perceived minus true range from the camera, bucketed at 1/3/5/10 m (±25%).
+  `depth_error_m_at_3m` is gated at 0.25 m; the other buckets are reported.
+- Evidence: `tests/unit/test_lot_truth.py` (curved pass reported but not gated, range
+  error and bucket known answers, CLI depth metric).

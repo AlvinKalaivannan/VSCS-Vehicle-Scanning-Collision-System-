@@ -60,6 +60,9 @@ class LotPass(_Strict):
     start: HubMarks
     end: HubMarks | None = None
     designed_nearest: DesignedNearest | None = None
+    # P4-T2 gates on straight passes only: there, start-to-end displacement is the
+    # distance driven. On a curve it is shorter, which overstates drift.
+    shape: Literal["straight", "curve"] | None = None
     notes: str = ""
 
 
@@ -160,6 +163,59 @@ def cone_errors(
             "median_error_m": float(np.median(errs)) if errs else None,
         }
     return out
+
+
+def range_errors(
+    obstacles: list[Obstacle],
+    truth_veh: dict[str, FloatArray],
+    camera_xy: npt.ArrayLike,
+    frame_times_ns: list[int],
+    *,
+    t_from_ns: int,
+    t_to_ns: int,
+    match_gate_m: float,
+) -> dict[str, dict[str, Any]]:
+    """Per measured obstacle: true range from the camera, and the median signed range error.
+
+    Range is horizontal distance from the camera mount. Each frame's nearest perceived
+    obstacle within ``match_gate_m`` of the true centre is its detection; its error is
+    ``perceived range - true range`` (positive = placed too far). P4-T1 reports this by
+    range bucket, so unlike :func:`cone_errors` there is no range cut-off here.
+    """
+    cam = np.asarray(camera_xy, dtype=np.float64)
+    by_t: dict[int, list[Obstacle]] = {
+        int(t): [] for t in frame_times_ns if t_from_ns <= t <= t_to_ns
+    }
+    for ob in obstacles:
+        if ob.t_ns in by_t:
+            by_t[ob.t_ns].append(ob)
+    out: dict[str, dict[str, Any]] = {}
+    for oid, p in truth_veh.items():
+        p = np.asarray(p, dtype=np.float64)
+        true_rng = float(np.linalg.norm(p - cam))
+        errs = []
+        for obs in by_t.values():
+            if not obs:
+                continue
+            c = np.array([o.center_veh[:2] for o in obs])
+            d = np.linalg.norm(c - p, axis=1)
+            k = int(np.argmin(d))
+            if d[k] <= match_gate_m:
+                errs.append(float(np.linalg.norm(c[k] - cam)) - true_rng)
+        out[oid] = {
+            "range_m": true_rng,
+            "n_detected": len(errs),
+            "median_signed_error_m": float(np.median(errs)) if errs else None,
+        }
+    return out
+
+
+def depth_bucket(range_m: float, buckets_m: list[float], rel_tol: float) -> float | None:
+    """The configured range bucket ``range_m`` belongs to, or ``None`` if it is near none."""
+    for b in buckets_m:
+        if abs(range_m - b) <= rel_tol * b:
+            return float(b)
+    return None
 
 
 def ego_drift(

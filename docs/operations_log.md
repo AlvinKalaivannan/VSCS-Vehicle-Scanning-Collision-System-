@@ -217,3 +217,5 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 11:22 | write | .gitignore: docs/private/ (developer request); private technical guide lives there, never committed
 - 2026-10-01 11:22 | merge | docs-private-ignore -> main (local only)
 - 2026-10-01 11:29 | write | docs/private/TECHNICAL_GUIDE.md (gitignored, never committed): ~10.9k-word technical guide, every component, from code/branches/ADRs
+- 2026-10-01 11:36 | decision | developer approved addressing: own limits (depth producer, straight/curve drift gating, slow-test check), third hub mark, half-voxel inset prototype, ADR 0010
+- 2026-10-01 11:36 | write | P4-T1 depth_error producer + straight-only P4-T2 drift gating (score_perception, lot_truth, eval.yaml lot_truth depth buckets), ADR 0012 amendment, checklist note, runbook; pytest --durations: slowest test 38 s, the 14-min run was laptop load

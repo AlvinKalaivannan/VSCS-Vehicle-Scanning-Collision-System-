@@ -83,7 +83,6 @@ def test_every_gated_metric_has_a_producer():
     }
     # Gates whose producer is planned with its phase, not yet written. Listed, not hidden.
     planned = {
-        "depth_error_m_at_3m": "P4-T1: needs lot ground truth by range bucket",
         "pipeline_smoke_seconds": "P0-T4: the smoke test is skipped until sweep.py exists",
     }
     missing = []

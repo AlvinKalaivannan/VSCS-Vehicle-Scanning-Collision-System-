@@ -302,7 +302,9 @@ For every pass:
       (P1-T4). Without it, sync is guesswork.
 - [ ] Note the pass number and what it was testing, on paper, as you go. If the pass is
       meant to take a particular component past an obstacle (a mirror pass, a wheel
-      pass), note which component and which obstacle.
+      pass), note which component and which obstacle. Note also whether the pass was
+      driven **straight** or on a **curve** (`shape:` in `gt.yaml`): only straight passes
+      are used to judge ego-motion drift (P4-T2).
 - [ ] **Van pose, before moving and after stopping (ADR 0012).** With the van stopped
       (park, engine off or handbrake on), and **only then**, drop a plumb line from the
       centre of each **rear wheel hub** to the ground, chalk both points, and tape-measure
