@@ -548,6 +548,7 @@ python scripts/export_model.py --labelled <cleaned.npz> --scale-error-m <m> # P2
 
 # Per-drive pipeline
 python scripts/perceive.py --frames-run <capture run> [--ego vo|stationary|file]  # detect + perception -> obstacles.jsonl (GPU env)
+    #   add --imu <gyro.csv> --imu-offset-ms <P1-T4 offset> to fuse the phone gyro with VO (P4-T2)
 python scripts/view.py --model <model run> --risk <frames.jsonl> [--obstacles <obs.jsonl>]  # P3-T1 -> drive.rrd
 python scripts/replay.py --model <model run> --risk <frames.jsonl> [--obstacles <obs.jsonl>]  # P5-T4 -> PNG frames + replay.wav
 
