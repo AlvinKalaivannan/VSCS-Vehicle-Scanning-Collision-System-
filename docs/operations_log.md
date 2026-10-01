@@ -164,3 +164,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:49 | note | p6-stream-scaffold brought up to date with main (805 passed on the branch); still unmerged
 - 2026-10-01 03:50 | write | docs/runbook.md: capture day -> evaluation, every command checked against --help; two chain gaps marked (P1-T6 vehicle frame needs scale.py; P2-T3/T5 fusion CLI needs fusion3d.py); warns that masks for fusion must be computed on the dense workspace's undistorted images
 - 2026-10-01 03:50 | commit | runbook
+- 2026-10-01 03:50 | merge | docs-runbook -> main (local only)
