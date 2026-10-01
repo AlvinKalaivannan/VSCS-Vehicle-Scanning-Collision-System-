@@ -60,6 +60,8 @@ developer's core-module drafts exist (pair mode, CLAUDE.md §0). They are marked
 
 `passes.yaml` lists each pass: `id`, `vscs` (risk run folder), `baseline` (the `--baseline` run
 folder), and `truth: {component, t_event_ns, event_onsets_ns}` from the lot ground truth.
+`id` is the raw id ingest gave the recording. `evaluate.py` refuses any pass that ingest
+did not put in the requested split (`eval.yaml splits`), so keep one passes file per split.
 
 ## Privacy and licences, every time
 

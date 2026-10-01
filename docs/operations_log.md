@@ -189,3 +189,7 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 04:20 | test | 819 passed, 1 skipped; ruff clean
 - 2026-10-01 04:20 | commit | metric producers
 - 2026-10-01 04:20 | merge | metrics-producers -> main (local only)
+- 2026-10-01 04:24 | branch | r09-pass-split-guard from main
+- 2026-10-01 04:24 | write | eval/evaluate.py check_pass_split + scripts/evaluate.py refuses passes outside the requested split (R-09); tests declare their splits; runbook note
+- 2026-10-01 04:24 | test | 820 passed, 1 skipped; ruff clean
+- 2026-10-01 04:24 | commit | R-09 pass split guard
