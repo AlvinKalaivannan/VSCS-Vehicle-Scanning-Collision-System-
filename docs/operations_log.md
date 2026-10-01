@@ -129,3 +129,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:32 | write | tests: Kalman NEES Monte Carlo consistency (test_track.py); occupancy rotated-report conservatism (test_occupancy.py)
 - 2026-10-01 03:32 | note | KF consistency: mean NEES 3.90 over 300 runs (chi2 4 dof -> 4.00), 95th pct 8.60 (theory 9.49): F, Q and update verified
 - 2026-10-01 03:32 | commit | self-check tests
+- 2026-10-01 03:32 | merge | p4-t4-kf-consistency -> main (local only)
