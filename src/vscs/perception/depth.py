@@ -43,6 +43,14 @@ A box clipped at the image's *top* is harmless (the base is what is used), but o
 at a *side* moves its bottom-centre inward and biases the position: found on the
 perception-pipeline test, where a walker cut off at the right edge read -0.69 m/s
 instead of -1.0 m/s. Treat side-clipped boxes with suspicion.
+
+Tall thin objects off to the side are the worst case (R-07). With the camera pitched down,
+a vertical pole projects as a *slanted* line, so its box is wide and its bottom-centre is
+not where the pole meets the ground. On the end-to-end fixture drive, a 6 cm pole came
+out 45 cm wide and 22 cm too far sideways. The error is conservative (more warnings), but
+it raises false criticals on neighbouring components. A box cannot say which side the base
+is on. A segmentation mask's lowest pixels can, so the fix belongs with the masks (P2-T2
+detector + SAM 2) and learned depth (P4-T1), not in a box heuristic here.
 Learned and motion-stereo depth replace this at P4-T1.
 """
 
