@@ -188,3 +188,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 04:20 | write | scripts/calibrate.py appends reprojection_error_px itself (run folder + calibration_result.json); scripts/evaluate.py appends component_flagged_frac (P3-T6) on dev; tests/unit/test_metric_producers.py
 - 2026-10-01 04:20 | test | 819 passed, 1 skipped; ruff clean
 - 2026-10-01 04:20 | commit | metric producers
+- 2026-10-01 04:20 | merge | metrics-producers -> main (local only)
