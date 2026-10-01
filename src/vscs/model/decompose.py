@@ -38,8 +38,9 @@ voxelization. The bias is conservative (more warnings, not fewer), but it is ~1 
 margin nobody asked for, so it is reported in the P2-T6 log. ``voxel_m: 0.01`` halves it
 at roughly 8x the compute. That trade-off is the developer's call.
 
-**Prototype correction: ``decompose.surface: voxel_centres``** (default ``voxel_faces``,
-the behaviour above). The grid is offset so that flat faces' points sit on voxel *centres*;
+**The correction: ``decompose.surface: voxel_centres``** (the default since ADR 0014;
+``voxel_faces`` is the behaviour above). The grid is offset so that flat faces' points
+sit on voxel *centres*;
 the true surface is therefore half a voxel inside the boundary faces. ``boundary_mesh(...,
 inset=True)`` moves every boundary vertex half a voxel toward the solid on each axis, by
 the sign of the vote of the eight voxels around it (occupied ones on the + side count +1,
@@ -168,7 +169,7 @@ def boundary_mesh(solid: VoxelSolid, *, inset: bool = False) -> trimesh.Trimesh:
     """Step 4: the watertight surface of the occupied voxels, in the veh frame.
 
     ``inset=True`` puts it through the outermost voxel centres instead of their faces
-    (module docstring, "Prototype correction").
+    (module docstring, "The correction"; ADR 0014).
     """
     occ = np.pad(solid.occupancy, 1)
     cells = np.argwhere(occ)

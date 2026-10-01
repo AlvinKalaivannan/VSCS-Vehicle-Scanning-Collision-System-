@@ -20,12 +20,14 @@ decompose:
   max_spacing_fraction_of_voxel: 0.3
   # P2-T6 acceptance: hull volume within +/- 15% of the point-cloud-derived volume.
   max_volume_error_fraction: 0.15
-  # Where the collision surface sits (decompose.py, "Prototype correction"). voxel_faces:
-  # the occupied voxels' faces, ~half a voxel (1 cm) outside the true surface on every
-  # side (conservative; the default). voxel_centres: through the outermost voxel centres,
-  # which removes that bias. PROTOTYPE 2026-10-01 - the developer decides after the
-  # fixture comparison (devlog) and a real scan.
-  surface: "voxel_faces"
+  # Where the collision surface sits (decompose.py, "The correction"). voxel_centres:
+  # through the outermost voxel centres - the most accurate option measured (ADR 0014;
+  # developer asked for the most accurate, 2026-10-01). voxel_faces: the voxels' faces,
+  # ~1 cm outside the true surface on every side (the old default).
+  # Fixture, 2 cm voxels: mean side error 1.13 -> 0.20 cm, volume error 33% -> 7.5%.
+  # 1 cm voxels would be better still, but only with points <= 3 mm apart; at a realistic
+  # dense-cloud spacing their shells do not fill and the gate fails (ADR 0014).
+  surface: "voxel_centres"
   # voxel_centres only: a component with no voxel at least this deep (distance to the
   # outside, in voxels) is a sheet and keeps voxel_faces, because insetting would collapse it.
   inset_min_depth_voxels: 2.0
