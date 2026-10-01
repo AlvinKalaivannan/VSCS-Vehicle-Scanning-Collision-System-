@@ -199,3 +199,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 04:29 | write | src/vscs/eval/lot_truth.py, scripts/score_perception.py (P3-T2 producer), tests/unit/test_lot_truth.py; eval.yaml lot_truth (PROPOSED); runbook, §12, STATUS
 - 2026-10-01 04:29 | test | 832 passed, 1 skipped; ruff clean
 - 2026-10-01 04:29 | commit | ADR 0012 + P3-T2 scorer
+- 2026-10-01 04:29 | merge | adr-0012-lot-truth -> main (local only; ADR stays proposed)
