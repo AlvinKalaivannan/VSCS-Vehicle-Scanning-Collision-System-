@@ -79,6 +79,9 @@ fusion3d:
   min_observations_per_point: 3
   min_vote_fraction: 0.50
   target_mean_iou: 0.70
+  # scripts/fuse.py loads this many views (mask + depth map each) at a time. Memory only:
+  # votes are counts, so they add up across batches and the result does not depend on it.
+  views_per_batch: 16
 
 cleanup:
   # P2-T5: must not make IoU worse. Deterministic (no random process, so no seed).

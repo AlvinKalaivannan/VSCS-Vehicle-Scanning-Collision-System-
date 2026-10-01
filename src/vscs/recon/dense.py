@@ -3,13 +3,17 @@
 Acceptance (CLAUDE.md §6): dense geometry and a splat, both viewable in Rerun in the ``veh``
 frame. This module produces the dense point cloud; viewing and the splat are separate.
 
-COLMAP's dense step has three stages, all driven from the sparse model P1-T5 produced:
+COLMAP's dense step has three stages, all driven from the sparse model P1-T5 produced,
+plus a conversion:
 
 1. ``image_undistorter`` - resample every registered frame to an ideal pinhole image,
    because patch-match assumes straight epipolar geometry;
 2. ``patch_match_stereo`` - estimate a depth and normal map per image by matching patches
    against neighbouring views, optionally filtered for geometric consistency between them;
-3. ``stereo_fusion`` - merge the per-image depth maps into one point cloud (``fused.ply``).
+3. ``stereo_fusion`` - merge the per-image depth maps into one point cloud (``fused.ply``);
+4. ``model_converter`` - write the *undistorted* camera model (``<workspace>/sparse``, binary)
+   as text into ``<workspace>/sparse_txt``. Label fusion (``scripts/fuse.py``) needs these
+   pinhole cameras: they, not the SfM model's, match the depth maps pixel for pixel.
 
 **Stage 2 requires a CUDA build of COLMAP.** The laptop has no NVIDIA GPU (ADR 0003), which
 is why this runs on Colab. A COLMAP binary built without CUDA does not fail until it reaches
@@ -80,7 +84,7 @@ def build_dense_commands(
     workspace: Path,
     dense_cfg: dict[str, Any],
 ) -> list[list[str]]:
-    """The three COLMAP dense stages as argument lists (never a shell string)."""
+    """The three COLMAP dense stages, then the text conversion, as argument lists."""
     ws = str(workspace)
     geometric = bool(dense_cfg.get("geom_consistency", True))
     return [
@@ -119,6 +123,16 @@ def build_dense_commands(
             "geometric" if geometric else "photometric",
             "--output_path",
             str(Path(workspace) / "fused.ply"),
+        ],
+        [
+            colmap,
+            "model_converter",
+            "--input_path",
+            str(Path(workspace) / "sparse"),
+            "--output_path",
+            str(Path(workspace) / "sparse_txt"),
+            "--output_type",
+            "TXT",
         ],
     ]
 
@@ -166,7 +180,7 @@ def run_dense(
         logger.warning("could not read CUDA support from COLMAP's banner; proceeding anyway")
 
     workspace = Path(workspace)
-    workspace.mkdir(parents=True, exist_ok=True)
+    (workspace / "sparse_txt").mkdir(parents=True, exist_ok=True)  # model_converter needs it
     for cmd in build_dense_commands(colmap, image_dir, sparse_model_dir, workspace, dense_cfg):
         logger.info("running: %s", " ".join(cmd[:2]))
         runner(cmd, check=True)

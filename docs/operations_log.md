@@ -177,3 +177,20 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:47 | commit | CLI chain integration test
 - 2026-10-01 03:47 | merge | test-cli-chain -> main (local only)
 - 2026-10-01 03:48 | merge | main -> p6-stream-scaffold (branch only, still UNMERGED into main); resolved CLAUDE.md §12 and kept both operations-log histories
+- 2026-10-01 03:49 | note | p6-stream-scaffold brought up to date with main (805 passed on the branch); still unmerged
+- 2026-10-01 03:50 | write | docs/runbook.md: capture day -> evaluation, every command checked against --help; two chain gaps marked (P1-T6 vehicle frame needs scale.py; P2-T3/T5 fusion CLI needs fusion3d.py); warns that masks for fusion must be computed on the dense workspace's undistorted images
+- 2026-10-01 03:50 | commit | runbook
+- 2026-10-01 03:50 | merge | docs-runbook -> main (local only)
+- 2026-10-01 04:04 | branch | p2-t3-fuse-cli from main
+- 2026-10-01 04:04 | write | src/vscs/seg/fuse_inputs.py, scripts/fuse.py, tests/unit/test_fuse_inputs.py: fusion plumbing around the developer's fusion3d (exit 3 until it exists); no fusion algorithm written
+- 2026-10-01 04:04 | write | recon/dense.py: model_converter step -> dense/sparse_txt; 20_seg.ipynb now masks the undistorted images; seg.yaml fusion3d.views_per_batch: 16 (memory only)
+- 2026-10-01 04:04 | test | 793 passed, 1 skipped; ruff clean
+- 2026-10-01 04:04 | commit | P2-T3 fusion plumbing
+- 2026-10-01 04:04 | merge | p2-t3-fuse-cli -> main (local only)
+- 2026-10-01 04:11 | branch | p1-t6-scale-cli from main
+- 2026-10-01 04:11 | write | src/vscs/recon/metric.py, scripts/scale.py, tests/unit/test_metric_frame.py: P1-T6 plumbing around the developer's scale.py (exit 3 until it exists); writes sfm_to_veh.json for fuse.py
+- 2026-10-01 04:11 | write | configs/recon.yaml vehicle_frame.body_select (PROPOSED, flagged for review on the first real scan)
+- 2026-10-01 04:11 | test | 802 passed, 1 skipped; ruff clean
+- 2026-10-01 04:11 | commit | P1-T6 plumbing
+- 2026-10-01 04:11 | merge | p1-t6-scale-cli -> main (local only)
+- 2026-10-01 04:13 | merge | main -> p6-stream-scaffold (refresh; log conflict resolved by keeping both sides); branch still unmerged
