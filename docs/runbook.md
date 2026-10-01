@@ -23,7 +23,7 @@ developer's core-module drafts exist (pair mode, CLAUDE.md §0). They are marked
 |---|---|---|---|
 | Ingest each file | `python scripts/ingest.py --src <path> --kind scan\|lot\|calib [--stratum pole\|curb\|box\|mixed]` | laptop | Checksums into `data/MANIFEST.md`; assigns lot passes to dev/test once (R-09); verify the backups |
 | Record the camera mount | edit `configs/capture.yaml mount` (`position_veh_m`, `look_at_veh_m`, `measured: true`) | laptop | Tape-measured on lot day. `perceive.py` refuses without it |
-| Record lot ground truth | `data/raw/lot_*/gt.yaml` (obstacle positions) | laptop | Feeds the `truth` blocks of `passes.yaml` (step 4) |
+| Record lot ground truth | `data/raw/lot_*/gt.yaml`: obstacle positions **and the van's start/end pose per pass** (rear-hub chalk marks) | laptop | Format and procedure: ADR 0012 (**proposed**: without the van's pose, P3-T2 and the `passes.yaml` truth cannot be computed) |
 
 ## 2. The van model, once (P1-T4 … P2-T8)
 
@@ -53,6 +53,7 @@ developer's core-module drafts exist (pair mode, CLAUDE.md §0). They are marked
 
 | Step | Command | Where | Notes |
 |---|---|---|---|
+| Cone positions (P3-T2) | `python scripts/score_perception.py --gt data/raw/lot_<date>/gt.yaml --passes <dev passes.yaml>` | laptop | per-pass entries need `perception: <perceive run>`; scored on the parked start of each pass; appends `cone_position_error_m`; a missed obstacle in range fails it (R-07) |
 | Dev scoring (tune here only) | `python scripts/evaluate.py --passes <passes.yaml> --split dev [--log-metrics]` | laptop | VSCS vs baseline on §11 metrics; baseline attribution is reported as n/a |
 | Throughput (P5-T3) | `python scripts/benchmark.py --frames-run <run> --detector --log-metrics` | **Colab T4** | every figure tagged with its hardware (§9); laptop runs are rehearsals; leave `--log-metrics` off |
 | **Final test (P5-T2), once** | `python scripts/evaluate.py --passes <passes.yaml> --split test --final --log-metrics` | laptop | R-09: allowed exactly once; afterwards `eval.yaml` records the date and refuses again |

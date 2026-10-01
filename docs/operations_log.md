@@ -194,3 +194,8 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 04:24 | test | 820 passed, 1 skipped; ruff clean
 - 2026-10-01 04:24 | commit | R-09 pass split guard
 - 2026-10-01 04:24 | merge | r09-pass-split-guard -> main (local only)
+- 2026-10-01 04:29 | branch | adr-0012-lot-truth from main
+- 2026-10-01 04:29 | write | docs/decisions/0012-lot-ground-truth-van-pose-proposed.md (PROPOSED: checklist change is the developer's decision; checklist NOT edited)
+- 2026-10-01 04:29 | write | src/vscs/eval/lot_truth.py, scripts/score_perception.py (P3-T2 producer), tests/unit/test_lot_truth.py; eval.yaml lot_truth (PROPOSED); runbook, §12, STATUS
+- 2026-10-01 04:29 | test | 832 passed, 1 skipped; ruff clean
+- 2026-10-01 04:29 | commit | ADR 0012 + P3-T2 scorer
