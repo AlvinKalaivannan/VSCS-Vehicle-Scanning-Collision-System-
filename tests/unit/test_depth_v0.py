@@ -86,3 +86,61 @@ def test_a_box_whose_base_is_above_the_horizon_is_rejected():
         )
         is None
     )
+
+
+# --------------------------------------------------------------------------- #
+# Mask-based ground contact: the fix for slanted thin objects (R-07)           #
+# --------------------------------------------------------------------------- #
+from PIL import Image, ImageDraw  # noqa: E402
+from scipy.spatial import ConvexHull  # noqa: E402
+
+from vscs.perception.depth import obstacle_from_mask  # noqa: E402
+
+
+def _mask(box):
+    """Silhouette of a convex box as a real mask would be: the filled hull of its projected
+    corners, clipped by the image edges (PIL clips the drawing)."""
+    uv, ok = project(K, transform_points(invert(T_VEH_CAM), box.corners()))
+    assert ok.all()  # in front of the camera; may extend past the frame
+    hull = uv[ConvexHull(uv).vertices]
+    img = Image.new("1", (W, H), 0)
+    ImageDraw.Draw(img).polygon([tuple(p) for p in hull], fill=1)
+    return np.asarray(img, dtype=bool)
+
+
+def test_mask_places_a_thin_off_axis_pole_that_a_box_cannot():
+    """6 cm pole off to the side, short enough (0.6 m) to be fully in frame."""
+    pole = Box.from_bounds("pole", [-3.53, -1.03, 0.0, -3.47, -0.97, 0.6])
+    by_mask = obstacle_from_mask(_mask(pole), K, T_VEH_CAM, CFG, obstacle_id=1, t_ns=0)
+    by_box = obstacle_from_box(_bbox(pole), K, T_VEH_CAM, CFG, obstacle_id=1, t_ns=0)
+    err_mask = np.hypot(by_mask.center_veh[0] + 3.5, by_mask.center_veh[1] + 1.0)
+    err_box = np.hypot(by_box.center_veh[0] + 3.5, by_box.center_veh[1] + 1.0)
+    assert err_mask < 0.03 and by_mask.extent[1] < 0.12  # true: centre exact, width 0.06
+    assert err_box > 3 * err_mask and by_box.extent[1] > 2 * by_mask.extent[1]
+    assert by_mask.extent[2] == pytest.approx(0.6, abs=0.1)
+
+
+def test_mask_base_is_exact_even_when_the_top_is_cut_off():
+    """The end-to-end drive's 1.2 m pole: its top is above the frame, its base is not."""
+    pole = Box.from_bounds("pole", [-3.53, -1.03, 0.0, -3.47, -0.97, 1.2])
+    m = _mask(pole)
+    assert m[0].any(), "setup: the mask touches the image's top row"
+    ob = obstacle_from_mask(m, K, T_VEH_CAM, CFG, obstacle_id=1, t_ns=0)
+    assert np.hypot(ob.center_veh[0] + 3.5, ob.center_veh[1] + 1.0) < 0.03
+    assert ob.extent[1] < 0.12
+    assert ob.extent[2] < 1.2  # a lower bound only: the top is out of view
+
+
+def test_mask_places_a_cone_at_least_as_well_as_a_box():
+    cone = Box.from_bounds("cone", [-3.15, 0.35, 0.0, -2.85, 0.65, 0.5])
+    ob = obstacle_from_mask(_mask(cone), K, T_VEH_CAM, CFG, obstacle_id=2, t_ns=0)
+    assert np.hypot(ob.center_veh[0] + 3.0, ob.center_veh[1] - 0.5) < 0.12
+    assert ob.center_veh[0] + ob.extent[0] / 2.0 == pytest.approx(-2.85, abs=0.03)  # near face
+
+
+def test_masks_with_no_visible_base_are_rejected():
+    empty = np.zeros((H, W), dtype=bool)
+    assert obstacle_from_mask(empty, K, T_VEH_CAM, CFG, obstacle_id=1, t_ns=0) is None
+    touching_bottom = empty.copy()
+    touching_bottom[H - 5 :, 600:620] = True
+    assert obstacle_from_mask(touching_bottom, K, T_VEH_CAM, CFG, obstacle_id=1, t_ns=0) is None

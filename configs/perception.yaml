@@ -12,6 +12,10 @@ depth:
   # Ground-plane v0 (src/vscs/perception/depth.py): assumed 1-sigma vertical pixel noise of
   # a detected box's bottom edge. Propagated to pos_sigma_m, which grows ~ range^2.
   pixel_sigma_px: 1.0
+  # Mask-based ground contact (depth.obstacle_from_mask): the base is read from the mask's
+  # lowest pixels, within this many rows of its bottom-most pixel. A box cannot locate the
+  # base of a slanted thin object (R-07); a mask can.
+  mask_base_rows_px: 3
 
 occupancy:
   # Height map in the veh frame, persisted in world so obstacles survive leaving the
