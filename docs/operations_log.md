@@ -110,3 +110,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:22 | write | src/vscs/eval/benchmark.py (warm-up, p50/p95, fps, hardware tag), scripts/benchmark.py (metrics only with --log-metrics), tests; CLAUDE.md §12
 - 2026-10-01 03:22 | note | laptop CPU rehearsal (synthetic 1280x720): decode 0.8 ms, perception step 7.4 ms (136 fps); detector ~750 ms (ADR 0011) is the bottleneck. Not logged to metrics (rehearsal, not the T4 figure)
 - 2026-10-01 03:22 | commit | P5-T3 benchmark tool
+- 2026-10-01 03:22 | merge | p5-t3-benchmark -> main (local only)
