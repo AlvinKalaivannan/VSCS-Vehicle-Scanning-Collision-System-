@@ -21,3 +21,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:35 | write | scripts/view.py, tests/unit/test_rerun_view.py; CLAUDE.md §12 synced (view.py)
 - 2026-10-01 02:35 | test | full suite green; real .rrd verified by 'rerun rrd verify'
 - 2026-10-01 02:35 | commit | P3-T1: Rerun dev view
+- 2026-10-01 02:35 | merge | p3-t1-rerun-view -> main (local only)
