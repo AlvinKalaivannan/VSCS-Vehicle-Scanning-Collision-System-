@@ -209,3 +209,6 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 10:49 | branch | adr-0012-accept from main
 - 2026-10-01 10:49 | write | ADR 0012 accepted (renamed, status), capture checklist: rear track on scan day + per-pass hub-mark poses; recon.yaml body_select approved; PROPOSED tags removed
 - 2026-10-01 10:50 | write | fuse_inputs: missing COLMAP depth -> NaN ("cannot tell", developer's decision)
+- 2026-10-01 11:06 | write | eval/dimensions.py, scripts/check_wheelbase.py, tests/unit/test_wheelbase.py, ADR 0013 (accepted); eval.yaml wheelbase block + wheelbase_error_m gate; scale.py points to it; runbook, §12, STATUS
+- 2026-10-01 11:06 | test | 842 passed, 1 skipped; ruff clean
+- 2026-10-01 11:06 | commit | wheelbase check + decisions applied

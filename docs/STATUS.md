@@ -63,15 +63,14 @@ Session evidence (tests, not metrics): `main` **832 passed, 1 skipped**; ruff cl
    - Push OK, after you verify (`docs/operations_log.md` lists everything done autonomously).
    - Approve ADR 0009 (zones) and merge `docs-streaming-merge`; decide the NC media policy and LGPL ffmpeg.
    - **ADR 0010 (proposed):** grade near misses by time of closest approach. The end-to-end fixture drive raises 'critical' 2.2 s early on a 0.30 m bumper near miss. Needs a schema field.
-   - **ADR 0012 (proposed, TIME-CRITICAL for October):** the lot-day checklist never
-     records where the van stood, so P3-T2 and the `passes.yaml` truth cannot be computed.
-     The proposal is to plumb and tape the rear hubs at the start and end of each pass
-     (~30 min), and to add the rear track to the scan-day measurements.
-   - **New, from the fuse/scale plumbing (devlog 2026-10-01):**
-     - in your `fusion3d.observe`, should a pixel with no COLMAP depth count as visible
-       (contract today) or as "cannot tell"?
-     - the PROPOSED van-point selection in `recon.yaml vehicle_frame.body_select`;
-     - how to validate wheelbase, which P1-T6 lists but the vehicle frame cannot measure.
+   - **Decided 2026-10-01:**
+     - ADR 0012 accepted; the capture checklist now has the rear track (scan day) and the
+       per-pass hub-mark poses (lot day).
+     - Missing COLMAP depth means "cannot tell": no vote. `fuse_inputs` writes NaN, and the
+       `fusion3d` contract on `p2-t3-fusion` says so, with a target test.
+     - `body_select` approved.
+     - Wheelbase is checked from the segmented wheels (`check_wheelbase.py`, ADR 0013), or
+       the gate is narrowed if that proves less accurate. Decide on the first real scan.
    - Review `p6-stream-scaffold` (streaming replay, queues, metrics, pipeline): unmerged.
    - Measure the camera mount on lot day (`configs/capture.yaml mount`); `perceive.py` refuses until then.
    - Sign the Phase 0 report when P0-T5..T7 are done (`docs/phase_reports/phase-0.md`).
