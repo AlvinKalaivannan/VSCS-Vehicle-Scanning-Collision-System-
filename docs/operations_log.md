@@ -69,3 +69,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:04 | write | src/vscs/perception/pipeline.py (boxes -> static to height map, dynamic to tracker -> obstacles in veh), Tracker.next_id, configs/perception.yaml pipeline block, tests/unit/test_perception_pipeline.py
 - 2026-10-01 03:04 | note | finding: side-clipped detector boxes bias v0 position (walker read -0.69 m/s vs -1.0); top-clipped are harmless; documented in depth.py
 - 2026-10-01 03:04 | commit | perception pipeline glue
+- 2026-10-01 03:04 | merge | p4-perception-pipeline -> main (local only)
