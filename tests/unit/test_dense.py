@@ -71,11 +71,19 @@ def test_missing_binary_is_unknown_not_a_crash():
 # --------------------------------------------------------------------------- #
 # Commands                                                                     #
 # --------------------------------------------------------------------------- #
-def test_three_stages_in_order_as_argument_lists(tmp_path):
+def test_three_stages_then_text_model_in_order_as_argument_lists(tmp_path):
     cmds = D.build_dense_commands(
         "colmap", tmp_path / "img", tmp_path / "sp", tmp_path / "ws", DENSE
     )
-    assert [c[1] for c in cmds] == ["image_undistorter", "patch_match_stereo", "stereo_fusion"]
+    assert [c[1] for c in cmds] == [
+        "image_undistorter",
+        "patch_match_stereo",
+        "stereo_fusion",
+        "model_converter",
+    ]
+    conv = cmds[3]
+    assert conv[conv.index("--output_type") + 1] == "TXT"
+    assert conv[conv.index("--output_path") + 1].endswith("sparse_txt")
     assert all(isinstance(a, str) for c in cmds for a in c)
     und = cmds[0]
     assert und[und.index("--max_image_size") + 1] == str(DENSE["max_image_size"])
@@ -124,7 +132,9 @@ def test_full_run(tmp_path):
         "image_undistorter",
         "patch_match_stereo",
         "stereo_fusion",
+        "model_converter",
     ]
+    assert (tmp_path / "ws" / "sparse_txt").is_dir()
     assert res.n_points == 250_000 and res.plausible
 
 
