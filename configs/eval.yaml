@@ -46,6 +46,15 @@ report_metrics:
   - depth_error_by_range
   - egomotion_drift_frac
 
+# How the risk metrics above are computed (src/vscs/eval/metrics.py).
+risk_metrics:
+  # The alert level that counts as "flagged" / "warned" for attribution and lead time.
+  flag_level: "warning"
+  # An alert episode is a FALSE alarm if no true close approach (ground-truth clearance
+  # below event_distance_m) begins within this long after the episode starts.
+  false_alarm_horizon_s: 3.0
+  event_distance_m: 0.25
+
 baseline:
   # Identical pipeline, vehicle modelled as ONE oriented bounding box.
   name: "single_obb"

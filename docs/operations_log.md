@@ -31,3 +31,6 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:40 | write | src/vscs/perception/occupancy.py (world height map: insert, carve, persist, expire, reset), tests/unit/test_occupancy.py
 - 2026-10-01 02:40 | commit | P4-T3: persistent height map
 - 2026-10-01 02:40 | merge | p4-t3-occupancy -> main (local only)
+- 2026-10-01 02:41 | branch | p5-eval-risk-metrics from main
+- 2026-10-01 02:42 | write | eval/metrics.py: attribution accuracy, lead time, TTC error, alert episodes, false alarms/min; configs/eval.yaml risk_metrics; tests
+- 2026-10-01 02:42 | commit | P5 eval risk metrics
