@@ -105,3 +105,23 @@ def test_points_outside_the_grid_are_counted_not_lost_silently():
     hmap = HeightMap(CFG)
     hmap.update(np.array([[100.0, 0.0, 0.5]]), 0)
     assert hmap.dropped_outside == 1
+
+
+def test_a_rotated_report_is_conservative_never_too_small():
+    """The docstring's promise: seen from a vehicle turned 30 deg, the axis-aligned box
+    reported in veh still contains every occupied cell of the object."""
+    from vscs.common.frames import rot_z
+
+    hmap = HeightMap(CFG)
+    xs, ys = np.meshgrid(np.arange(-2.0, -1.0, 0.02), np.arange(0.0, 0.4, 0.02))
+    hmap.update(np.column_stack([xs.ravel(), ys.ravel(), np.full(xs.size, 0.5)]), 0)
+    T_world_veh = T_from_Rt(rot_z(np.deg2rad(30.0)), [0.5, -0.3, 0.0])
+    T_veh_world = invert(T_world_veh)
+    (ob,) = hmap.obstacles(T_veh_world, 0, pos_sigma_m=0.05)
+    occupied = hmap.cell_centres()[np.isfinite(hmap.height) & (hmap.height > hmap.threshold)]
+    pts = (
+        np.column_stack([occupied, np.zeros(len(occupied)), np.ones(len(occupied))]) @ T_veh_world.T
+    )
+    lo = np.array(ob.center_veh[:2]) - np.array(ob.extent[:2]) / 2
+    hi = np.array(ob.center_veh[:2]) + np.array(ob.extent[:2]) / 2
+    assert (pts[:, :2] >= lo - 1e-9).all() and (pts[:, :2] <= hi + 1e-9).all()

@@ -106,3 +106,41 @@ def test_one_outlier_measurement_does_not_spawn_a_duplicate():
     z = (-4.0 + 3.2 * NOISE, 2.0 - 1.0 * 10 * DT + 2.5 * NOISE)  # far out, still the same person
     tr.update([_det(z)], round(10 * DT * S))
     assert len(tr.tracks) == 1
+
+
+def test_kalman_filter_is_statistically_consistent_nees():
+    """Monte Carlo NEES check (Bar-Shalom): simulate the filter's own model - white
+    acceleration with std accel_std, position measurements with std measurement_std - and
+    the normalised state error e^T P^-1 e must average ~4 (chi-square, 4 dof). A wrong F,
+    Q or update shifts it away from 4; this is the strongest test of the maths."""
+    from vscs.perception.track import Track
+
+    rng = np.random.default_rng(11)
+    tr = Tracker(CFG)
+    a_std = CFG["kalman"]["accel_std_mps2"]
+    runs, steps, dt = 300, 30, 0.1
+    nees = []
+    for _ in range(runs):
+        x = np.array([0.0, 0.0, 1.0, -0.5])
+        z0 = x[:2] + rng.normal(0, NOISE, 2)
+        P0 = np.diag([NOISE**2, NOISE**2, 4.0, 4.0])
+        trk = Track(0, np.array([z0[0], z0[1], 0.0, 0.0]), P0, "person", PERSON, 0)
+        # True initial velocity drawn from the prior, so the start is consistent too.
+        x[2:] = rng.normal(0, 2.0, 2)
+        for k in range(1, steps + 1):
+            acc = rng.normal(0, a_std, 2)
+            x = np.array(
+                [
+                    x[0] + x[2] * dt + 0.5 * acc[0] * dt**2,
+                    x[1] + x[3] * dt + 0.5 * acc[1] * dt**2,
+                    x[2] + acc[0] * dt,
+                    x[3] + acc[1] * dt,
+                ]
+            )
+            tr._predict(trk, round(k * dt * S))
+            tr._update(trk, _det(x[:2] + rng.normal(0, NOISE, 2)))
+        e = trk.x - x
+        nees.append(float(e @ np.linalg.solve(trk.P, e)))
+    mean = float(np.mean(nees))
+    # chi2(4): mean 4, std of the mean over 300 runs ~ sqrt(8/300) = 0.16 -> a 4-sigma band.
+    assert 3.35 < mean < 4.65, mean
