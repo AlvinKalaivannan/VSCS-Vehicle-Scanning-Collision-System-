@@ -63,3 +63,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:58 | branch | p5-t4-driver-replay from main
 - 2026-10-01 03:01 | write | src/vscs/ui/driver_replay.py (silhouette PNGs + alert audio WAV, no ffmpeg), scripts/replay.py, configs/ui.yaml driver_replay, tests; CLAUDE.md §12 synced
 - 2026-10-01 03:01 | commit | P5-T4 driver replay
+- 2026-10-01 03:01 | merge | p5-t4-driver-replay -> main (local only)
