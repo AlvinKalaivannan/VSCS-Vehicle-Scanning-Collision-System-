@@ -125,3 +125,7 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:30 | deferred | Phase 0 gate sign-off and risk re-rating: developer
 - 2026-10-01 03:30 | commit | phase 0 draft
 - 2026-10-01 03:30 | merge | docs-phase0-draft -> main (local only)
+- 2026-10-01 03:31 | branch | p4-t4-kf-consistency from main
+- 2026-10-01 03:32 | write | tests: Kalman NEES Monte Carlo consistency (test_track.py); occupancy rotated-report conservatism (test_occupancy.py)
+- 2026-10-01 03:32 | note | KF consistency: mean NEES 3.90 over 300 runs (chi2 4 dof -> 4.00), 95th pct 8.60 (theory 9.49): F, Q and update verified
+- 2026-10-01 03:32 | commit | self-check tests
