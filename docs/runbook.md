@@ -23,7 +23,7 @@ developer's core-module drafts exist (pair mode, CLAUDE.md §0). They are marked
 |---|---|---|---|
 | Ingest each file | `python scripts/ingest.py --src <path> --kind scan\|lot\|calib [--stratum pole\|curb\|box\|mixed]` | laptop | Checksums into `data/MANIFEST.md`; assigns lot passes to dev/test once (R-09); verify the backups |
 | Record the camera mount | edit `configs/capture.yaml mount` (`position_veh_m`, `look_at_veh_m`, `measured: true`) | laptop | Tape-measured on lot day. `perceive.py` refuses without it |
-| Record lot ground truth | `data/raw/lot_*/gt.yaml`: obstacle positions **and the van's start/end pose per pass** (rear-hub chalk marks) | laptop | Format and procedure: ADR 0012 (**proposed**: without the van's pose, P3-T2 and the `passes.yaml` truth cannot be computed) |
+| Record lot ground truth | `data/raw/lot_*/gt.yaml`: obstacle positions **and the van's start/end pose per pass** (rear-hub chalk marks) | laptop | Format and procedure: ADR 0012 and the lot-day checklist (without the van's pose, P3-T2, P4-T2 and the `passes.yaml` truth cannot be computed) |
 
 ## 2. The van model, once (P1-T4 … P2-T8)
 

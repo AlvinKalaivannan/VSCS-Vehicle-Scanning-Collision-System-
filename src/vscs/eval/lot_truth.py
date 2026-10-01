@@ -1,4 +1,4 @@
-"""Lot-day ground truth and the P3-T2 cone-position score (format PROPOSED, ADR 0012).
+"""Lot-day ground truth and the P3-T2 cone-position score (format: ADR 0012).
 
 ``gt.yaml`` holds the obstacle layout, measured from a chalk origin, and the van's pose at
 the start and end of each pass, measured as two chalk marks plumbed from the rear wheel

@@ -55,7 +55,7 @@ labels3d:
   match_tolerance_m: 0.001
 
 lot_truth:
-  # data/raw/lot_*/gt.yaml and scripts/score_perception.py (P3-T2). PROPOSED with ADR 0012.
+  # data/raw/lot_*/gt.yaml and scripts/score_perception.py (P3-T2, P4-T2). ADR 0012 (accepted).
   # The two hub marks must be the scan-day rear track apart, to within this.
   track_tolerance_m: 0.03
   # P3-T2 is scored while the van is still parked at the start of a pass: skip the start

@@ -72,8 +72,8 @@ vehicle_frame:
   # Ignore this percentage of points at each extreme when taking length and height,
   # so a few stray reconstruction points cannot stretch the vehicle.
   trim_percentile: 0.5
-  # Which sparse points are the van (scripts/scale.py, recon/metric.py step 4). PROPOSED
-  # 2026-10-01, not yet checked on a real scan - review on the first one (body_points.ply).
+  # Which sparse points are the van (scripts/scale.py, recon/metric.py step 4). Approved by
+  # the developer 2026-10-01; still check body_points.ply on the first real scan.
   # Kept: points between these heights above the fitted ground, inside the camera loop's
   # footprint (the walk-round circles the van), in single-linkage clusters (points closer
   # than cluster_eps_m are linked) of at least min_cluster_points, and farther than

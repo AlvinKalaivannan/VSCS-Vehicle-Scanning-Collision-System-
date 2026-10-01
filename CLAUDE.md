@@ -558,7 +558,7 @@ python scripts/view.py --model <model run> --risk <frames.jsonl> [--obstacles <o
 python scripts/replay.py --model <model run> --risk <frames.jsonl> [--obstacles <obs.jsonl>]  # P5-T4 -> PNG frames + replay.wav
 
 # External datasets (ADR 0006; licence-checked, private by default)
-python scripts/score_perception.py --gt data/raw/lot_<date>/gt.yaml --passes <dev passes.yaml>  # P3-T2 (gt format: ADR 0012, proposed)
+python scripts/score_perception.py --gt data/raw/lot_<date>/gt.yaml --passes <dev passes.yaml>  # P3-T2 + P4-T2 drift (gt format: ADR 0012)
 python scripts/fetch_dataset.py <id>                                        # id from configs/datasets.yaml
 
 python scripts/benchmark.py --frames-run <run> [--detector] [--log-metrics]  # P5-T3, per-stage fps tagged with hardware
