@@ -124,3 +124,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:30 | write | docs/phase_reports/phase-0.md DRAFT (P0-T1..T4 MET, T5/T7 PARTIAL, T6 UNMET; unsigned - developer signs at gate); re-ran scripts/report.py (REPORT.md regenerated, 0 measurements)
 - 2026-10-01 03:30 | deferred | Phase 0 gate sign-off and risk re-rating: developer
 - 2026-10-01 03:30 | commit | phase 0 draft
+- 2026-10-01 03:30 | merge | docs-phase0-draft -> main (local only)
