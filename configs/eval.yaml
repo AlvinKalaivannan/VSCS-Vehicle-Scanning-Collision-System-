@@ -47,6 +47,13 @@ report_metrics:
   - egomotion_drift_frac
 
 # How the risk metrics above are computed (src/vscs/eval/metrics.py).
+labels3d:
+  # scripts/score_labels.py (P2-T3/T4/T5). Gold points are exported from the fuse run's own
+  # points_veh.ply, so each has an exact twin in the cloud; this only absorbs the ASCII
+  # export's rounding. It must stay far below the point spacing (~1 cm dense) so a gold
+  # point can never be matched to a neighbour.
+  match_tolerance_m: 0.001
+
 risk_metrics:
   # The alert level that counts as "flagged" / "warned" for attribution and lead time.
   flag_level: "warning"
