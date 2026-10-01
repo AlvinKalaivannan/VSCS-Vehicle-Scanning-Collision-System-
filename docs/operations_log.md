@@ -111,3 +111,7 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:22 | note | laptop CPU rehearsal (synthetic 1280x720): decode 0.8 ms, perception step 7.4 ms (136 fps); detector ~750 ms (ADR 0011) is the bottleneck. Not logged to metrics (rehearsal, not the T4 figure)
 - 2026-10-01 03:22 | commit | P5-T3 benchmark tool
 - 2026-10-01 03:22 | merge | p5-t3-benchmark -> main (local only)
+- 2026-10-01 03:23 | branch | p4-t2-ground-vo from main
+- 2026-10-01 03:25 | write | src/vscs/perception/egomotion.py (ground-plane VO: ORB on road pixels -> ground points -> RANSAC 2D Kabsch), configs/perception.yaml egomotion.vo, tests/unit/test_egomotion.py (rendered textured road via exact ground homography)
+- 2026-10-01 03:25 | note | VO on an ideal rendered road (flat, textured, perfect calibration): 2.0 m reversing arc, drift 0.20 cm (0.10%), yaw 20.03 vs 20.0 deg, ~1100 inliers/step. Real asphalt/blur/rolling shutter will be worse; IMU fusion still to come (P4-T2 visual-inertial)
+- 2026-10-01 03:25 | commit | P4-T2 ground VO
