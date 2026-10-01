@@ -101,3 +101,7 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:19 | write | notebooks/colab/30_perceive.ipynb (thin wrapper: GPU check, Drive, clone, install w/o torch pin, run scripts/perceive.py)
 - 2026-10-01 03:19 | commit | perceive notebook
 - 2026-10-01 03:19 | merge | p4-perceive-notebook -> main (local only)
+- 2026-10-01 03:20 | branch | docs-readme-credits from main (README edit started on main, carried over uncommitted)
+- 2026-10-01 03:20 | data | licences re-verified at source 2026-10-01: Grounding DINO tiny weights + code Apache-2.0 (HF card, GitHub); SAM 2 code + checkpoints Apache-2.0 (repo README licence section); CoACD MIT
+- 2026-10-01 03:20 | write | README.md: 'Third-party models, datasets and methods' section with full citations (Grounding DINO ECCV 2024; SAM 2 ICLR 2025; RT-DETR CVPR 2024; COLMAP CVPR/ECCV 2016; CoACD TOG 2022; ByteTrack ECCV 2022) and dataset licence/provenance/allowed-use; nuScenes row omitted on main (registered only on unmerged docs-streaming-merge)
+- 2026-10-01 03:20 | commit | README credits
