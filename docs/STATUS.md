@@ -31,6 +31,14 @@ health: ON TRACK
     and `benchmark`.
   - The Phase 0 report draft.
   - **Every script planned for Phases 0–5 now exists.**
+  - `docs/runbook.md`: every command from capture day to evaluation, in order.
+  - **The offline chain now has no missing commands:**
+    - `scripts/scale.py` (P1-T6): writes `sfm_to_veh.json`;
+    - `scripts/fuse.py` (P2-T3/T5): writes `cleaned.npz` for `export_model.py`.
+
+    Both wrap your drafts and stop with exit 3 until those exist. The dense stage now
+    writes the undistorted cameras as text, and `20_seg.ipynb` masks the undistorted
+    images, which fusion needs pixel-aligned.
   - All on the fixture, and all merged locally.
 - **ADR 0008 / proposed ADR 0009** (streaming merge) are on branch `docs-streaming-merge`,
   **not merged**, awaiting your OK.
@@ -40,7 +48,7 @@ health: ON TRACK
 
 **None.** `metrics/results.jsonl` is empty; nothing has been measured on real data.
 
-Session evidence (tests, not metrics): `main` **776 passed, 1 skipped**; ruff clean; coverage 94.6% at last measurement (common/ and risk/ above the 80% target).
+Session evidence (tests, not metrics): `main` **860 passed, 1 skipped**; ruff clean; coverage 94.6% at last measurement (common/ and risk/ above the 80% target).
 
 ## Blockers — decisions and work only you can do
 
@@ -54,7 +62,26 @@ Session evidence (tests, not metrics): `main` **776 passed, 1 skipped**; ruff cl
    - Rate R-17 to R-19.
    - Push OK, after you verify (`docs/operations_log.md` lists everything done autonomously).
    - Approve ADR 0009 (zones) and merge `docs-streaming-merge`; decide the NC media policy and LGPL ffmpeg.
-   - **ADR 0010 (proposed):** grade near misses by time of closest approach. The end-to-end fixture drive raises 'critical' 2.2 s early on a 0.30 m bumper near miss. Needs a schema field.
+   - **Decided 2026-10-01:**
+     - ADR 0012 accepted; the capture checklist now has the rear track (scan day) and the
+       per-pass hub-mark poses (lot day).
+     - Missing COLMAP depth means "cannot tell": no vote. `fuse_inputs` writes NaN, and the
+       `fusion3d` contract on `p2-t3-fusion` says so, with a target test.
+     - `body_select` approved.
+     - Wheelbase is checked from the segmented wheels (`check_wheelbase.py`, ADR 0013), or
+       the gate is narrowed if that proves less accurate. Decide on the first real scan.
+     - **ADR 0010 accepted and implemented:** schema 2, `ComponentRisk.t_closest_s`. On the
+       fixture drive, critical now comes at 1.6 s (contact 0.75 s away), not at 0.2 s.
+       Your `sweep.py` contract reports `t_closest_s` (3 new target tests).
+     - **Limits addressed:**
+       - P4-T1 depth error by range bucket now has a script that produces it;
+       - P4-T2 drift is gated on straight passes only;
+       - a third (front-left) hub mark catches swaps and across-misreads;
+       - the half-voxel inset prototype (`model.yaml decompose.surface`).
+     - `limits_policy: exhaust-first` added to CLAUDE.md §0.
+   - **Collision surface decided** (you asked for the most accurate): `voxel_centres` at
+     2 cm (ADR 0014). Mean side error 1.13 → 0.20 cm, volume error 33% → 7.5%, same time.
+     1 cm voxels need points ≤ 3 mm apart; re-check that on the real dense cloud.
    - Review `p6-stream-scaffold` (streaming replay, queues, metrics, pipeline): unmerged.
    - Measure the camera mount on lot day (`configs/capture.yaml mount`); `perceive.py` refuses until then.
    - Sign the Phase 0 report when P0-T5..T7 are done (`docs/phase_reports/phase-0.md`).
@@ -68,7 +95,7 @@ None triggered.
 
 ## Next 3 tasks
 
-1. **Me:** streaming scaffolding (replay, queues, metrics, pipeline): unmerged until you review.
+1. **Me:** more plumbing and tests that need no data or decisions; keep branches current.
 2. **You:** verify the autonomous work; the three drafts; the Phase 0 captures.
 3. **October:** van scan, lot day, second vehicle.
 

@@ -24,7 +24,9 @@ from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator, m
 
 #: Bump on ANY change to the models below. Serialized streams carry it so a stale
 #: file is recognisable rather than silently misread.
-SCHEMA_VERSION = 1
+#: 2 (ADR 0010, 2026-10-01): ComponentRisk.t_closest_s added. Version-1 streams still
+#: load (the field defaults to None, which grades near misses by distance alone, as v1 did).
+SCHEMA_VERSION = 2
 
 AlertLevel = Literal["none", "caution", "warning", "critical"]
 ObstacleKind = Literal["static_geom", "person", "vehicle", "cyclist", "unknown"]
@@ -210,6 +212,13 @@ class ComponentRisk(_Base):
         description="None means no predicted contact within the horizon. "
         "This is NOT the same as a large TTC and must not be "
         "coerced to one.",
+    )
+    t_closest_s: float | None = Field(
+        default=None,
+        ge=0.0,
+        description="When the closest approach happens, seconds from now (ADR 0010): the "
+        "time of min_distance_m. Equals ttc_s for a predicted contact. None = not reported "
+        "(a schema-1 stream), and near misses are then graded by distance alone.",
     )
     p_contact: float = Field(ge=0.0, le=1.0)
     severity: float = Field(ge=0.0)

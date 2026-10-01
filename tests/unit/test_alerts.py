@@ -294,3 +294,32 @@ def test_no_flicker_when_ttc_hovers_on_a_threshold():
     filtered = _run(AlertStateMachine(CFG), frames)
     assert len(_changes(raw)) >= 50, "input is not noisy enough to test anything"
     assert len(_changes(filtered)) <= 2
+
+
+@pytest.mark.parametrize(
+    ("t_closest", "level"),
+    [
+        (None, "critical"),  # schema-1 risk: distance alone, as before ADR 0010
+        (2.5, "caution"),  # 0.2 m miss, but 2.5 s away: only inside the caution window
+        (1.5, "warning"),
+        (0.5, "critical"),
+        (3.5, "none"),  # beyond every level's time threshold
+    ],
+)
+def test_a_near_miss_is_graded_by_when_as_well_as_how_close_adr_0010(t_closest, level):
+    r = _risk(0.20).model_copy(update={"t_closest_s": t_closest})
+    assert raw_level([r], CFG) == level
+
+
+def test_a_far_near_miss_does_not_hold_a_level_through_the_deadband():
+    """Release uses the same widened thresholds for time: 2.2 s is inside warning's
+    release window (2.0 + 0.3 s), so a warning would hold; 2.4 s is not."""
+    hyst = CFG["alerts"]["hysteresis"]
+    kw = {
+        "distance_offset_m": hyst["deescalate_distance_hysteresis_m"],
+        "ttc_offset_s": hyst["deescalate_ttc_hysteresis_s"],
+    }
+    near = _risk(0.20).model_copy(update={"t_closest_s": 2.2})
+    far = _risk(0.20).model_copy(update={"t_closest_s": 2.4})
+    assert raw_level([near], CFG, **kw) == "warning"
+    assert raw_level([far], CFG, **kw) == "caution"

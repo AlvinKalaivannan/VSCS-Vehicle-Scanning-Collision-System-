@@ -13,7 +13,8 @@ that workspace's *undistorted* images (dense/images), so masks and depth maps li
 puts everything in the metric veh frame.
 
 Writes a new data/processed/seg/<run>/ folder: fused.npz (labels, confidence, n_obs),
-cleaned.npz (points, labels, names - the input of scripts/export_model.py) and
+cleaned.npz (points, labels, names - the input of scripts/export_model.py),
+points_veh.ply (the cloud to hand-label for P2-T4, see scripts/score_labels.py) and
 fuse_summary.json. The fusion is the developer's seg/fusion3d.py (P2-T3); until it exists
 this script stops with a clear message (exit code 3).
 """
@@ -156,6 +157,7 @@ def main(argv: list[str] | None = None) -> int:
         n_obs=n_obs,
         names=np.array(names),
     )
+    trimesh.PointCloud(points).export(run_dir / "points_veh.ply")
     cleaned = cleanup_labels(points, labels, ccfg)
     np.savez_compressed(
         run_dir / "cleaned.npz", points=points, labels=cleaned.labels, names=np.array(names)

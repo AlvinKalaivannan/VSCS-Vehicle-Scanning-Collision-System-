@@ -28,7 +28,13 @@ from vscs.common.config import config_dir, load_config, repo_root
 from vscs.common.io import append_metric, make_run_dir, read_jsonl, write_json
 from vscs.common.log import setup_logging
 from vscs.common.types import RiskFrame
-from vscs.eval.evaluate import PassTruthFull, guard_split, mark_test_split_used, score_system
+from vscs.eval.evaluate import (
+    PassTruthFull,
+    check_pass_split,
+    guard_split,
+    mark_test_split_used,
+    score_system,
+)
 
 
 def _frames(run: Path) -> list[RiskFrame]:
@@ -58,6 +64,11 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     spec = yaml.safe_load(args.passes.read_text(encoding="utf-8"))
+    try:
+        check_pass_split([str(p["id"]) for p in spec["passes"]], ev["splits"], args.split)
+    except PermissionError as exc:
+        print(f"refused: {exc}")
+        return 2
     vscs, base = [], []
     for p in spec["passes"]:
         t = p["truth"]
@@ -100,6 +111,19 @@ def main(argv: list[str] | None = None) -> int:
                         run_dir=str(rel),
                         notes=f"{result[system]['n_passes']} passes",
                     )
+        acc = result["vscs"]["component_attribution_accuracy"]
+        if args.split == "dev" and acc is not None:
+            # P3-T6's gate (eval.yaml thresholds): the share of dev passes on which the right
+            # component was flagged before the closest approach - attribution accuracy.
+            append_metric(
+                task="P3-T6",
+                metric="component_flagged_frac",
+                value=float(acc),
+                split="dev",
+                run_dir=str(rel),
+                notes="= component_attribution_accuracy__vscs, "
+                f"{result['vscs']['n_passes']} passes",
+            )
     if args.split == "test":
         mark_test_split_used(eval_path, ev["splits"])
         print("test split marked as used in", eval_path)

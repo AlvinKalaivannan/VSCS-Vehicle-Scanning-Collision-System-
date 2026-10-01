@@ -138,6 +138,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  {k:9s} {v:.3f} m  {tape}")
     if result.not_validated:
         print(f"  not validated here: {', '.join(result.not_validated)}")
+        if "wheelbase" in result.not_validated:
+            print("    wheelbase: run scripts/check_wheelbase.py after P2-T5 (ADR 0013)")
     print(
         f"scale_error_m {result.scale_error_m:.4f} (gate {result.max_dimension_error_m}): "
         f"{'PASS' if result.passed else 'FAIL'}"

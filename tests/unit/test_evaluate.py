@@ -106,6 +106,11 @@ def test_cli_dev_then_test_once(tmp_path):
     eval_copy.write_text(
         (repo_root() / "configs" / "eval.yaml").read_text(encoding="utf-8"), encoding="utf-8"
     )
+    from vscs.common.config import replace_top_level_block
+
+    replace_top_level_block(
+        eval_copy, "splits", {**EV["splits"], "dev": ["lot_001"], "test": ["lot_101"]}
+    )
     for name, frames in (
         (
             "v",
@@ -118,41 +123,55 @@ def test_cli_dev_then_test_once(tmp_path):
     ):
         (tmp_path / name).mkdir()
         write_jsonl(tmp_path / name / "risk_frames.jsonl", frames)
-    passes = tmp_path / "passes.yaml"
-    passes.write_text(
-        _yaml.safe_dump(
-            {
-                "passes": [
-                    {
-                        "id": "lot_001",
-                        "vscs": str(tmp_path / "v"),
-                        "baseline": str(tmp_path / "b"),
-                        "truth": {
-                            "component": "rear_right_bumper_corner",
-                            "t_event_ns": 5 * S,
-                            "event_onsets_ns": [5 * S],
-                        },
-                    }
-                ]
-            }
-        ),
-        encoding="utf-8",
-    )
+
+    def _passes(pass_id):
+        path = tmp_path / f"passes_{pass_id}.yaml"
+        path.write_text(
+            _yaml.safe_dump(
+                {
+                    "passes": [
+                        {
+                            "id": pass_id,
+                            "vscs": str(tmp_path / "v"),
+                            "baseline": str(tmp_path / "b"),
+                            "truth": {
+                                "component": "rear_right_bumper_corner",
+                                "t_event_ns": 5 * S,
+                                "event_onsets_ns": [5 * S],
+                            },
+                        }
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+        return path
+
     spec = importlib.util.spec_from_file_location(
         "eval_cli", repo_root() / "scripts" / "evaluate.py"
     )
     cli = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(cli)
-    base_args = [
-        "--passes",
-        str(passes),
-        "--eval-config",
-        str(eval_copy),
-        "--out-root",
-        str(tmp_path / "o"),
-    ]
-    assert cli.main([*base_args, "--split", "dev"]) == 0
-    assert cli.main([*base_args, "--split", "test"]) == 2  # no --final
-    assert cli.main([*base_args, "--split", "test", "--final"]) == 0  # the one permitted run
-    assert cli.main([*base_args, "--split", "test", "--final"]) == 2  # never twice
+    common = ["--eval-config", str(eval_copy), "--out-root", str(tmp_path / "o")]
+    dev = [*common, "--passes", str(_passes("lot_001"))]
+    test = [*common, "--passes", str(_passes("lot_101"))]
+    assert cli.main([*dev, "--split", "dev"]) == 0
+    # R-09: a pass is scored only under the split ingest gave it.
+    assert cli.main([*test, "--split", "dev"]) == 2  # a test pass under dev: refused
+    assert cli.main([*dev, "--split", "test", "--final"]) == 2  # a dev pass under test
+    assert cli.main([*test, "--split", "test"]) == 2  # no --final
+    assert "test_split_used: false" in eval_copy.read_text(encoding="utf-8")
+    assert cli.main([*test, "--split", "test", "--final"]) == 0  # the one permitted run
+    assert cli.main([*test, "--split", "test", "--final"]) == 2  # never twice
     assert "test_split_used: true" in eval_copy.read_text(encoding="utf-8")
+
+
+def test_check_pass_split_messages():
+    from vscs.eval.evaluate import check_pass_split
+
+    splits = {"dev": ["a", "b"], "test": ["c"]}
+    check_pass_split(["a", "b"], splits, "dev")
+    with pytest.raises(PermissionError, match="belong to the test split"):
+        check_pass_split(["a", "c"], splits, "dev")
+    with pytest.raises(PermissionError, match="not listed"):
+        check_pass_split(["z"], splits, "dev")

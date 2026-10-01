@@ -194,3 +194,55 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 04:11 | commit | P1-T6 plumbing
 - 2026-10-01 04:11 | merge | p1-t6-scale-cli -> main (local only)
 - 2026-10-01 04:13 | merge | main -> p6-stream-scaffold (refresh; log conflict resolved by keeping both sides); branch still unmerged
+- 2026-10-01 04:13 | note | p6-stream-scaffold refreshed with main; still unmerged
+- 2026-10-01 04:13 | write | docs/STATUS.md checkpoint (802 passed; fuse/scale plumbing; three new questions for the developer)
+- 2026-10-01 04:16 | branch | p2-t4-score-labels from main
+- 2026-10-01 04:16 | write | src/vscs/eval/labels3d.py, scripts/score_labels.py, tests/unit/test_labels3d.py; eval.yaml labels3d.match_tolerance_m: 0.001; fuse.py writes points_veh.ply for hand-labelling
+- 2026-10-01 04:16 | test | 814 passed, 1 skipped; ruff clean
+- 2026-10-01 04:16 | commit | label scoring
+- 2026-10-01 04:16 | merge | p2-t4-score-labels -> main (local only)
+- 2026-10-01 04:20 | branch | metrics-producers from main
+- 2026-10-01 04:20 | write | scripts/calibrate.py appends reprojection_error_px itself (run folder + calibration_result.json); scripts/evaluate.py appends component_flagged_frac (P3-T6) on dev; tests/unit/test_metric_producers.py
+- 2026-10-01 04:20 | test | 819 passed, 1 skipped; ruff clean
+- 2026-10-01 04:20 | commit | metric producers
+- 2026-10-01 04:20 | merge | metrics-producers -> main (local only)
+- 2026-10-01 04:24 | branch | r09-pass-split-guard from main
+- 2026-10-01 04:24 | write | eval/evaluate.py check_pass_split + scripts/evaluate.py refuses passes outside the requested split (R-09); tests declare their splits; runbook note
+- 2026-10-01 04:24 | test | 820 passed, 1 skipped; ruff clean
+- 2026-10-01 04:24 | commit | R-09 pass split guard
+- 2026-10-01 04:24 | merge | r09-pass-split-guard -> main (local only)
+- 2026-10-01 04:29 | branch | adr-0012-lot-truth from main
+- 2026-10-01 04:29 | write | docs/decisions/0012-lot-ground-truth-van-pose-proposed.md (PROPOSED: checklist change is the developer's decision; checklist NOT edited)
+- 2026-10-01 04:29 | write | src/vscs/eval/lot_truth.py, scripts/score_perception.py (P3-T2 producer), tests/unit/test_lot_truth.py; eval.yaml lot_truth (PROPOSED); runbook, §12, STATUS
+- 2026-10-01 04:29 | test | 832 passed, 1 skipped; ruff clean
+- 2026-10-01 04:29 | commit | ADR 0012 + P3-T2 scorer
+- 2026-10-01 04:29 | merge | adr-0012-lot-truth -> main (local only; ADR stays proposed)
+- 2026-10-01 08:43 | branch | p4-t2-drift-producer from main
+- 2026-10-01 08:43 | write | eval/lot_truth.ego_drift + score_perception.py appends egomotion_drift_frac (P4-T2) from ADR 0012 start/end poses; eval.yaml lot_truth.min_drift_displacement_m: 1.0 (PROPOSED)
+- 2026-10-01 08:43 | test | 835 passed, 1 skipped; ruff clean
+- 2026-10-01 08:43 | commit | P4-T2 drift producer
+- 2026-10-01 08:43 | merge | p4-t2-drift-producer -> main (local only)
+- 2026-10-01 10:49 | decision | developer: ADR 0012 approved; missing depth = can't tell; body_select approved; wheelbase via segmented wheels or a narrowed gate, whichever is more accurate
+- 2026-10-01 10:49 | branch | adr-0012-accept from main
+- 2026-10-01 10:49 | write | ADR 0012 accepted (renamed, status), capture checklist: rear track on scan day + per-pass hub-mark poses; recon.yaml body_select approved; PROPOSED tags removed
+- 2026-10-01 10:50 | write | fuse_inputs: missing COLMAP depth -> NaN ("cannot tell", developer's decision)
+- 2026-10-01 11:06 | write | eval/dimensions.py, scripts/check_wheelbase.py, tests/unit/test_wheelbase.py, ADR 0013 (accepted); eval.yaml wheelbase block + wheelbase_error_m gate; scale.py points to it; runbook, §12, STATUS
+- 2026-10-01 11:06 | test | 842 passed, 1 skipped; ruff clean
+- 2026-10-01 11:06 | commit | wheelbase check + decisions applied
+- 2026-10-01 11:06 | merge | adr-0012-accept -> main (local only)
+- 2026-10-01 11:07 | write | p2-t3-fusion (developer's draft branch): contract docstring + red target test test_a_pixel_without_depth_cannot_tell (NaN and inf); fast-forwarded; 13 targets red on the stub only
+- 2026-10-01 11:22 | write | .gitignore: docs/private/ (developer request); private technical guide lives there, never committed
+- 2026-10-01 11:22 | merge | docs-private-ignore -> main (local only)
+- 2026-10-01 11:29 | write | docs/private/TECHNICAL_GUIDE.md (gitignored, never committed): ~10.9k-word technical guide, every component, from code/branches/ADRs
+- 2026-10-01 11:36 | decision | developer approved addressing: own limits (depth producer, straight/curve drift gating, slow-test check), third hub mark, half-voxel inset prototype, ADR 0010
+- 2026-10-01 11:36 | write | P4-T1 depth_error producer + straight-only P4-T2 drift gating (score_perception, lot_truth, eval.yaml lot_truth depth buckets), ADR 0012 amendment, checklist note, runbook; pytest --durations: slowest test 38 s, the 14-min run was laptop load
+- 2026-10-01 11:37 | write | third (front-left) hub mark: HubMarks.front_left_hub_m + LotTruth.wheelbase_m, swap/heading check in veh_pose_in_lot, eval.yaml front_mark_tolerance_m 0.05, checklist + ADR 0012 amendment (approved)
+- 2026-10-01 11:40 | write | decompose.surface voxel_centres prototype (half-voxel inset of the voxel surface; sheets keep faces); model.yaml surface: voxel_faces (default unchanged), inset_min_depth_voxels 2.0; 5 tests; fixture: faces +1..2 cm per side, centres 0 +/-1 cm
+- 2026-10-01 11:41 | write | CLAUDE.md §0 Limits policy: limits_policy: exhaust-first (developer instruction)
+- 2026-10-01 11:56 | write | ADR 0010 accepted+implemented: ComponentRisk.t_closest_s, SCHEMA_VERSION 2 (v1 streams load; None = distance-only), alerts near-miss 'close and soon', aggregate passthrough, oracle reports it; pinned e2e test flipped (critical now at 1.6 s, not 0.2 s); 860 passed
+- 2026-10-01 11:57 | write | p3-t4-sweep (developer's draft branch): SweepResult.t_closest_s contract + 3 red target tests; fast-forwarded
+- 2026-10-01 11:57 | merge | limits-drift-depth, limits-third-hub-mark, limits-voxel-inset, adr-0010-near-miss-timing -> main (local only)
+- 2026-10-01 11:57 | write | STATUS + devlog: limits session
+- 2026-10-01 12:20 | decision | developer: use the most accurate collision surface -> measured 4 options; voxel_centres @ 2 cm chosen (ADR 0014); 1 cm fails at realistic density; details in the private guide
+- 2026-10-01 12:20 | merge | p2-t6-surface-voxel-centres -> main (local only)
+- 2026-10-01 12:46 | push | main -> origin (64ae48b..87bf565, 203 commits) on the developer's instruction, after checks: no data/.env/private files, no files >1 MB, no real secrets (one fake test key), no trailers, single author
