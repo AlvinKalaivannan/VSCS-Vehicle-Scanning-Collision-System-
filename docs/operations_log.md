@@ -227,3 +227,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 11:57 | merge | limits-drift-depth, limits-third-hub-mark, limits-voxel-inset, adr-0010-near-miss-timing -> main (local only)
 - 2026-10-01 11:57 | write | STATUS + devlog: limits session
 - 2026-10-01 12:20 | decision | developer: use the most accurate collision surface -> measured 4 options; voxel_centres @ 2 cm chosen (ADR 0014); 1 cm fails at realistic density; details in the private guide
+- 2026-10-01 12:20 | merge | p2-t6-surface-voxel-centres -> main (local only)
