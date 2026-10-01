@@ -44,6 +44,14 @@ the depth map stores) and ``tol = fusion3d.occlusion_depth_tolerance_m``. A poin
 behind the surface is occluded. The tolerance absorbs depth-map noise and the fact that
 a pixel covers a small patch of surface, not one point.
 
+**No depth at that pixel means the frame cannot tell** (the developer's decision,
+2026-10-01). COLMAP leaves pixels empty wherever its geometric filter found no consistent
+depth, and glossy panels (R-01) leave many such holes. If an empty pixel counted as "no
+surface, so visible", every point behind a hole would vote through the van. So a point
+is visible only where ``D_i[v, u]`` is **finite**. Careful: ``np.nan`` comparisons are
+already False, but ``np.inf + tol`` is ``inf`` and ``z <= inf`` is True, so test
+``np.isfinite`` explicitly.
+
 Without this test the vote is dominated by frames looking *through* the van, which is
 the textbook failure of naive label projection. ``test_fusion3d.py`` has a test that
 shows the wrong answer appearing when the tolerance is set to infinity.
@@ -98,7 +106,9 @@ class PosedView:
 
     ``labels[v, u]`` is a component index in ``0 .. n_classes-1`` or ``NONE_LABEL``.
     ``depth[v, u]`` is z-depth in metres of the first surface along that pixel's ray, and
-    ``inf`` where there is none. Both are ``(H, W)`` and pixel-aligned.
+    non-finite (NaN from a COLMAP hole, inf from the fixture renderer's background) where
+    it is unknown: the frame then cannot tell, and casts no vote there. Both are
+    ``(H, W)`` and pixel-aligned.
     """
 
     K: FloatArray
@@ -126,7 +136,8 @@ def observe(
     """What one frame says about each point.
 
     Returns ``(pixel_label (N,), visible (N,))``. ``visible`` is True only for points in
-    front of the camera, inside the image, and passing the depth test (step 2).
+    front of the camera, inside the image, on a pixel with a finite depth, and passing
+    the depth test (step 2).
     ``pixel_label`` is the mask value under each visible point, and ``NONE_LABEL`` where
     ``visible`` is False.
     """

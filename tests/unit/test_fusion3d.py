@@ -120,6 +120,21 @@ def test_observe_rejects_an_occluded_point():
     assert vis.tolist() == [False] and lab.tolist() == [NONE_LABEL]
 
 
+def test_a_pixel_without_depth_cannot_tell():
+    """No depth estimate (a COLMAP hole: NaN; renderer background: inf) means no vote.
+
+    Otherwise the occluded front bumper would be "visible" through a hole in the rear
+    doors' depth map and vote for the rear bumper's label (developer, 2026-10-01).
+    """
+    view = _behind_view()
+    for hole in (np.nan, np.inf):
+        holed = F.PosedView(view.K, view.T_cam_world, view.labels, np.full_like(view.depth, hole))
+        p = np.array([[-1.0, 0.0, 0.6], [4.0, 0.0, 0.6]])  # visible rear, occluded front
+        lab, vis = F.observe(p, holed, TOL)
+        assert vis.tolist() == [False, False]
+        assert lab.tolist() == [NONE_LABEL, NONE_LABEL]
+
+
 def test_without_the_depth_test_the_occluded_point_gets_the_wrong_label():
     """Why step 2 exists: an infinite tolerance is naive projection."""
     view = _behind_view()
