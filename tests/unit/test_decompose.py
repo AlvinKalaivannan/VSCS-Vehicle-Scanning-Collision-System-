@@ -157,8 +157,8 @@ def _wheel():
     return box, _surface_points(mesh)
 
 
-def test_default_surface_is_unchanged():
-    assert CFG.get("surface", "voxel_faces") == "voxel_faces"
+def test_default_surface_is_the_voxel_centres_adr_0014():
+    assert CFG["surface"] == "voxel_centres"
 
 
 # The collapsed slab below has zero volume, and trimesh divides by it for a centre of mass.

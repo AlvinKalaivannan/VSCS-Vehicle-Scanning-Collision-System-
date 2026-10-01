@@ -79,10 +79,9 @@ Session evidence (tests, not metrics): `main` **860 passed, 1 skipped**; ruff cl
        - a third (front-left) hub mark catches swaps and across-misreads;
        - the half-voxel inset prototype (`model.yaml decompose.surface`).
      - `limits_policy: exhaust-first` added to CLAUDE.md §0.
-   - **Your call: collision surface.** `voxel_faces` (default) is 1–2 cm outside the true
-     surface on every side: conservative. `voxel_centres` removes that bias, but leaves
-     ±1 cm voxel quantization, sometimes on the inside. Fixture box volume error, faces →
-     centres: door +64% → +20%, front bumper +31% → +9%, wheel +16% → 0%.
+   - **Collision surface decided** (you asked for the most accurate): `voxel_centres` at
+     2 cm (ADR 0014). Mean side error 1.13 → 0.20 cm, volume error 33% → 7.5%, same time.
+     1 cm voxels need points ≤ 3 mm apart; re-check that on the real dense cloud.
    - Review `p6-stream-scaffold` (streaming replay, queues, metrics, pipeline): unmerged.
    - Measure the camera mount on lot day (`configs/capture.yaml mount`); `perceive.py` refuses until then.
    - Sign the Phase 0 report when P0-T5..T7 are done (`docs/phase_reports/phase-0.md`).
