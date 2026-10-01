@@ -155,3 +155,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:44 | merge | p5-t2-evaluate-cli -> main (local only)
 - 2026-10-01 03:45 | write | devlog + STATUS checkpoint c
 - 2026-10-01 03:45 | commit | docs checkpoint c
+- 2026-10-01 03:45 | merge | docs-1001-c -> main (local only)
