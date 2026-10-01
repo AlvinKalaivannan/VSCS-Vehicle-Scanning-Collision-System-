@@ -74,3 +74,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:08 | write | tests/unit/test_drive_end_to_end.py (stub detector -> perception -> engine w/ reference sweep -> metrics), depth.py limitation note, RISKS.md near-miss row (R-07)
 - 2026-10-01 03:08 | note | fixture drive (reverse 1 m/s to a pole behind the rear-right corner, contact 2.47 s): first warning at 0.2 s naming rear_right_bumper_corner, lead 2.27 s, TTC error median 0.16 s; BUT alert critical from 0.2 s because box-only v0 fattened the 6 cm pole to 0.45 m and shifted it 0.22 m sideways (rear bumper near miss graded critical). Pinned as known limitation; fix belongs with masks/learned depth
 - 2026-10-01 03:08 | commit | end-to-end fixture drive
+- 2026-10-01 03:08 | merge | p3-t6-fixture-e2e -> main (local only)
