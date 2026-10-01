@@ -230,3 +230,5 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 12:20 | merge | p2-t6-surface-voxel-centres -> main (local only)
 - 2026-10-01 12:46 | push | main -> origin (64ae48b..87bf565, 203 commits) on the developer's instruction, after checks: no data/.env/private files, no files >1 MB, no real secrets (one fake test key), no trailers, single author
 - 2026-10-01 13:14 | write | CLAUDE.md §12: score_perception moved from 'External datasets' to 'Per-drive pipeline' (misplaced earlier)
+- 2026-10-01 13:14 | merge | main -> docs-streaming-merge, docs-streaming-merge -> p6-stream-scaffold (refresh; CLAUDE.md + ops log conflicts resolved; 861 / 888 passed); branches still unmerged into main
+- 2026-10-01 13:14 | push | p1-t6-scale, p2-t3-fusion, p3-t4-sweep, docs-streaming-merge, p6-stream-scaffold -> origin (developer approved; checked: no trailers/data/secrets, single author). backup/pre-trailer-strip NOT pushed
