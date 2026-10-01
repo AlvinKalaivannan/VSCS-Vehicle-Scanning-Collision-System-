@@ -133,3 +133,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:32 | branch | p4-t6-turning-check from main
 - 2026-10-01 03:34 | write | test: underbody footprint motion equals frames.transform_points on turning paths (hardest left/right, mid and end of horizon)
 - 2026-10-01 03:34 | commit | turning-path check
+- 2026-10-01 03:34 | merge | p4-t6-turning-check -> main (local only)
