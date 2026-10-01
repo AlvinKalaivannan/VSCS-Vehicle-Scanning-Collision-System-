@@ -35,6 +35,9 @@ detect:
   # Must stay Apache/MIT licensed. Ultralytics YOLO is AGPL and is not an option
   # without the developer accepting open-sourcing obligations (CLAUDE.md §10).
   engine: "rtdetr"
+  # RT-DETR (Zhao et al., "DETRs Beat YOLOs on Real-time Object Detection", CVPR 2024); code and
+  # weights Apache-2.0 (verified 2026-10-01; ADR 0011). COCO-trained: class names are COCO's.
+  model_id: "PekingU/rtdetr_r18vd"
   score_threshold: 0.40
   classes: ["person", "bicycle", "car", "truck", "bus", "motorcycle"]
 
