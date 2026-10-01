@@ -49,3 +49,6 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:46 | commit | P6-T2 queue (branch p6-stream-scaffold, unmerged)
 - 2026-10-01 02:47 | write | src/vscs/stream/metrics.py (StreamFrame, breakdown, LatencyRecorder, over_budget), tests/unit/test_stream_metrics.py (exact latency accounting)
 - 2026-10-01 02:47 | commit | P6-T3 metrics (branch p6-stream-scaffold, unmerged)
+- 2026-10-01 02:48 | write | src/vscs/stream/replay.py (FileReplay at native t_ns; reads extract_frames runs), tests/unit/test_stream_replay.py
+- 2026-10-01 02:48 | deferred | RTSP replay rung (ffmpeg/GStreamer, LGPL): needs developer's licence decision (§10)
+- 2026-10-01 02:48 | commit | P6-T1 file replay (branch p6-stream-scaffold, unmerged)
