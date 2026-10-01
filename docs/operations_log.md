@@ -165,3 +165,8 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:50 | write | docs/runbook.md: capture day -> evaluation, every command checked against --help; two chain gaps marked (P1-T6 vehicle frame needs scale.py; P2-T3/T5 fusion CLI needs fusion3d.py); warns that masks for fusion must be computed on the dense workspace's undistorted images
 - 2026-10-01 03:50 | commit | runbook
 - 2026-10-01 03:50 | merge | docs-runbook -> main (local only)
+- 2026-10-01 04:04 | branch | p2-t3-fuse-cli from main
+- 2026-10-01 04:04 | write | src/vscs/seg/fuse_inputs.py, scripts/fuse.py, tests/unit/test_fuse_inputs.py: fusion plumbing around the developer's fusion3d (exit 3 until it exists); no fusion algorithm written
+- 2026-10-01 04:04 | write | recon/dense.py: model_converter step -> dense/sparse_txt; 20_seg.ipynb now masks the undistorted images; seg.yaml fusion3d.views_per_batch: 16 (memory only)
+- 2026-10-01 04:04 | test | 793 passed, 1 skipped; ruff clean
+- 2026-10-01 04:04 | commit | P2-T3 fusion plumbing

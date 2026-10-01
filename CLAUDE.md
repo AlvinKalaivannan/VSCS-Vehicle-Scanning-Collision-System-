@@ -544,6 +544,7 @@ python scripts/extract_frames.py --video data/raw/<id>/<clip>              # P1-
 python scripts/recon.py --frames-run data/processed/capture/<run>          # P1-T5, needs COLMAP
 python scripts/dense.py --recon-run <run> --images <frames>              # P1-T7, Colab (notebooks/colab/10_dense.ipynb)
 python scripts/seg.py --frames <frames> --sam2-dir <sam2 checkout>         # P2-T2, Colab (notebooks/colab/20_seg.ipynb)
+python scripts/fuse.py --dense-run <run> --seg-run <run> --sfm-to-veh <json> # P2-T3/T5: needs fusion3d.py + P1-T6
 python scripts/export_model.py --labelled <cleaned.npz> --scale-error-m <m> # P2-T6..T8: decompose + URDF
 
 # Per-drive pipeline
