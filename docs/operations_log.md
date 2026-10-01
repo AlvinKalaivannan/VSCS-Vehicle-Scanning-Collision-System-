@@ -59,3 +59,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:58 | write | src/vscs/risk/underbody.py (swept footprint vs height map clearance), configs/risk.yaml underbody block, tests/unit/test_underbody.py
 - 2026-10-01 02:58 | note | P4-T6 fixture: kerb 0.12 m flags rear wheels only (ttc ~1.65 s); underbody clears by 0.13 m, rear bumper by 0.28 m; a 0.30 m bump reaches the underbody
 - 2026-10-01 02:58 | commit | P4-T6 underbody clearance
+- 2026-10-01 02:58 | merge | p4-t6-underbody -> main (local only)
