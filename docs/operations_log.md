@@ -161,3 +161,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:47 | note | CLI chain passes in ~12 s: VO recovers the 2.4 m reverse within 5 cm; VSCS attribution 1.0 with >1 s lead; baseline attribution n/a
 - 2026-10-01 03:47 | commit | CLI chain integration test
 - 2026-10-01 03:47 | merge | test-cli-chain -> main (local only)
+- 2026-10-01 03:49 | note | p6-stream-scaffold brought up to date with main (805 passed on the branch); still unmerged
