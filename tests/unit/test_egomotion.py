@@ -91,3 +91,14 @@ def test_drift_over_a_two_metre_reversing_arc_is_under_five_percent():
     true = _pose(x, y, yaw)  # the last pose rendered (no update after the final frame)
     err = np.linalg.norm(vo.T_world_veh[:2, 3] - true[:2, 3])
     assert err < 0.05 * travelled  # < 5% of the 2.0 m travelled
+
+
+def test_a_lost_frame_coasts_on_the_last_motion():
+    vo = GroundVO(K, T_VEH_CAM, MAX_RANGE, VO, SEED)
+    vo.step(_render(_pose(0.0, 0.0, 0.0)))
+    vo.step(_render(_pose(-0.10, 0.0, 0.0)))  # learn a 10 cm reverse
+    before = vo.T_world_veh.copy()
+    blank = np.zeros((H, W, 3), np.uint8)
+    step = vo.step(blank)  # no texture: lost
+    assert step.T_prev_curr is None and vo.lost == 1
+    np.testing.assert_allclose(vo.T_world_veh[:2, 3] - before[:2, 3], [-0.10, 0.0], atol=0.01)

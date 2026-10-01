@@ -114,6 +114,8 @@ class GroundVO:
         self.matcher = cv2.BFMatcher(cv2.NORM_HAMMING)
         self.rng = np.random.default_rng(seed)
         self.T_world_veh = np.eye(4)
+        self.lost = 0
+        self._last_T: FloatArray | None = None
         self._prev: tuple[Any, Any] | None = None
         self._mask: npt.NDArray | None = None
 
@@ -135,13 +137,15 @@ class GroundVO:
         gray = self.cv2.cvtColor(image_rgb, self.cv2.COLOR_RGB2GRAY)
         kp, des = self._features(gray)
         prev, self._prev = self._prev, (kp, des)
-        if prev is None or des is None or prev[1] is None:
+        if prev is None:  # first frame: nothing to compare with yet, not a loss
             return VOStep(None, 0, 0)
+        if des is None or prev[1] is None:  # a featureless frame (or after one): lost
+            return self._coast(0)
         pairs = self.matcher.knnMatch(prev[1], des, k=2)
         ratio = float(self.cfg["ratio_test"])
         good = [m for m, *rest in pairs if rest and m.distance < ratio * rest[0].distance]
         if len(good) < 2:
-            return VOStep(None, len(good), 0)
+            return self._coast(len(good))
         uv_prev = np.array([prev[0][m.queryIdx].pt for m in good])
         uv_curr = np.array([kp[m.trainIdx].pt for m in good])
         g_prev, ok_p = ground_points(self.K, self.T_veh_cam, uv_prev, self.max_range)
@@ -149,8 +153,20 @@ class GroundVO:
         ok = ok_p & ok_c
         fit = ransac_rigid_2d(g_curr[ok, :2], g_prev[ok, :2], self.cfg, self.rng)
         if fit is None:
-            return VOStep(None, int(ok.sum()), 0)
+            return self._coast(int(ok.sum()))
         R, t, inl = fit
         T = planar_T(R, t)
         self.T_world_veh = self.T_world_veh @ T
+        self._last_T = T
         return VOStep(T, int(ok.sum()), int(inl.sum()))
+
+    def _coast(self, n_matches: int) -> VOStep:
+        """Lost this frame: repeat the last motion (constant velocity) and count it.
+
+        A pose that silently stops would make every obstacle appear to move with the van;
+        coasting keeps it moving, and ``lost`` tells the caller how far to trust it.
+        """
+        self.lost += 1
+        if self._last_T is not None:
+            self.T_world_veh = self.T_world_veh @ self._last_T
+        return VOStep(None, n_matches, 0)

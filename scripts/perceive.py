@@ -4,7 +4,7 @@
 Thin CLI only - logic lives in src/vscs/perception/ (CLAUDE.md section 3).
 
     python scripts/perceive.py --frames-run data/processed/capture/<run>
-                               [--ego-poses <poses.jsonl>] [--device cuda]
+                               [--ego vo|stationary|file] [--ego-poses <poses.jsonl>]
 
 Each frame is undistorted (P0-T7 intrinsics), run through the RT-DETR detector (ADR 0011),
 then perception: static objects into the persistent height map, people/vehicles/cyclists
@@ -12,9 +12,10 @@ into the tracker. Writes obstacles.jsonl (one §4.2 Obstacle per line, in each f
 veh frame) and detections.jsonl into a new data/processed/perception/<run>/.
 
 Needs the camera calibrated (configs/capture.yaml intrinsics.calibrated) and its mount
-measured (mount.measured), and refuses otherwise. Without --ego-poses the van is assumed
-STATIONARY (right for the P4-T4 staged walk-behind clip; wrong for a moving drive until
-P4-T2 ego-motion exists). The detector needs torch: run it on Colab or in a GPU env.
+measured (mount.measured), and refuses otherwise. Ego-motion (--ego): "vo" (default)
+estimates it from the road surface (ground-plane visual odometry, P4-T2); "stationary"
+fixes the van (the P4-T4 staged walk-behind clip); "file" reads --ego-poses. The detector
+needs torch: run it on Colab or in a GPU env.
 """
 
 from __future__ import annotations
@@ -33,6 +34,7 @@ from vscs.common.config import load_config
 from vscs.common.frames import look_at_T_world_cam
 from vscs.common.io import make_run_dir, read_jsonl, write_jsonl
 from vscs.common.log import get_logger, setup_logging
+from vscs.perception.egomotion import GroundVO
 from vscs.perception.pipeline import Perception
 
 logger = get_logger("scripts.perceive")
@@ -61,8 +63,9 @@ def main(argv: list[str] | None = None) -> int:
         epilog="\n".join(__doc__.splitlines()[1:]),
     )
     parser.add_argument("--frames-run", type=Path, required=True)
+    parser.add_argument("--ego", choices=["vo", "stationary", "file"], default="vo")
     parser.add_argument(
-        "--ego-poses", type=Path, default=None, help="JSON Lines: t_ns, T_world_veh (16)"
+        "--ego-poses", type=Path, default=None, help="with --ego file: t_ns, T_world_veh (16)"
     )
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--out-root", type=Path, default=None)
@@ -90,13 +93,20 @@ def main(argv: list[str] | None = None) -> int:
     setup_logging(run_dir=run_dir, level=logging.INFO)
 
     poses = {}
-    if args.ego_poses:
+    vo = None
+    if args.ego == "file":
+        if not args.ego_poses:
+            print("--ego file needs --ego-poses")
+            return 2
         poses = {
             int(r["t_ns"]): np.asarray(r["T_world_veh"], dtype=np.float64).reshape(4, 4)
             for r in read_jsonl(args.ego_poses)
         }
+    elif args.ego == "vo":
+        eg = pcfg["egomotion"]
+        vo = GroundVO(K, T_veh_cam, float(pcfg["depth"]["max_range_m"]), eg["vo"], int(eg["seed"]))
     else:
-        logger.warning("no --ego-poses: assuming the van is STATIONARY for the whole run")
+        logger.warning("--ego stationary: the van is assumed not to move for the whole run")
 
     detector = make_detector(pcfg["detect"], args.device)
     perception = Perception(pcfg, K, T_veh_cam, (w, h))
@@ -111,11 +121,17 @@ def main(argv: list[str] | None = None) -> int:
         detections.extend(
             {"t_ns": t_ns, "cls": b.cls, "score": b.score, "xyxy": list(b.xyxy)} for b in boxes
         )
-        T_world_veh = poses.get(t_ns, np.eye(4))
+        if vo is not None:
+            vo.step(img)
+            T_world_veh = vo.T_world_veh
+        else:
+            T_world_veh = poses.get(t_ns, np.eye(4))
         obstacles.extend(perception.step(t_ns, boxes, T_world_veh))
 
     write_jsonl(run_dir / "obstacles.jsonl", obstacles)
     write_jsonl(run_dir / "detections.jsonl", detections)
+    if vo is not None and vo.lost:
+        logger.warning("visual odometry lost the road on %d frame(s); motion was coasted", vo.lost)
     print(
         f"{len(detections)} detections -> {len(obstacles)} obstacle records\nrun folder: {run_dir}"
     )

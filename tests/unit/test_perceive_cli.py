@@ -99,6 +99,8 @@ def test_frames_become_an_obstacle_stream(cli, monkeypatch, tmp_path):
         [
             "--frames-run",
             str(_frames_run(tmp_path)),
+            "--ego",
+            "stationary",
             "--out-root",
             str(tmp_path / "o"),
         ]
@@ -111,3 +113,44 @@ def test_frames_become_an_obstacle_stream(cli, monkeypatch, tmp_path):
     assert all(o["source"] == "occupancy" for o in obs)
     last = obs[-1]
     assert abs(last["center_veh"][0] - (-3.5)) < 0.35 and abs(last["center_veh"][1] - (-1.0)) < 0.35
+
+
+def test_ego_file_needs_poses(cli, monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        cli, "load_config", lambda n: _capture_cfg() if n == "capture" else load_config(n)
+    )
+    monkeypatch.setattr(cli, "make_detector", lambda cfg, device: FakeDetector())
+    assert (
+        cli.main(
+            [
+                "--frames-run",
+                str(_frames_run(tmp_path)),
+                "--ego",
+                "file",
+                "--out-root",
+                str(tmp_path / "o"),
+            ]
+        )
+        == 2
+    )
+
+
+def test_ego_vo_runs_and_coasts_through_featureless_frames(cli, monkeypatch, tmp_path):
+    """Blank frames have no road texture: VO reports them lost instead of inventing motion."""
+    monkeypatch.setattr(
+        cli, "load_config", lambda n: _capture_cfg() if n == "capture" else load_config(n)
+    )
+    monkeypatch.setattr(cli, "make_detector", lambda cfg, device: FakeDetector())
+    rc = cli.main(
+        [
+            "--frames-run",
+            str(_frames_run(tmp_path)),
+            "--ego",
+            "vo",
+            "--out-root",
+            str(tmp_path / "o"),
+        ]
+    )
+    assert rc == 0
+    (run,) = list((tmp_path / "o" / "perception").iterdir())
+    assert "lost the road" in (run / "run.log").read_text(encoding="utf-8")

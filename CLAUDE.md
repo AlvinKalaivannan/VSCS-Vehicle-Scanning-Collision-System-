@@ -547,7 +547,7 @@ python scripts/seg.py --frames <frames> --sam2-dir <sam2 checkout>         # P2-
 python scripts/export_model.py --labelled <cleaned.npz> --scale-error-m <m> # P2-T6..T8: decompose + URDF
 
 # Per-drive pipeline
-python scripts/perceive.py --frames-run <capture run> [--ego-poses <poses.jsonl>]  # detect + perception -> obstacles.jsonl (GPU env)
+python scripts/perceive.py --frames-run <capture run> [--ego vo|stationary|file]  # detect + perception -> obstacles.jsonl (GPU env)
 python scripts/view.py --model <model run> --risk <frames.jsonl> [--obstacles <obs.jsonl>]  # P3-T1 -> drive.rrd
 python scripts/replay.py --model <model run> --risk <frames.jsonl> [--obstacles <obs.jsonl>]  # P5-T4 -> PNG frames + replay.wav
 
