@@ -1,0 +1,31 @@
+# Streaming pipeline (Phase 6, ADR 0008): stages, queues, latency budget.
+schema_version: 1
+
+# Stage order. Each stage reads from a bounded drop-oldest queue (src/vscs/stream/queues.py).
+stages: ["decode", "detect", "track", "depth", "risk", "output"]
+
+# Items per stage input queue. Small on purpose: latency is bounded by roughly
+# queue_size x (slowest stage's service time), and old frames are worthless to risk.
+queue_size: 2
+
+# Rolling window for the live statistics (frames).
+metrics_window: 300
+
+target_fps: 15
+
+# PROPOSED split of the < 150 ms end-to-end budget (CLAUDE.md §1 item 7). Not measured
+# yet: P6-T4 measures each stage on laptop CPU and Colab T4 and revises this. The stage
+# budgets sum to 135 ms, leaving 15 ms for queue waits at steady state.
+budget_ms:
+  decode: 10
+  detect: 50
+  track: 10
+  depth: 30
+  risk: 25
+  output: 10
+  end_to_end: 150
+
+replay:
+  speed: 1.0
+  # A frame emitted later than this after its due time counts as late (source overloaded).
+  late_tolerance_ms: 5

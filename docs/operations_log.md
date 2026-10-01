@@ -52,3 +52,7 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:48 | write | src/vscs/stream/replay.py (FileReplay at native t_ns; reads extract_frames runs), tests/unit/test_stream_replay.py
 - 2026-10-01 02:48 | deferred | RTSP replay rung (ffmpeg/GStreamer, LGPL): needs developer's licence decision (§10)
 - 2026-10-01 02:48 | commit | P6-T1 file replay (branch p6-stream-scaffold, unmerged)
+- 2026-10-01 02:49 | write | src/vscs/stream/pipeline.py (thread-per-stage, drop-oldest queues, error isolation, downstream shutdown), configs/stream.yaml (PROPOSED budget), KNOWN_CONFIGS 'stream', tests/unit/test_stream_pipeline.py
+- 2026-10-01 02:49 | note | laptop CPU, 2x overload (200 fps into 10 ms stage, 400 frames): queue 2 -> p95 20 ms flat, 205 dropped; queue 8 -> p95 51 ms; unbounded -> p95 2052 ms and climbing; ~96 fps throughput in all
+- 2026-10-01 02:50 | test | full suite on p6-stream-scaffold green
+- 2026-10-01 02:50 | commit | P6-T2 pipeline (branch p6-stream-scaffold, unmerged)

@@ -36,6 +36,7 @@ KNOWN_CONFIGS = (
     "eval",
     "datasets",
     "ui",
+    "stream",
 )
 
 
