@@ -216,3 +216,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 11:07 | write | p2-t3-fusion (developer's draft branch): contract docstring + red target test test_a_pixel_without_depth_cannot_tell (NaN and inf); fast-forwarded; 13 targets red on the stub only
 - 2026-10-01 11:22 | write | .gitignore: docs/private/ (developer request); private technical guide lives there, never committed
 - 2026-10-01 11:22 | merge | docs-private-ignore -> main (local only)
+- 2026-10-01 11:29 | write | docs/private/TECHNICAL_GUIDE.md (gitignored, never committed): ~10.9k-word technical guide, every component, from code/branches/ADRs
