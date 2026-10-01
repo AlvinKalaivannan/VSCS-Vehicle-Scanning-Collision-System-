@@ -120,3 +120,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:30 | write | perceive.py --ego vo|stationary|file (default vo: ground-plane VO); GroundVO coasts on lost/featureless frames and counts them; tests; CLAUDE.md §12
 - 2026-10-01 03:30 | note | bugs caught by tests before commit: featureless frames returned early without coasting; my scripted edit adding the 'lost the road' warning had not applied (anchor reformatted)
 - 2026-10-01 03:30 | commit | perceive with VO
+- 2026-10-01 03:30 | merge | p4-perceive-vo -> main (local only)
