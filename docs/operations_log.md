@@ -81,3 +81,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:13 | write | docs/decisions/0010-grade-near-misses-by-time-proposed.md (PROPOSED; needs schema field t_closest_s)
 - 2026-10-01 03:13 | deferred | ADR 0010 near-miss timing: schema change -> developer decision
 - 2026-10-01 03:13 | commit | mask-based ground contact + ADR 0010 proposal
+- 2026-10-01 03:13 | merge | p4-mask-ground-contact -> main (local only)
