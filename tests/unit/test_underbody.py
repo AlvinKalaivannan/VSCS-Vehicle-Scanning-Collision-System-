@@ -80,3 +80,20 @@ def test_high_components_are_not_checked_and_an_empty_map_is_clear():
     assert "right_mirror" not in res and "left_mirror" not in res  # min_z 1.40 m > 0.60 m
     assert "sliding_door_right" in res  # its lower edge is at 0.50 m: a bollard could reach it
     assert all(r.ttc_s is None and math.isinf(r.min_clearance_m) for r in res.values())
+
+
+def test_footprints_move_exactly_like_the_frames_module_on_a_turning_path():
+    """The 2D affine form of each path pose must match common.frames.transform_points: a
+    sign slip would only show on turning paths, which the kerb tests do not exercise."""
+    from vscs.common.frames import transform_points
+    from vscs.risk.underbody import _moved
+
+    fan = path_fan_from_config(-1.0, RISK)
+    poly = box(-0.35, -1.0, 0.35, -0.8)  # the rear-right wheel
+    for k in (0, fan.n_curvatures - 1):  # hardest left and right
+        for i in (fan.n_steps // 2, fan.n_steps - 1):
+            T = fan.T_veh0_veh(k, i)
+            moved = np.array(_moved(poly, T).exterior.coords)[:-1]
+            corners = np.array(poly.exterior.coords)[:-1]
+            expect = transform_points(T, np.column_stack([corners, np.zeros(len(corners))]))[:, :2]
+            np.testing.assert_allclose(moved, expect, atol=1e-12)
