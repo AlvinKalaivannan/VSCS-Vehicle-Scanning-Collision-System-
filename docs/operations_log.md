@@ -138,3 +138,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:36 | write | src/vscs/perception/vio.py (gyro up-axis self-calibration from turns, trapezoid yaw integration, fusion with VO), configs/perception.yaml egomotion.vio, tests/unit/test_vio.py
 - 2026-10-01 03:36 | note | VIO synthetic: unknown phone mounting (70 deg tilt) axis recovered < 3 deg; 1 s VO dropout during a turn reversal: fused 0.04 deg / 1.3 cm vs coasting 68.6 cm; no-dropout cost 0.04 cm. Not yet wired into perceive.py (needs IMU-video sync wiring)
 - 2026-10-01 03:36 | commit | P4-T2 gyro fusion
+- 2026-10-01 03:36 | merge | p4-t2-vio -> main (local only)
