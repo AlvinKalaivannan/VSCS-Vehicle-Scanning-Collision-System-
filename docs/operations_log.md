@@ -47,3 +47,5 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:45 | branch | p6-stream-scaffold from docs-streaming-merge; merged main in (resolved CLAUDE.md §12 conflict: kept view.py line and both planned lists)
 - 2026-10-01 02:46 | write | src/vscs/stream/queues.py (DropOldestQueue), tests/unit/test_stream_queues.py (P6-T2 required backpressure tests)
 - 2026-10-01 02:46 | commit | P6-T2 queue (branch p6-stream-scaffold, unmerged)
+- 2026-10-01 02:47 | write | src/vscs/stream/metrics.py (StreamFrame, breakdown, LatencyRecorder, over_budget), tests/unit/test_stream_metrics.py (exact latency accounting)
+- 2026-10-01 02:47 | commit | P6-T3 metrics (branch p6-stream-scaffold, unmerged)
