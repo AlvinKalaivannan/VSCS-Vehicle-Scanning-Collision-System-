@@ -33,6 +33,33 @@ Default: **pair mode.** VSCS is the developer's portfolio project and they must 
 - When a concept leans on linear algebra (projections, rigid transforms, frames), give a short explanation tied to MAT188-level notation.
 - The developer can switch to `mode: build` in `docs/STATUS.md` to have Claude write everything; respect that field.
 
+### Limits policy
+
+```
+limits_policy: exhaust-first        # set by the developer, 2026-10-01
+```
+
+A **limit** is anything recorded as a known limitation, accepted error, "won't fix",
+"out of scope", or residual inaccuracy, whether in a docstring, ADR, devlog, STATUS,
+the README or a hand-off summary. With `exhaust-first`, before recording one:
+
+1. **List the candidate fixes.** Consider code, config, method, extra data, the capture
+   procedure, and a different tool.
+2. **Try every candidate that is plumbing** and needs no decision, and **measure** the
+   result. Do not just reason about whether it might work.
+3. **Record a limit only if one of these holds:**
+   - **(a) No feasible fix exists.** Say why each candidate fails.
+   - **(b) The remaining fix is the developer's decision**: anything in the stop-and-ask
+     list, a schema change, a purchase, a capture-procedure change, or a compute
+     trade-off. Then *propose* the fix with its evidence; don't just list the limit.
+   - **(c) The error cannot be corrected or measured with what the project has**, for
+     example physics or the hardware VSCS runs on.
+4. **Every recorded limit states** what was tried, the evidence, which of (a), (b) or (c)
+   applies, and who or what would unblock it.
+
+Prefer conservative errors (more warnings, not fewer) only when no correction exists,
+and say which way the error leans.
+
 ---
 
 ## 1. Project summary
