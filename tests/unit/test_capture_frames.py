@@ -245,3 +245,18 @@ def test_extract_frames_rejects_bad_arguments(video, tmp_path):
         FR.extract_frames(video, tmp_path, stride=0)
     with pytest.raises(ValueError, match="unsupported image_format"):
         FR.extract_frames(video, tmp_path, image_format="tiff")
+
+
+def test_read_frames_index_sorts_and_validates(tmp_path):
+    from vscs.capture.frames import read_frames_index
+    from vscs.common.io import write_jsonl
+
+    a, b = 1_000_000_000, 1_033_333_333  # real int64 ns, one 30 fps frame apart
+    write_jsonl(
+        tmp_path / "frames.jsonl",
+        [{"t_ns": b, "file": "frames/b.png"}, {"t_ns": a, "file": "frames/a.png"}],
+    )
+    assert [t for t, _ in read_frames_index(tmp_path)] == [a, b]
+    write_jsonl(tmp_path / "frames.jsonl", [{"t_ns": a, "file": "a"}, {"t_ns": a, "file": "b"}])
+    with pytest.raises(ValueError):  # duplicate timestamps are not a valid stream
+        read_frames_index(tmp_path)

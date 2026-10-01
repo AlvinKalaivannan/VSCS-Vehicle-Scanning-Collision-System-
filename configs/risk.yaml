@@ -44,6 +44,15 @@ sweep:
     left_mirror: 0.0
     right_mirror: 0.0
 
+underbody:
+  # P4-T6: vertical clearance between each component's lowest point (Component.min_z) and
+  # the persistent height map (P4-T3) under its swept footprint. A predicted contact is a
+  # cell whose height comes within margin_m of the component's underside.
+  margin_m: 0.03
+  # Only components this low are checked against the ground: the underbody, wheels,
+  # bumpers. Anything higher cannot meet a kerb or speed bump.
+  max_component_min_z_m: 0.60
+
 probability:
   # P4-T7: p_contact = Phi(-d / sigma), i.e. the probability that the true clearance
   # is <= 0 given a Gaussian error of std sigma on an estimated clearance d.

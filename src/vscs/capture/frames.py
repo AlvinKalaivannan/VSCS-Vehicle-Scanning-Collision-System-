@@ -366,3 +366,21 @@ def extract_frames(
     }
     write_json(out_dir / "frames_meta.json", meta)
     return meta
+
+
+def read_frames_index(run_dir: Path) -> list[tuple[int, Path]]:
+    """``(t_ns, image path)`` for every frame of an ``extract_frames`` run, in time order.
+
+    Reads the ``frames.jsonl`` index ``extract_frames`` writes, and checks the timestamps
+    are a valid stream (§4.1, R-03) before anything downstream relies on them.
+    """
+    run_dir = Path(run_dir)
+    index = run_dir / "frames.jsonl"
+    rows = [
+        json.loads(line) for line in index.read_text(encoding="utf-8").splitlines() if line.strip()
+    ]
+    if not rows:
+        raise ValueError(f"{index} is empty")
+    frames = sorted(((int(r["t_ns"]), run_dir / r["file"]) for r in rows), key=lambda x: x[0])
+    validate_timestamp_stream([t for t, _ in frames], name=str(index))
+    return frames

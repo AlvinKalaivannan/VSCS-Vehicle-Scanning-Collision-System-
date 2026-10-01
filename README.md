@@ -150,6 +150,36 @@ verification. Raw sequences, positional traces and location metadata are exclude
 version control; `data/MANIFEST.md` is the only tracked file within that tree. Third-party
 footage is used for private evaluation only and is not redistributed.
 
+## Third-party models, datasets and methods
+
+Every external model, dataset and method VSCS uses is listed here with its source and
+licence. Licences were checked at the source on the dates given. Datasets are governed by
+`configs/datasets.yaml`, which derives what each may be used for from its licence and
+provenance (`docs/decisions/0006-external-datasets.md`).
+
+**Models (weights and code)**
+
+| Model | Use | Licence (checked) | Reference |
+|---|---|---|---|
+| Grounding DINO (`IDEA-Research/grounding-dino-tiny`) | open-vocabulary component boxes | Apache-2.0, code and weights (2026-10-01) | S. Liu et al., "Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection", ECCV 2024 |
+| SAM 2 (`sam2.1_hiera_small`) | component masks tracked through the scan | Apache-2.0, code and checkpoints (2026-10-01) | N. Ravi et al., "SAM 2: Segment Anything in Images and Videos", ICLR 2025 |
+| RT-DETR (`PekingU/rtdetr_r18vd`) | object detection while driving | Apache-2.0, code and weights (2026-10-01); trained on COCO, no COCO images redistributed | Y. Zhao et al., "DETRs Beat YOLOs on Real-time Object Detection", CVPR 2024 |
+
+**Methods and libraries with a paper**
+
+| Method | Use | Licence | Reference |
+|---|---|---|---|
+| COLMAP | structure-from-motion, dense stereo | BSD | J. L. Schönberger and J.-M. Frahm, "Structure-from-Motion Revisited", CVPR 2016; J. L. Schönberger et al., "Pixelwise View Selection for Unstructured Multi-View Stereo", ECCV 2016 |
+| CoACD | per-component convex decomposition | MIT (2026-09-29) | X. Wei et al., "Approximate Convex Decomposition for 3D Meshes with Collision-Aware Concavity and Tree Search", ACM TOG (SIGGRAPH) 2022 |
+| ByteTrack (association idea only; reimplemented on the ground plane, no code used) | multi-object tracking | — | Y. Zhang et al., "ByteTrack: Multi-Object Tracking by Associating Every Detection Box", ECCV 2022 |
+
+**Datasets** (none redistributed; images never shown publicly)
+
+| Dataset | Licence and provenance | Allowed here |
+|---|---|---|
+| Roboflow Universe "car parts", workspace `car-segmentation-iq9jj` — <https://universe.roboflow.com/car-segmentation-iq9jj/car-parts-9vig8> | CC BY 4.0 (reported by the Roboflow API, 2026-09-29); photo source undocumented | private evaluation, reported numbers (with this credit), training; never public images |
+| Roboflow Universe "Car Parts Segmentation", workspace `person-detector` — <https://universe.roboflow.com/person-detector/car-parts-segmentation> | CC BY 4.0 claimed, but it appears to re-upload the unlicensed DSMLR set, so treated as conflicting | private rehearsal and evaluation only |
+
 ## Project status
 
 Phase 1. Current task state, verified metrics and open risks are recorded in
