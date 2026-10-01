@@ -184,3 +184,7 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 04:16 | test | 814 passed, 1 skipped; ruff clean
 - 2026-10-01 04:16 | commit | label scoring
 - 2026-10-01 04:16 | merge | p2-t4-score-labels -> main (local only)
+- 2026-10-01 04:20 | branch | metrics-producers from main
+- 2026-10-01 04:20 | write | scripts/calibrate.py appends reprojection_error_px itself (run folder + calibration_result.json); scripts/evaluate.py appends component_flagged_frac (P3-T6) on dev; tests/unit/test_metric_producers.py
+- 2026-10-01 04:20 | test | 819 passed, 1 skipped; ruff clean
+- 2026-10-01 04:20 | commit | metric producers

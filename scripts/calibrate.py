@@ -6,6 +6,10 @@ Thin CLI only - logic lives in src/vscs/capture/calib.py (CLAUDE.md section 3).
     python scripts/calibrate.py --images data/raw/calib_20260924 --device pixel_main
     python scripts/calibrate.py --images <folder> --dry-run      # report, write nothing
 
+Unless --dry-run, every run - pass or fail - gets a data/processed/capture/<run>/ folder
+with calibration_result.json, and appends reprojection_error_px (P0-T7) to
+metrics/results.jsonl (--no-metrics to skip). Only a pass writes configs/capture.yaml.
+
 Before shooting the board (risk R-04):
   * lock focus and exposure, main lens only, no zoom
   * 15+ images, board tilted and placed near all four image corners
@@ -26,7 +30,8 @@ from vscs.capture.calib import (
     find_images,
     write_to_capture_config,
 )
-from vscs.common.config import load_config
+from vscs.common.config import load_config, repo_root
+from vscs.common.io import append_metric, make_run_dir, write_json
 from vscs.common.log import setup_logging
 
 
@@ -53,8 +58,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="report the result but do not touch configs/capture.yaml",
+        help="report the result; write no config, run folder or metric",
     )
+    parser.add_argument("--out-root", type=Path, default=None, help="default: data/processed")
+    parser.add_argument("--no-metrics", action="store_true")
     args = parser.parse_args(argv)
 
     setup_logging(level=logging.INFO)
@@ -88,10 +95,45 @@ def main(argv: list[str] | None = None) -> int:
     for name, err in worst:
         print(f"  {err:7.4f} px  {name}")
 
+    if not args.dry_run:
+        run_dir = make_run_dir(
+            "capture",
+            config={"checkerboard": board, "images": str(args.images), "device": args.device},
+            root=args.out_root,
+        )
+        write_json(
+            run_dir / "calibration_result.json",
+            {
+                "device": args.device,
+                "K": result.K.tolist(),
+                "dist": result.dist.tolist(),
+                "image_size": list(result.image_size),
+                "mean_reprojection_error_px": result.mean_reprojection_error_px,
+                "max_reprojection_error_px": result.max_reprojection_error_px,
+                "per_image_error_px": result.per_image_error_px,
+                "n_images_used": result.n_images_used,
+                "n_images_total": result.n_images_total,
+                "gate_px": gate,
+                "passed": result.meets_gate(gate),
+            },
+        )
+        print(f"run folder: {run_dir}")
+        if not args.no_metrics:
+            under = run_dir.is_relative_to(repo_root())
+            append_metric(
+                task="P0-T7",
+                metric="reprojection_error_px",
+                value=result.mean_reprojection_error_px,
+                split="calib",
+                run_dir=str(run_dir.relative_to(repo_root()) if under else run_dir),
+                notes=f"{args.device or 'device not named'}; "
+                f"{result.n_images_used}/{result.n_images_total} images",
+            )
+
     if not result.meets_gate(gate):
         print(
             f"\nFAIL: mean error {result.mean_reprojection_error_px:.4f} px is not below "
-            f"the {gate} px gate (P0-T7). Nothing written."
+            f"the {gate} px gate (P0-T7). configs/capture.yaml not modified."
         )
         print("Recapture: fill more of the frame, vary the angles, lock focus and exposure.")
         return 1
@@ -103,10 +145,7 @@ def main(argv: list[str] | None = None) -> int:
 
     path = write_to_capture_config(result, device=args.device)
     print(f"wrote intrinsics to {path}")
-    print(
-        "Next: record this in today's devlog, and append the metric with\n"
-        "  metric=reprojection_error_px task=P0-T7"
-    )
+    print("Next: record this in today's devlog; run scripts/report.py to refresh the report.")
     return 0
 
 
