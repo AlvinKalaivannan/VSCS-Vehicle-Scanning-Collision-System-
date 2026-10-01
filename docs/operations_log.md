@@ -49,3 +49,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:52 | write | docs/RISKS.md: R-17..R-19 rows seeded UNRATED (ratings deferred to developer per §8; earlier proposals noted)
 - 2026-10-01 02:52 | deferred | R-17..R-19 likelihood/impact ratings: developer
 - 2026-10-01 02:52 | commit | risk register rows
+- 2026-10-01 02:52 | merge | risks-r17-r19 -> main (local only)
