@@ -83,6 +83,10 @@ lot_truth:
   # P4-T2 drift is endpoint error / displacement (start to end hub-mark poses). Passes that
   # move less than this are left out: a small denominator turns centimetres into percent.
   min_drift_displacement_m: 1.0
+  # P4-T1 depth error by range bucket (perception.yaml depth.report_error_at_ranges_m). An
+  # obstacle counts toward bucket b if its true range is within this fraction of b.
+  depth_buckets_m: [1.0, 3.0, 5.0, 10.0]
+  depth_bucket_rel_tol: 0.25
 
 risk_metrics:
   # The alert level that counts as "flagged" / "warned" for attribution and lead time.

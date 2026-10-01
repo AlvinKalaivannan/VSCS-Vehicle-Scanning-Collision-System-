@@ -195,7 +195,7 @@ def test_cli_scores_and_logs_the_p3_t2_metric(tmp_path, monkeypatch):
     logged = []
     monkeypatch.setattr(cli, "append_metric", lambda **kw: logged.append(kw))
     assert cli.main(write("lot_001")) == 0
-    (m,) = logged
+    (m,) = [r for r in logged if r["metric"] == "cone_position_error_m"]
     assert (m["task"], m["metric"]) == ("P3-T2", "cone_position_error_m")
     assert m["value"] == pytest.approx(0.12)
 
@@ -234,6 +234,7 @@ def test_cli_scores_ego_drift_from_the_end_pose(tmp_path, monkeypatch, est_x, co
     cli, write = _setup(tmp_path, monkeypatch, offset_m=0.05)
     g = copy.deepcopy(GT)
     g["passes"][0]["end"] = {"rear_left_hub_m": [2.0, 0.86], "rear_right_hub_m": [2.0, -0.86]}
+    g["passes"][0]["shape"] = "straight"
     (tmp_path / "gt.yaml").write_text(yaml.safe_dump(g), encoding="utf-8")
     ego = tmp_path / "perc" / "ego.jsonl"
     rows = [__import__("json").loads(ln) for ln in ego.read_text(encoding="utf-8").splitlines()]
@@ -246,3 +247,55 @@ def test_cli_scores_ego_drift_from_the_end_pose(tmp_path, monkeypatch, est_x, co
     assert cli.main(write("lot_001")) == code
     (m,) = [r for r in logged if r["metric"] == "egomotion_drift_frac"]
     assert m["task"] == "P4-T2" and m["value"] == pytest.approx(drift)
+
+
+def test_a_curved_pass_is_reported_but_not_gated(tmp_path, monkeypatch):
+    """Displacement understates a curved path, so only straight passes gate P4-T2."""
+    cli, write = _setup(tmp_path, monkeypatch, offset_m=0.05)
+    g = copy.deepcopy(GT)
+    g["passes"][0]["end"] = {"rear_left_hub_m": [2.0, 0.86], "rear_right_hub_m": [2.0, -0.86]}
+    g["passes"][0]["shape"] = "curve"
+    (tmp_path / "gt.yaml").write_text(yaml.safe_dump(g), encoding="utf-8")
+    ego = tmp_path / "perc" / "ego.jsonl"
+    rows = [__import__("json").loads(ln) for ln in ego.read_text(encoding="utf-8").splitlines()]
+    T = np.eye(4)
+    T[0, 3] = -2.5  # 17% drift: would fail the 5% gate if it were gated
+    rows[-1]["T_world_veh"] = T.ravel().tolist()
+    write_jsonl(ego, rows)
+    logged = []
+    monkeypatch.setattr(cli, "append_metric", lambda **kw: logged.append(kw))
+    assert cli.main(write("lot_001")) == 0
+    assert not [r for r in logged if r["metric"] == "egomotion_drift_frac"]
+    (run,) = list((tmp_path / "o" / "eval").iterdir())
+    saved = __import__("json").loads((run / "perception_scores.json").read_text(encoding="utf-8"))
+    assert saved["drift"]["lot_001"]["shape"] == "curve" and saved["drift_passed"] is None
+
+
+def test_range_errors_and_buckets_known_answer():
+    from vscs.eval.lot_truth import depth_bucket, range_errors
+
+    cam = [-1.0, 0.0]
+    truth = {"c3": np.array([-4.0, 0.0])}  # 3.0 m behind the camera
+    frames = [0, S // 10, 2 * S // 10]
+    obs = [_ob(t, -4.2, 0.0) for t in frames]  # placed 0.2 m too far
+    r = range_errors(obs, truth, cam, frames, t_from_ns=0, t_to_ns=frames[-1], match_gate_m=1.0)
+    assert r["c3"]["range_m"] == pytest.approx(3.0)
+    assert r["c3"]["median_signed_error_m"] == pytest.approx(0.2)
+    buckets = [1.0, 3.0, 5.0, 10.0]
+    assert depth_bucket(3.0, buckets, 0.25) == 3.0
+    assert depth_bucket(3.7, buckets, 0.25) == 3.0  # within 25% of 3 m
+    assert depth_bucket(4.0, buckets, 0.25) == 5.0  # within 25% of 5 m
+    assert depth_bucket(1.6, buckets, 0.25) is None  # near no bucket
+
+
+def test_cli_logs_depth_error_by_bucket(tmp_path, monkeypatch):
+    """cone_1 is 1.118 m from the camera; perceived 12 cm closer along x."""
+    cli, write = _setup(tmp_path, monkeypatch, offset_m=0.12)
+    logged = []
+    monkeypatch.setattr(cli, "append_metric", lambda **kw: logged.append(kw))
+    assert cli.main(write("lot_001")) == 0
+    (m,) = [r for r in logged if r["metric"].startswith("depth_error_m_at_")]
+    true_rng = math.hypot(1.0, 0.5)
+    seen_rng = math.hypot(0.88, 0.5)
+    assert (m["task"], m["metric"]) == ("P4-T1", "depth_error_m_at_1m")
+    assert m["value"] == pytest.approx(abs(seen_rng - true_rng))
