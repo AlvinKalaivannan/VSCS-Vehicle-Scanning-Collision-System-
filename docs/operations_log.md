@@ -105,3 +105,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:20 | data | licences re-verified at source 2026-10-01: Grounding DINO tiny weights + code Apache-2.0 (HF card, GitHub); SAM 2 code + checkpoints Apache-2.0 (repo README licence section); CoACD MIT
 - 2026-10-01 03:20 | write | README.md: 'Third-party models, datasets and methods' section with full citations (Grounding DINO ECCV 2024; SAM 2 ICLR 2025; RT-DETR CVPR 2024; COLMAP CVPR/ECCV 2016; CoACD TOG 2022; ByteTrack ECCV 2022) and dataset licence/provenance/allowed-use; nuScenes row omitted on main (registered only on unmerged docs-streaming-merge)
 - 2026-10-01 03:20 | commit | README credits
+- 2026-10-01 03:20 | merge | docs-readme-credits -> main (local only)
