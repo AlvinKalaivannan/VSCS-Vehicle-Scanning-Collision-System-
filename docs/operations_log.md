@@ -40,3 +40,5 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:44 | note | P5-T1 fixture finding: pole 0.40 m from sliding door reads 0.15 m to the single box (mirror protrusion 0.25 m); same engine, geometry only
 - 2026-10-01 02:44 | commit | P5-T1: single-box baseline
 - 2026-10-01 02:44 | merge | p5-t1-baseline -> main (local only)
+- 2026-10-01 02:44 | write | docs/devlog/2026-10-01.md, docs/STATUS.md checkpoint
+- 2026-10-01 02:44 | commit | docs checkpoint
