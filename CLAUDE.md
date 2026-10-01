@@ -581,12 +581,12 @@ python scripts/export_model.py --labelled <cleaned.npz> --scale-error-m <m> # P2
 python scripts/perceive.py --frames-run <capture run> [--ego vo|stationary|file]  # detect + perception -> obstacles.jsonl (GPU env)
     #   add --imu <gyro.csv> --imu-offset-ms <P1-T4 offset> to fuse the phone gyro with VO (P4-T2)
 python scripts/risk.py --model <model run> --perception <perceive run> [--baseline]  # -> risk_frames.jsonl (needs sweep.py)
+python scripts/score_perception.py --gt data/raw/lot_<date>/gt.yaml --passes <dev passes.yaml>  # P3-T2 cones, P4-T1 depth, P4-T2 drift (ADR 0012)
 python scripts/evaluate.py --passes <passes.yaml> --split dev [--log-metrics]   # VSCS vs baseline (§11); test split: --final, once
 python scripts/view.py --model <model run> --risk <frames.jsonl> [--obstacles <obs.jsonl>]  # P3-T1 -> drive.rrd
 python scripts/replay.py --model <model run> --risk <frames.jsonl> [--obstacles <obs.jsonl>]  # P5-T4 -> PNG frames + replay.wav
 
 # External datasets (ADR 0006; licence-checked, private by default)
-python scripts/score_perception.py --gt data/raw/lot_<date>/gt.yaml --passes <dev passes.yaml>  # P3-T2 + P4-T2 drift (gt format: ADR 0012)
 python scripts/fetch_dataset.py <id>                                        # id from configs/datasets.yaml
 
 python scripts/benchmark.py --frames-run <run> [--detector] [--log-metrics]  # P5-T3, per-stage fps tagged with hardware

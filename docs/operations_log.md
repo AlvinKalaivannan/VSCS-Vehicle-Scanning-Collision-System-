@@ -229,3 +229,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 12:20 | decision | developer: use the most accurate collision surface -> measured 4 options; voxel_centres @ 2 cm chosen (ADR 0014); 1 cm fails at realistic density; details in the private guide
 - 2026-10-01 12:20 | merge | p2-t6-surface-voxel-centres -> main (local only)
 - 2026-10-01 12:46 | push | main -> origin (64ae48b..87bf565, 203 commits) on the developer's instruction, after checks: no data/.env/private files, no files >1 MB, no real secrets (one fake test key), no trailers, single author
+- 2026-10-01 13:14 | write | CLAUDE.md §12: score_perception moved from 'External datasets' to 'Per-drive pipeline' (misplaced earlier)
