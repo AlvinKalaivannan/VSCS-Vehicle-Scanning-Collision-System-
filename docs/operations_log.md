@@ -16,3 +16,8 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 02:32 | write | docs/operations_log.md (this file)
 - 2026-10-01 02:32 | commit | ops-log: add operations log
 - 2026-10-01 02:32 | merge | ops-log -> main (local only)
+- 2026-10-01 02:33 | branch | p3-t1-rerun-view from main
+- 2026-10-01 02:34 | write | src/vscs/ui/rerun_view.py, configs/ui.yaml (+ KNOWN_CONFIGS 'ui')
+- 2026-10-01 02:35 | write | scripts/view.py, tests/unit/test_rerun_view.py; CLAUDE.md §12 synced (view.py)
+- 2026-10-01 02:35 | test | full suite green; real .rrd verified by 'rerun rrd verify'
+- 2026-10-01 02:35 | commit | P3-T1: Rerun dev view
