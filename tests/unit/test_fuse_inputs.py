@@ -168,7 +168,8 @@ def test_views_come_back_in_veh_and_metres(runs, truth):
         np.testing.assert_allclose(v.K, K, atol=1e-9)
         np.testing.assert_array_equal(v.labels, labels)
         finite = np.isfinite(depth)
-        assert np.array_equal(np.isfinite(v.depth), finite)  # COLMAP's 0 -> inf
+        assert np.array_equal(np.isfinite(v.depth), finite)
+        assert np.isnan(v.depth[~finite]).all()  # COLMAP's 0 -> NaN: "cannot tell"
         np.testing.assert_allclose(v.depth[finite], depth[finite], rtol=1e-6)  # float32 file
 
 

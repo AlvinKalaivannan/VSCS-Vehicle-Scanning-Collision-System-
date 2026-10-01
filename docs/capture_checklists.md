@@ -166,6 +166,8 @@ below the **centre of the rear axle**):
 
 - [ ] Rear overhang: rear axle centre to rear bumper — record cm
 - [ ] Front overhang: front axle centre to front bumper — record cm
+- [ ] **Rear track:** centre of the left rear wheel hub to centre of the right rear hub —
+      record cm, twice. Every lot-day pose is checked against it (ADR 0012).
 
 ### Marker placement
 
@@ -298,7 +300,19 @@ For every pass:
       each recording.** This is the sync signal: it puts a sharp spike in both the IMU
       trace and the image motion, which is what lets the video/IMU offset be estimated
       (P1-T4). Without it, sync is guesswork.
-- [ ] Note the pass number and what it was testing, on paper, as you go.
+- [ ] Note the pass number and what it was testing, on paper, as you go. If the pass is
+      meant to take a particular component past an obstacle (a mirror pass, a wheel
+      pass), note which component and which obstacle.
+- [ ] **Van pose, before moving and after stopping (ADR 0012).** With the van stopped
+      (park, engine off or handbrake on), and **only then**, drop a plumb line from the
+      centre of each **rear wheel hub** to the ground, chalk both points, and tape-measure
+      each from the origin in x and y. Never measure beside a moving vehicle.
+  - [ ] **Read each tape twice.** The track check catches a misread *along* the hub
+        line, but not one *across* it (10 cm turns the heading by about 3°).
+  - [ ] **Left means the van's own left**, as if sitting in the driver's seat facing
+        forward. A swap is not caught by any check: it turns the van around in the data.
+  - [ ] The two marks should be the rear track apart (±3 cm). If not, measure again.
+  - [ ] Write them under the pass in `gt.yaml` (`start:` / `end:`), format in ADR 0012.
 - [ ] **Record which doors and mirrors are open or closed** (R-15) — normally all closed
       for lot runs; say so explicitly.
 - [ ] Stop the vehicle before touching the phone.

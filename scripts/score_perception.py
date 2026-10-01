@@ -5,7 +5,7 @@ Thin CLI only - logic lives in src/vscs/eval/lot_truth.py (CLAUDE.md section 3).
 
     python scripts/score_perception.py --gt data/raw/lot_<date>/gt.yaml --passes <passes.yaml>
 
---gt is the lot day's ground truth (format PROPOSED, ADR 0012): obstacle positions and the
+--gt is the lot day's ground truth (format: ADR 0012): obstacle positions and the
 van's start pose per pass, from the rear-hub chalk marks. --passes is the dev passes file
 (the one scripts/evaluate.py reads), with a "perception" run folder per pass. Only dev
 passes are accepted (R-09).

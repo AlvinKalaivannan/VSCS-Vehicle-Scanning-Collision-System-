@@ -547,6 +547,7 @@ python scripts/dense.py --recon-run <run> --images <frames>              # P1-T7
 python scripts/seg.py --frames <frames> --sam2-dir <sam2 checkout>         # P2-T2, Colab (notebooks/colab/20_seg.ipynb)
 python scripts/fuse.py --dense-run <run> --seg-run <run> --sfm-to-veh <json> # P2-T3/T5: needs fusion3d.py + P1-T6
 python scripts/score_labels.py --fuse-run <run> --gold <gold.txt>          # P2-T3/T4/T5 gates vs the hand-labelled subset
+python scripts/check_wheelbase.py --labelled <cleaned.npz> --measured <yaml>  # P1-T6 wheelbase from segmented wheels (ADR 0013)
 python scripts/export_model.py --labelled <cleaned.npz> --scale-error-m <m> # P2-T6..T8: decompose + URDF
 
 # Per-drive pipeline
@@ -558,7 +559,7 @@ python scripts/view.py --model <model run> --risk <frames.jsonl> [--obstacles <o
 python scripts/replay.py --model <model run> --risk <frames.jsonl> [--obstacles <obs.jsonl>]  # P5-T4 -> PNG frames + replay.wav
 
 # External datasets (ADR 0006; licence-checked, private by default)
-python scripts/score_perception.py --gt data/raw/lot_<date>/gt.yaml --passes <dev passes.yaml>  # P3-T2 (gt format: ADR 0012, proposed)
+python scripts/score_perception.py --gt data/raw/lot_<date>/gt.yaml --passes <dev passes.yaml>  # P3-T2 + P4-T2 drift (gt format: ADR 0012)
 python scripts/fetch_dataset.py <id>                                        # id from configs/datasets.yaml
 
 python scripts/benchmark.py --frames-run <run> [--detector] [--log-metrics]  # P5-T3, per-stage fps tagged with hardware

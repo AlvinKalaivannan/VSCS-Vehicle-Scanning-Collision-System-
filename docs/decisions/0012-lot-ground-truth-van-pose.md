@@ -1,7 +1,7 @@
 # ADR 0012 - Lot-day ground truth must include where the van is
 
 - **Date:** 2026-10-01
-- **Status:** **proposed** (changes the lot-day capture checklist: the developer's decision)
+- **Status:** **accepted** by the developer, 2026-10-01. Checklist updated the same day.
 - **Task:** P1-T3 (lot day), P3-T2 (cone positions), P3-T6 / P5-T2 (component attribution)
 - **Deciders:** developer (pending), Claude
 
@@ -45,11 +45,11 @@ cannot be cheaply repeated, so this is time-critical.
 4. **Do nothing on lot day; reconstruct the van pose later from ego-motion.** Circular for
    the same reason as option 2, and there is nothing to anchor the start. Rejected.
 
-## Decision (proposed)
+## Decision
 
-Option 1. The developer decides, because it changes the reviewed capture checklist.
+Option 1, approved by the developer on 2026-10-01.
 
-**Checklist additions** (to `docs/capture_checklists.md`, only if approved):
+**Checklist additions** (applied to `docs/capture_checklists.md`):
 
 - Scan day, "Measure the van first": add **rear track** (centre of the left rear hub to
   centre of the right rear hub), measured twice.

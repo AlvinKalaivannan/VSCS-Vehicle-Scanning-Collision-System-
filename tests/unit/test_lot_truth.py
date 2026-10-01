@@ -1,4 +1,4 @@
-"""Lot-day ground truth (format PROPOSED, ADR 0012) and the P3-T2 scorer."""
+"""Lot-day ground truth (format: ADR 0012) and the P3-T2 scorer."""
 
 from __future__ import annotations
 

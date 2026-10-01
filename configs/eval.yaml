@@ -23,6 +23,7 @@ thresholds:
   frames_registered_frac:       { task: P1-T5, limit: 0.90,  direction: above }
   sfm_reprojection_error_px:    { task: P1-T5, limit: 1.5,   direction: below }
   scale_error_m:                { task: P1-T6, limit: 0.02,  direction: below }
+  wheelbase_error_m:            { task: P1-T6, limit: 0.02,  direction: below }  # ADR 0013
   component_iou_mean:           { task: P2-T3, limit: 0.70,  direction: above }
   labeled_points_count:         { task: P2-T4, limit: 2000,  direction: above }
   hull_volume_error_frac:       { task: P2-T6, limit: 0.15,  direction: below }
@@ -54,8 +55,15 @@ labels3d:
   # point can never be matched to a neighbour.
   match_tolerance_m: 0.001
 
+wheelbase:
+  # scripts/check_wheelbase.py (P1-T6's wheelbase, ADR 0013): hub x = middle of each wheel's
+  # x-extent, trimmed by this percentage at each end against stray labels.
+  front_wheels: ["wheel_front_left", "wheel_front_right"]
+  rear_wheels: ["wheel_rear_left", "wheel_rear_right"]
+  trim_percentile: 2.0
+
 lot_truth:
-  # data/raw/lot_*/gt.yaml and scripts/score_perception.py (P3-T2). PROPOSED with ADR 0012.
+  # data/raw/lot_*/gt.yaml and scripts/score_perception.py (P3-T2, P4-T2). ADR 0012 (accepted).
   # The two hub marks must be the scan-day rear track apart, to within this.
   track_tolerance_m: 0.03
   # P3-T2 is scored while the van is still parked at the start of a pass: skip the start

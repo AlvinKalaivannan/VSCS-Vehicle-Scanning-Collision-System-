@@ -137,7 +137,9 @@ class ViewData:
     K: FloatArray
     T_cam_world: FloatArray  # here "world" is veh: the fused points are in veh
     labels: npt.NDArray[np.int64]
-    depth: FloatArray  # metres; inf where COLMAP has no depth (it stores 0 there)
+    # Metres. NaN where COLMAP has no depth estimate (it stores 0 there): that frame cannot
+    # tell whether a point is visible, so it casts no vote for it (developer, 2026-10-01).
+    depth: FloatArray
 
 
 def load_view(
@@ -167,7 +169,7 @@ def load_view(
             f"{n_classes} components"
         )
     depth = sfm_to_veh.depth(raw)
-    depth[~(raw > 0)] = np.inf
+    depth[~(raw > 0)] = np.nan
     return ViewData(image.name, camera.K, sfm_to_veh.T_cam_veh(image.T_cam_world), labels, depth)
 
 
