@@ -171,3 +171,8 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 04:04 | test | 793 passed, 1 skipped; ruff clean
 - 2026-10-01 04:04 | commit | P2-T3 fusion plumbing
 - 2026-10-01 04:04 | merge | p2-t3-fuse-cli -> main (local only)
+- 2026-10-01 04:11 | branch | p1-t6-scale-cli from main
+- 2026-10-01 04:11 | write | src/vscs/recon/metric.py, scripts/scale.py, tests/unit/test_metric_frame.py: P1-T6 plumbing around the developer's scale.py (exit 3 until it exists); writes sfm_to_veh.json for fuse.py
+- 2026-10-01 04:11 | write | configs/recon.yaml vehicle_frame.body_select (PROPOSED, flagged for review on the first real scan)
+- 2026-10-01 04:11 | test | 802 passed, 1 skipped; ruff clean
+- 2026-10-01 04:11 | commit | P1-T6 plumbing

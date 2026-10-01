@@ -5,8 +5,8 @@ the script's own `--help` (2026-10-01). **Where** says which machine; **needs** 
 must exist first. The scripts refuse to run when a prerequisite is missing; they do not
 guess.
 
-Two links in the offline chain are **not runnable yet**, because they wrap the developer's
-core-module drafts (pair mode, CLAUDE.md §0). They are marked ⛔ below.
+Two links in the offline chain **have commands but stop with exit code 3** until the
+developer's core-module drafts exist (pair mode, CLAUDE.md §0). They are marked ⛔ below.
 
 ## 0. Before capture day (Phase 0)
 
@@ -31,10 +31,10 @@ core-module drafts (pair mode, CLAUDE.md §0). They are marked ⛔ below.
 |---|---|---|---|
 | Frames | `python scripts/extract_frames.py --video data/raw/<id>/<clip>` | laptop | `data/processed/capture/<run>/` (frames + `frames.jsonl`, real timestamps) |
 | SfM (P1-T5) | `python scripts/recon.py --frames-run data/processed/capture/<run>` | laptop (CPU COLMAP) | sparse model; gates ≥ 90% registered, < 1.5 px |
-| ⛔ Scale + ground + vehicle frame (P1-T6) | not yet a command: needs `recon/scale.py` (the developer's draft) | — | `T_veh_sfm` (similarity), `scale_error_m` |
+| ⛔ Scale + ground + vehicle frame (P1-T6) | `python scripts/scale.py --recon-run <run> --images <frames> --measured <measurements.yaml>` | laptop | `sfm_to_veh.json` (for `fuse.py`), `metric_result.json`, `body_points.ply`, the `scale_error_m` metric. Needs `recon/scale.py` (the developer's draft), `vehicle_frame.rear_overhang_m` and the measured marker side in `recon.yaml`. `measurements.yaml` is scan day's tape numbers **in metres** (`length`, `width`, `height`, `wheelbase`). Wheelbase is reported as *not validated* by this step: it needs wheel centres. **Open `body_points.ply` and check it is the van and only the van** (the selection rules are PROPOSED, `recon.yaml vehicle_frame.body_select`) |
 | Dense (P1-T7) | `notebooks/colab/10_dense.ipynb` → `scripts/dense.py --recon-run <run> --images <frames>` | **Colab** (CUDA COLMAP) | `dense/`: `fused.ply`, undistorted images in `images/`, depth maps, and the undistorted pinhole cameras as text in `sparse_txt/` |
 | 2D masks (P2-T2) | `notebooks/colab/20_seg.ipynb` → `scripts/seg.py --frames <dense run>/dense/images --sam2-dir <sam2>` | **Colab** | per-frame label PNGs + 20 check overlays. **Run it on the dense workspace's *undistorted* images**: the depth maps are in undistorted pixels, so masks from the original frames would not line up for fusion |
-| ⛔ 3D fusion + cleanup (P2-T3, P2-T5) | `python scripts/fuse.py --dense-run <dense run> --seg-run <seg run> --sfm-to-veh <sfm_to_veh.json>` | laptop | `fused.npz`, `cleaned.npz` (points in `veh`, labels, names), `fuse_summary.json`. Stops with exit 3 until `seg/fusion3d.py` (the developer's draft) exists. `sfm_to_veh.json` is `{"scale": m per SfM unit, "T_veh_world": 4×4}` from P1-T6, which has no command yet. Masks must be indexed in the seg run's component order (read from its `resolved_config.yaml`) |
+| ⛔ 3D fusion + cleanup (P2-T3, P2-T5) | `python scripts/fuse.py --dense-run <dense run> --seg-run <seg run> --sfm-to-veh <sfm_to_veh.json>` | laptop | `fused.npz`, `cleaned.npz` (points in `veh`, labels, names), `fuse_summary.json`. Stops with exit 3 until `seg/fusion3d.py` (the developer's draft) exists. `sfm_to_veh.json` comes from `scripts/scale.py`. Masks must be indexed in the seg run's component order (read from its `resolved_config.yaml`) |
 | Collision model (P2-T6…T8) | `python scripts/export_model.py --labelled <cleaned.npz> --scale-error-m <P1-T6 value>` | laptop | URDF + meshes + `components.yaml`; hinges stay fixed until measured (P2-T7) |
 
 ## 3. Each recorded drive (P3, P4)
