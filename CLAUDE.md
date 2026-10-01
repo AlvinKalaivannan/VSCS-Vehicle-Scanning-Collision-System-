@@ -554,6 +554,7 @@ python scripts/replay.py --model <model run> --risk <frames.jsonl> [--obstacles 
 # External datasets (ADR 0006; licence-checked, private by default)
 python scripts/fetch_dataset.py <id>                                        # id from configs/datasets.yaml
 
+python scripts/benchmark.py --frames-run <run> [--detector] [--log-metrics]  # P5-T3, per-stage fps tagged with hardware
 python scripts/report.py                                                    # regenerates docs/REPORT.md
 ```
 

@@ -106,3 +106,7 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:20 | write | README.md: 'Third-party models, datasets and methods' section with full citations (Grounding DINO ECCV 2024; SAM 2 ICLR 2025; RT-DETR CVPR 2024; COLMAP CVPR/ECCV 2016; CoACD TOG 2022; ByteTrack ECCV 2022) and dataset licence/provenance/allowed-use; nuScenes row omitted on main (registered only on unmerged docs-streaming-merge)
 - 2026-10-01 03:20 | commit | README credits
 - 2026-10-01 03:20 | merge | docs-readme-credits -> main (local only)
+- 2026-10-01 03:21 | branch | p5-t3-benchmark from main
+- 2026-10-01 03:22 | write | src/vscs/eval/benchmark.py (warm-up, p50/p95, fps, hardware tag), scripts/benchmark.py (metrics only with --log-metrics), tests; CLAUDE.md §12
+- 2026-10-01 03:22 | note | laptop CPU rehearsal (synthetic 1280x720): decode 0.8 ms, perception step 7.4 ms (136 fps); detector ~750 ms (ADR 0011) is the bottleneck. Not logged to metrics (rehearsal, not the T4 figure)
+- 2026-10-01 03:22 | commit | P5-T3 benchmark tool
