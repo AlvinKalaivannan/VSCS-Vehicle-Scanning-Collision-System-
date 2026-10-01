@@ -154,3 +154,37 @@ def test_ego_vo_runs_and_coasts_through_featureless_frames(cli, monkeypatch, tmp
     assert rc == 0
     (run,) = list((tmp_path / "o" / "perception").iterdir())
     assert "lost the road" in (run / "run.log").read_text(encoding="utf-8")
+
+
+def _gyro_csv(path, n=400):
+    """A wide-format gyro log (t in seconds, x/y/z in rad/s), as phone logger apps write."""
+    import csv
+
+    with open(path, "w", newline="", encoding="utf-8") as fh:
+        w = csv.writer(fh)
+        w.writerow(["time", "x", "y", "z"])
+        for i in range(n):
+            w.writerow([f"{i * 0.005:.3f}", "0.001", "-0.002", "0.0005"])
+    return path
+
+
+def test_imu_needs_an_explicit_sync_offset(cli, monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        cli, "load_config", lambda n: _capture_cfg() if n == "capture" else load_config(n)
+    )
+    monkeypatch.setattr(cli, "make_detector", lambda cfg, device: FakeDetector())
+    args = [
+        "--frames-run",
+        str(_frames_run(tmp_path)),
+        "--ego",
+        "vo",
+        "--imu",
+        str(_gyro_csv(tmp_path / "g.csv")),
+        "--out-root",
+        str(tmp_path / "o"),
+    ]
+    assert cli.main(args) == 2  # no offset: refuse to guess
+    assert cli.main([*args, "--imu-offset-ms", "12.5"]) == 0
+    (run,) = list((tmp_path / "o" / "perception").iterdir())
+    # Blank frames: no turns, so the gyro's axis never calibrates - and the log says so.
+    assert "gyro not used" in (run / "run.log").read_text(encoding="utf-8")

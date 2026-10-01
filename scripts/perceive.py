@@ -15,7 +15,9 @@ Needs the camera calibrated (configs/capture.yaml intrinsics.calibrated) and its
 measured (mount.measured), and refuses otherwise. Ego-motion (--ego): "vo" (default)
 estimates it from the road surface (ground-plane visual odometry, P4-T2); "stationary"
 fixes the van (the P4-T4 staged walk-behind clip); "file" reads --ego-poses. The detector
-needs torch: run it on Colab or in a GPU env.
+needs torch: run it on Colab or in a GPU env. With --imu (and --imu-offset-ms from the
+P1-T4 sync), the phone gyro is fused with VO; its mounting axis is self-calibrated from
+turns (perception/vio.py).
 """
 
 from __future__ import annotations
@@ -30,12 +32,14 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from vscs.capture.frames import read_frames_index
+from vscs.capture.preflight import load_imu_csv
 from vscs.common.config import load_config
 from vscs.common.frames import look_at_T_world_cam
 from vscs.common.io import make_run_dir, read_jsonl, write_jsonl
 from vscs.common.log import get_logger, setup_logging
 from vscs.perception.egomotion import GroundVO
 from vscs.perception.pipeline import Perception
+from vscs.perception.vio import GyroFusion
 
 logger = get_logger("scripts.perceive")
 
@@ -67,9 +71,23 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--ego-poses", type=Path, default=None, help="with --ego file: t_ns, T_world_veh (16)"
     )
+    parser.add_argument("--imu", type=Path, default=None, help="gyro CSV, fused with VO (--ego vo)")
+    parser.add_argument(
+        "--imu-offset-ms",
+        type=float,
+        default=None,
+        help="t_video = t_imu + offset (from P1-T4 sync); required with --imu",
+    )
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--out-root", type=Path, default=None)
     args = parser.parse_args(argv)
+    if args.imu is not None and args.imu_offset_ms is None:
+        # Checked before anything is written: a refused run must not leave a run folder.
+        print("--imu needs --imu-offset-ms (the P1-T4 sync offset); refusing to guess")
+        return 2
+    if args.imu is not None and args.ego != "vo":
+        print("--imu is fused with visual odometry: use it with --ego vo")
+        return 2
 
     cap = load_config("capture")
     intr, mount = cap["intrinsics"], cap["mount"]
@@ -94,6 +112,7 @@ def main(argv: list[str] | None = None) -> int:
 
     poses = {}
     vo = None
+    fusion = None
     if args.ego == "file":
         if not args.ego_poses:
             print("--ego file needs --ego-poses")
@@ -105,6 +124,10 @@ def main(argv: list[str] | None = None) -> int:
     elif args.ego == "vo":
         eg = pcfg["egomotion"]
         vo = GroundVO(K, T_veh_cam, float(pcfg["depth"]["max_range_m"]), eg["vo"], int(eg["seed"]))
+        if args.imu is not None:
+            imu_t, gyro, _ = load_imu_csv(args.imu)
+            imu_t = np.asarray(imu_t) + round(args.imu_offset_ms * 1e6)  # onto the video clock
+            fusion = GyroFusion(eg["vio"], imu_t, gyro)
     else:
         logger.warning("--ego stationary: the van is assumed not to move for the whole run")
 
@@ -113,6 +136,7 @@ def main(argv: list[str] | None = None) -> int:
     obstacles, detections = [], []
     import cv2
 
+    prev_t = None
     for t_ns, path in read_frames_index(args.frames_run):
         img = load_image(path)
         if dist.size:
@@ -122,14 +146,26 @@ def main(argv: list[str] | None = None) -> int:
             {"t_ns": t_ns, "cls": b.cls, "score": b.score, "xyxy": list(b.xyxy)} for b in boxes
         )
         if vo is not None:
-            vo.step(img)
-            T_world_veh = vo.T_world_veh
+            step = vo.step(img)
+            if fusion is not None and prev_t is not None:
+                fusion.step(step.T_prev_curr, prev_t, t_ns)
+                T_world_veh = fusion.T_world_veh
+            else:
+                T_world_veh = vo.T_world_veh
+            prev_t = t_ns
         else:
             T_world_veh = poses.get(t_ns, np.eye(4))
         obstacles.extend(perception.step(t_ns, boxes, T_world_veh))
 
     write_jsonl(run_dir / "obstacles.jsonl", obstacles)
     write_jsonl(run_dir / "detections.jsonl", detections)
+    if fusion is not None:
+        if fusion.axis is None:
+            logger.warning("gyro not used: too few confident turns to calibrate its mounting axis")
+        else:
+            logger.info(
+                "gyro fused; van up-axis in phone coordinates: %s", np.round(fusion.axis, 3)
+            )
     if vo is not None and vo.lost:
         logger.warning("visual odometry lost the road on %d frame(s); motion was coasted", vo.lost)
     print(
