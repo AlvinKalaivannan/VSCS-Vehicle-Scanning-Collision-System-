@@ -81,6 +81,15 @@ egomotion:
   # Ladder trigger: > 10%.
   max_drift_fraction: 0.05
   keyframe_translation_m: 0.10
+  # Ground-plane visual odometry (src/vscs/perception/egomotion.py): ORB features on the
+  # road surface, put on the ground (known camera height = metric scale), aligned by a
+  # RANSAC 2D rigid fit. The visual half of visual-inertial; the IMU half joins at P4-T2.
+  vo:
+    orb_features: 2000
+    ratio_test: 0.75            # Lowe's ratio test on Hamming matches
+    ransac_iterations: 400
+    ransac_threshold_m: 0.03    # inlier if the aligned ground points agree within this
+    min_inliers: 25             # fewer than this: report the frame as lost, keep the old pose
   seed: 20260924
 
 uncertainty:
