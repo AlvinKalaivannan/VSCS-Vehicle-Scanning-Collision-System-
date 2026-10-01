@@ -85,3 +85,9 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:13 | write | devlog 2026-10-01 continuation, STATUS checkpoint
 - 2026-10-01 03:13 | commit | docs checkpoint b
 - 2026-10-01 03:13 | merge | docs-1001-b -> main (local only)
+- 2026-10-01 03:13 | branch | p4-t4-detector from main
+- 2026-10-01 03:14 | note | citation corrected before commit: RT-DETR is Zhao et al., CVPR 2024 (not 'Lv et al.')
+- 2026-10-01 03:16 | data | model weights PekingU/rtdetr_r18vd downloaded to the HF cache (outside repo) for CPU verification; licence Apache-2.0 (HF model card, checked 2026-10-01); code lyuwenyu/RT-DETR Apache-2.0; cited: Zhao et al., CVPR 2024; trained on COCO (images Flickr-licensed; no images redistributed)
+- 2026-10-01 03:16 | write | src/vscs/perception/detect.py (filter + RT-DETR adapter), configs/perception.yaml detect.model_id, tests/unit/test_detect.py, docs/decisions/0011-detector-rtdetr.md
+- 2026-10-01 03:16 | note | RT-DETR r18 on laptop CPU: car found 18/20 Roboflow test photos, IoU median 0.98 vs labelled extent; ~750 ms/image (R-20 evidence)
+- 2026-10-01 03:16 | commit | P4-T4 detector
