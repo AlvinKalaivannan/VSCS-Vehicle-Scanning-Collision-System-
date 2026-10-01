@@ -220,3 +220,5 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 11:36 | decision | developer approved addressing: own limits (depth producer, straight/curve drift gating, slow-test check), third hub mark, half-voxel inset prototype, ADR 0010
 - 2026-10-01 11:36 | write | P4-T1 depth_error producer + straight-only P4-T2 drift gating (score_perception, lot_truth, eval.yaml lot_truth depth buckets), ADR 0012 amendment, checklist note, runbook; pytest --durations: slowest test 38 s, the 14-min run was laptop load
 - 2026-10-01 11:37 | write | third (front-left) hub mark: HubMarks.front_left_hub_m + LotTruth.wheelbase_m, swap/heading check in veh_pose_in_lot, eval.yaml front_mark_tolerance_m 0.05, checklist + ADR 0012 amendment (approved)
+- 2026-10-01 11:40 | write | decompose.surface voxel_centres prototype (half-voxel inset of the voxel surface; sheets keep faces); model.yaml surface: voxel_faces (default unchanged), inset_min_depth_voxels 2.0; 5 tests; fixture: faces +1..2 cm per side, centres 0 +/-1 cm
+- 2026-10-01 11:41 | write | CLAUDE.md §0 Limits policy: limits_policy: exhaust-first (developer instruction)
