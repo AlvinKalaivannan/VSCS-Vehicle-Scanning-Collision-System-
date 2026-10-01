@@ -177,3 +177,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 04:11 | test | 802 passed, 1 skipped; ruff clean
 - 2026-10-01 04:11 | commit | P1-T6 plumbing
 - 2026-10-01 04:11 | merge | p1-t6-scale-cli -> main (local only)
+- 2026-10-01 04:13 | note | p6-stream-scaffold refreshed with main; still unmerged
