@@ -25,7 +25,7 @@ import yaml
 
 from fixtures.oracle_sweep import ref_sweep_components
 from fixtures.synthetic import Box, load_scene
-from vscs.common.config import load_config, repo_root
+from vscs.common.config import load_config, replace_top_level_block, repo_root
 from vscs.common.frames import T_from_Rt, invert, look_at_T_world_cam, project, transform_points
 from vscs.common.io import read_jsonl, write_jsonl
 from vscs.model.urdf import export_model
@@ -215,6 +215,10 @@ def test_the_whole_chain(chain, monkeypatch):
     eval_copy = chain / "eval.yaml"
     eval_copy.write_text(
         (repo_root() / "configs" / "eval.yaml").read_text(encoding="utf-8"), encoding="utf-8"
+    )
+    # As ingest would have: the synthetic pass is a dev pass (R-09).
+    replace_top_level_block(
+        eval_copy, "splits", {**load_config("eval")["splits"], "dev": ["synthetic_01"]}
     )
     assert (
         evaluate.main(

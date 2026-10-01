@@ -10,7 +10,9 @@ many passes were never warned, median TTC error, and false alarms per minute.
 R-09 - the test split is touched ONCE. ``guard_split`` refuses ``test`` unless the caller
 says ``final=True``, and refuses outright if ``eval.yaml`` already records that the test
 split was used. ``mark_test_split_used`` writes that record, with the date, after a final
-run. Tuning happens on ``dev`` only.
+run. Tuning happens on ``dev`` only. ``check_pass_split`` makes the split label mean
+something: every pass scored must be listed in that split by ingest (P1-T4), so a test
+pass can never be scored - or tuned on - under ``dev``.
 """
 
 from __future__ import annotations
@@ -52,6 +54,27 @@ def guard_split(split: str, splits_cfg: dict[str, Any], *, final: bool) -> None:
             raise PermissionError(
                 "the test split is used once, at P5-T2: pass final=True (--final)"
             )
+
+
+def check_pass_split(pass_ids: list[str], splits_cfg: dict[str, Any], split: str) -> None:
+    """Refuse passes that ingest did not assign to ``split`` (R-09).
+
+    Pass ids are the raw ids ingest wrote into ``eval.yaml splits``. A pass from the other
+    split is the dangerous case - test data seen during tuning - and gets its own message.
+    """
+    other = "test" if split == "dev" else "dev"
+    leaked = sorted(set(pass_ids) & set(splits_cfg.get(other) or []))
+    if leaked:
+        raise PermissionError(
+            f"passes {leaked} belong to the {other} split; scoring them as {split} would "
+            "leak them (R-09). Remove them from the passes file."
+        )
+    unknown = sorted(set(pass_ids) - set(splits_cfg.get(split) or []))
+    if unknown:
+        raise PermissionError(
+            f"passes {unknown} are not listed in eval.yaml splits.{split}. Split membership "
+            "comes from ingest (scripts/ingest.py); use the raw ids it assigned."
+        )
 
 
 def mark_test_split_used(

@@ -28,7 +28,13 @@ from vscs.common.config import config_dir, load_config, repo_root
 from vscs.common.io import append_metric, make_run_dir, read_jsonl, write_json
 from vscs.common.log import setup_logging
 from vscs.common.types import RiskFrame
-from vscs.eval.evaluate import PassTruthFull, guard_split, mark_test_split_used, score_system
+from vscs.eval.evaluate import (
+    PassTruthFull,
+    check_pass_split,
+    guard_split,
+    mark_test_split_used,
+    score_system,
+)
 
 
 def _frames(run: Path) -> list[RiskFrame]:
@@ -58,6 +64,11 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     spec = yaml.safe_load(args.passes.read_text(encoding="utf-8"))
+    try:
+        check_pass_split([str(p["id"]) for p in spec["passes"]], ev["splits"], args.split)
+    except PermissionError as exc:
+        print(f"refused: {exc}")
+        return 2
     vscs, base = [], []
     for p in spec["passes"]:
         t = p["truth"]

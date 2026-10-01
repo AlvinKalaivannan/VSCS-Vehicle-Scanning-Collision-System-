@@ -130,6 +130,11 @@ def test_evaluate_logs_the_p3_t6_gate_on_dev_only(tmp_path, monkeypatch):
     eval_copy.write_text(
         (repo_root() / "configs" / "eval.yaml").read_text(encoding="utf-8"), encoding="utf-8"
     )
+    from vscs.common.config import replace_top_level_block
+
+    replace_top_level_block(
+        eval_copy, "splits", {**load_config("eval")["splits"], "dev": ["p1"], "test": ["p2"]}
+    )
     for name, frames in (
         (
             "v",
@@ -147,37 +152,26 @@ def test_evaluate_logs_the_p3_t6_gate_on_dev_only(tmp_path, monkeypatch):
         "t_event_ns": 5 * S,
         "event_onsets_ns": [5 * S],
     }
-    passes = tmp_path / "passes.yaml"
-    passes.write_text(
-        yaml.safe_dump(
-            {
-                "passes": [
-                    {
-                        "id": "p1",
-                        "vscs": str(tmp_path / "v"),
-                        "baseline": str(tmp_path / "b"),
-                        "truth": truth,
-                    }
-                ]
-            }
-        ),
-        encoding="utf-8",
-    )
+
+    def _passes(pass_id):
+        path = tmp_path / f"passes_{pass_id}.yaml"
+        one = {"id": pass_id, "vscs": str(tmp_path / "v"), "baseline": str(tmp_path / "b")}
+        path.write_text(yaml.safe_dump({"passes": [{**one, "truth": truth}]}), encoding="utf-8")
+        return path
+
     cli = _load("evaluate")
     logged = []
     monkeypatch.setattr(cli, "append_metric", lambda **kw: logged.append(kw))
     base = [
-        "--passes",
-        str(passes),
         "--eval-config",
         str(eval_copy),
         "--out-root",
         str(tmp_path / "o"),
         "--log-metrics",
     ]
-    assert cli.main([*base, "--split", "dev"]) == 0
+    assert cli.main([*base, "--passes", str(_passes("p1")), "--split", "dev"]) == 0
     gate = [m for m in logged if m["metric"] == "component_flagged_frac"]
     assert len(gate) == 1 and gate[0]["task"] == "P3-T6" and gate[0]["value"] == 1.0
     logged.clear()
-    assert cli.main([*base, "--split", "test", "--final"]) == 0
+    assert cli.main([*base, "--passes", str(_passes("p2")), "--split", "test", "--final"]) == 0
     assert not [m for m in logged if m["metric"] == "component_flagged_frac"]  # P5-T2 reports
