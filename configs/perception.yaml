@@ -90,6 +90,12 @@ egomotion:
     ransac_iterations: 400
     ransac_threshold_m: 0.03    # inlier if the aligned ground points agree within this
     min_inliers: 25             # fewer than this: report the frame as lost, keep the old pose
+  # Gyro fusion (src/vscs/perception/vio.py): the phone's mounting is unknown, so the van's
+  # vertical axis in gyro coordinates is estimated from turns (gyro vector ~ yaw rate x axis).
+  vio:
+    min_turn_rate_radps: 0.05   # only frames turning at least this fast calibrate the axis
+    min_calibration_frames: 20
+    vo_yaw_weight: 0.7          # when VO is good: yaw = w * VO + (1 - w) * gyro
   seed: 20260924
 
 uncertainty:
