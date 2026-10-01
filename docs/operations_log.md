@@ -156,3 +156,7 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:45 | write | devlog + STATUS checkpoint c
 - 2026-10-01 03:45 | commit | docs checkpoint c
 - 2026-10-01 03:45 | merge | docs-1001-c -> main (local only)
+- 2026-10-01 03:45 | branch | test-cli-chain from main
+- 2026-10-01 03:47 | write | tests/test_cli_chain.py: full per-drive CLI chain on a synthetic drive (frames -> perceive w/ real ground VO -> risk VSCS + baseline -> evaluate dev -> view + replay)
+- 2026-10-01 03:47 | note | CLI chain passes in ~12 s: VO recovers the 2.4 m reverse within 5 cm; VSCS attribution 1.0 with >1 s lead; baseline attribution n/a
+- 2026-10-01 03:47 | commit | CLI chain integration test
