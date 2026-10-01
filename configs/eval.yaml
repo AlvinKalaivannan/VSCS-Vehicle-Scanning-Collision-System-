@@ -66,6 +66,10 @@ lot_truth:
   # data/raw/lot_*/gt.yaml and scripts/score_perception.py (P3-T2, P4-T2). ADR 0012 (accepted).
   # The two hub marks must be the scan-day rear track apart, to within this.
   track_tolerance_m: 0.03
+  # The front-left hub mark must land within this of (wheelbase, track/2) in veh. Tape
+  # error (~1 cm per mark) over a ~3 m lever arm stays well inside; a 10 cm misread across
+  # the hub line (~17 cm at the front) or a left/right swap does not.
+  front_mark_tolerance_m: 0.05
   # P3-T2 is scored while the van is still parked at the start of a pass: skip the start
   # sync shake/clap, then compare every frame in the window with the measured layout.
   start_skip_s: 1.5

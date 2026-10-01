@@ -299,3 +299,74 @@ def test_cli_logs_depth_error_by_bucket(tmp_path, monkeypatch):
     seen_rng = math.hypot(0.88, 0.5)
     assert (m["task"], m["metric"]) == ("P4-T1", "depth_error_m_at_1m")
     assert m["value"] == pytest.approx(abs(seen_rng - true_rng))
+
+
+# --------------------------------------------------------------------------- #
+# The third (front-left) hub mark: ADR 0012 amendment                          #
+# --------------------------------------------------------------------------- #
+WB = 3.0
+KW = {"wheelbase_m": WB, "front_tolerance_m": 0.05}
+
+
+def _marks3(o, yaw):
+    """Rear marks as before, plus the front-left hub mark."""
+    m = _marks(o, yaw)
+    x_axis = np.array([math.cos(yaw), math.sin(yaw)])
+    y_axis = np.array([-math.sin(yaw), math.cos(yaw)])
+    fl = np.asarray(o, float) + WB * x_axis + TRACK / 2 * y_axis
+    return HubMarks(
+        rear_left_hub_m=m.rear_left_hub_m,
+        rear_right_hub_m=m.rear_right_hub_m,
+        front_left_hub_m=tuple(fl),
+    )
+
+
+def test_three_marks_agree_and_tape_noise_passes():
+    m = _marks3([5.0, 1.0], 0.3)
+    veh_pose_in_lot(m, TRACK, 0.03, **KW)
+    # Each mark read 1 cm off, in the worst-case directions for the heading.
+    (lx, ly), (rx, ry), (fx, fy) = m.rear_left_hub_m, m.rear_right_hub_m, m.front_left_hub_m
+    noisy = HubMarks(
+        rear_left_hub_m=(lx + 0.01, ly),
+        rear_right_hub_m=(rx - 0.01, ry),
+        front_left_hub_m=(fx, fy + 0.01),
+    )
+    veh_pose_in_lot(noisy, TRACK, 0.03, **KW)
+
+
+def test_the_third_mark_catches_a_swap():
+    m = _marks3([0.0, 0.0], 0.0)
+    swapped = HubMarks(
+        rear_left_hub_m=m.rear_right_hub_m,
+        rear_right_hub_m=m.rear_left_hub_m,
+        front_left_hub_m=m.front_left_hub_m,
+    )
+    with pytest.raises(ValueError, match="swapped"):
+        veh_pose_in_lot(swapped, TRACK, 0.03, **KW)
+
+
+def test_the_third_mark_catches_a_misread_across_the_hub_line():
+    """The case the track check cannot see (test_a_misread_tape_is_caught_by_the_track)."""
+    m = _marks3([5.0, 0.0], 0.0)
+    across = HubMarks(
+        rear_left_hub_m=(5.10, 0.86),
+        rear_right_hub_m=m.rear_right_hub_m,
+        front_left_hub_m=m.front_left_hub_m,
+    )
+    veh_pose_in_lot(
+        HubMarks(rear_left_hub_m=(5.10, 0.86), rear_right_hub_m=m.rear_right_hub_m), TRACK, 0.03
+    )
+    with pytest.raises(ValueError, match="heading"):
+        veh_pose_in_lot(across, TRACK, 0.03, **KW)
+
+
+def test_front_marks_need_the_wheelbase(tmp_path):
+    g = copy.deepcopy(GT)
+    g["passes"][0]["start"]["front_left_hub_m"] = [8.0, 0.86]
+    p = tmp_path / "gt.yaml"
+    p.write_text(yaml.safe_dump(g), encoding="utf-8")
+    with pytest.raises(ValidationError, match="wheelbase_m"):
+        load_lot_truth(p)
+    g["wheelbase_m"] = WB
+    p.write_text(yaml.safe_dump(g), encoding="utf-8")
+    assert load_lot_truth(p).pass_("lot_001").start.front_left_hub_m == (8.0, 0.86)

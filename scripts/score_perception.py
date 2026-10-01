@@ -107,8 +107,12 @@ def main(argv: list[str] | None = None) -> int:
         pid = str(p["id"])
         try:
             lp = truth.pass_(pid)
-            R, o = veh_pose_in_lot(lp.start, truth.rear_track_m, tol)
-            end = veh_pose_in_lot(lp.end, truth.rear_track_m, tol) if lp.end else None
+            kw = {
+                "wheelbase_m": truth.wheelbase_m,
+                "front_tolerance_m": float(lc["front_mark_tolerance_m"]),
+            }
+            R, o = veh_pose_in_lot(lp.start, truth.rear_track_m, tol, **kw)
+            end = veh_pose_in_lot(lp.end, truth.rear_track_m, tol, **kw) if lp.end else None
         except (KeyError, ValueError) as exc:
             print(f"pass {pid}: {exc}")
             return 2

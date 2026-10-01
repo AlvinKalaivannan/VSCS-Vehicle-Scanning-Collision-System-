@@ -307,14 +307,20 @@ For every pass:
       are used to judge ego-motion drift (P4-T2).
 - [ ] **Van pose, before moving and after stopping (ADR 0012).** With the van stopped
       (park, engine off or handbrake on), and **only then**, drop a plumb line from the
-      centre of each **rear wheel hub** to the ground, chalk both points, and tape-measure
-      each from the origin in x and y. Never measure beside a moving vehicle.
-  - [ ] **Read each tape twice.** The track check catches a misread *along* the hub
-        line, but not one *across* it (10 cm turns the heading by about 3°).
+      centre of each **rear wheel hub** and the **front-left hub** to the ground, chalk
+      all three points, and tape-measure each from the origin in x and y. Never measure
+      beside a moving vehicle. (About 3 minutes per pose.)
+  - [ ] **Read each tape twice.**
   - [ ] **Left means the van's own left**, as if sitting in the driver's seat facing
-        forward. A swap is not caught by any check: it turns the van around in the data.
-  - [ ] The two marks should be the rear track apart (±3 cm). If not, measure again.
-  - [ ] Write them under the pass in `gt.yaml` (`start:` / `end:`), format in ADR 0012.
+        forward.
+  - [ ] The two rear marks should be the rear track apart (±3 cm). If not, measure again.
+  - [ ] The front-left mark is the cross-check: the software expects it one wheelbase
+        ahead of the rear-left mark, and refuses a pose where it is not. That catches a
+        left/right swap and a rear tape misread *across* the hub line, which the track
+        check alone cannot see.
+  - [ ] Write them under the pass in `gt.yaml` (`start:` / `end:`, with
+        `front_left_hub_m`), plus the scan-day `wheelbase_m` once at the top. Format in
+        ADR 0012.
 - [ ] **Record which doors and mirrors are open or closed** (R-15) — normally all closed
       for lot runs; say so explicitly.
 - [ ] Stop the vehicle before touching the phone.
