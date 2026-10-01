@@ -183,3 +183,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 04:16 | write | src/vscs/eval/labels3d.py, scripts/score_labels.py, tests/unit/test_labels3d.py; eval.yaml labels3d.match_tolerance_m: 0.001; fuse.py writes points_veh.ply for hand-labelling
 - 2026-10-01 04:16 | test | 814 passed, 1 skipped; ruff clean
 - 2026-10-01 04:16 | commit | label scoring
+- 2026-10-01 04:16 | merge | p2-t4-score-labels -> main (local only)
