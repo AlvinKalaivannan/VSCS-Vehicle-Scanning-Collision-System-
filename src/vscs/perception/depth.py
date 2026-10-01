@@ -39,6 +39,10 @@ high (perspective widens the box), which errs toward larger obstacles - conserva
 
 Assumptions to remember: a flat ground plane at ``z = 0``, a known fixed camera mount, and
 a box bottom edge that really is the ground contact (an overhanging object breaks it).
+A box clipped at the image's *top* is harmless (the base is what is used), but one clipped
+at a *side* moves its bottom-centre inward and biases the position: found on the
+perception-pipeline test, where a walker cut off at the right edge read -0.69 m/s
+instead of -1.0 m/s. Treat side-clipped boxes with suspicion.
 Learned and motion-stereo depth replace this at P4-T1.
 """
 

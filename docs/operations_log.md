@@ -64,3 +64,8 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 03:01 | write | src/vscs/ui/driver_replay.py (silhouette PNGs + alert audio WAV, no ffmpeg), scripts/replay.py, configs/ui.yaml driver_replay, tests; CLAUDE.md §12 synced
 - 2026-10-01 03:01 | commit | P5-T4 driver replay
 - 2026-10-01 03:01 | merge | p5-t4-driver-replay -> main (local only)
+- 2026-10-01 03:02 | test | coverage: total 94.6%; common/ 83-100%, risk/ 92-100% (>=80% §5 target met); seg/masks2d 80% (GPU adapters run on Colab only)
+- 2026-10-01 03:02 | branch | p4-perception-pipeline from main
+- 2026-10-01 03:04 | write | src/vscs/perception/pipeline.py (boxes -> static to height map, dynamic to tracker -> obstacles in veh), Tracker.next_id, configs/perception.yaml pipeline block, tests/unit/test_perception_pipeline.py
+- 2026-10-01 03:04 | note | finding: side-clipped detector boxes bias v0 position (walker read -0.69 m/s vs -1.0); top-clipped are harmless; documented in depth.py
+- 2026-10-01 03:04 | commit | perception pipeline glue

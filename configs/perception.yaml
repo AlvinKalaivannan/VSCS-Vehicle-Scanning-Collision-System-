@@ -53,6 +53,21 @@ track:
   # duplicate track (found on the crossing-walkers test, 2026-10-01).
   gate_recover_chi2: 18.42
 
+pipeline:
+  # Per-frame perception glue (src/vscs/perception/pipeline.py). Detector classes map to
+  # §4.2 obstacle kinds; static kinds go to the persistent height map (P4-T3), dynamic kinds
+  # to the tracker (P4-T4). Unlisted classes are treated as static_geom (cones, poles, boxes).
+  class_to_kind:
+    person: "person"
+    bicycle: "cyclist"
+    motorcycle: "cyclist"
+    car: "vehicle"
+    truck: "vehicle"
+    bus: "vehicle"
+  dynamic_kinds: ["person", "vehicle", "cyclist"]
+  # Static obstacles are written into the height map as a filled footprint at this spacing.
+  fill_step_m: 0.025
+
 egomotion:
   method: "visual_inertial"   # visual_inertial | visual_only | imu_plus_gt (§8.2)
   # R-08 detection signal: drift > 5% of distance travelled (P4-T2 acceptance).
