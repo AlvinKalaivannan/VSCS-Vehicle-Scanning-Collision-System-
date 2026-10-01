@@ -1,7 +1,7 @@
 # ADR 0010 - Grade near misses by *when* as well as *how close*
 
 - **Date:** 2026-10-01
-- **Status:** **proposed** (needs a §4 schema field: the developer's decision)
+- **Status:** **accepted** by the developer, 2026-10-01 (option 2, implemented the same day)
 - **Task:** P3-T5 (alerts), P5-T2 (false alarms per minute)
 - **Deciders:** developer (pending), Claude
 
@@ -43,11 +43,24 @@ That is the same timing logic contacts already get.
 
 ## Decision
 
-**Pending the developer.** Nothing changes in `types.py`, `sweep.py` or `alerts.py` until
-approved. `test_near_miss_grading_makes_it_critical_early_with_masks_too_adr_0010` pins
-today's behaviour, so the change is visible when it lands.
+Option 2, approved by the developer on 2026-10-01.
 
-## Consequences if approved
+## Migration note (schema 1 -> 2)
+
+- `ComponentRisk.t_closest_s: float | None` (seconds from now, ≥ 0): the time of
+  `min_distance_m`. It equals `ttc_s` for a predicted contact, and is the earliest time of
+  the minimum otherwise. `SCHEMA_VERSION` = 2.
+- **Version-1 streams still load.** The field defaults to `None`, and a near miss with
+  `t_closest_s = None` is graded by distance alone, exactly as in version 1. So old
+  `risk_frames.jsonl` files replay unchanged, and a sweep that does not yet report the
+  field degrades to the old behaviour rather than failing.
+- `alerts._meets`, near-miss branch: `close and soon`, where soon = `t_closest_s` below
+  the level's TTC threshold. The release offsets widen both thresholds.
+- `aggregate.component_risks` copies `t_closest_s` from the sweep result if present.
+- `risk/sweep.py` (your core module): `SweepResult.t_closest_s`, with a red target test
+  on `p3-t4-sweep`. The test oracle (`tests/fixtures/oracle_sweep.py`) reports it.
+
+## Consequences
 
 - Schema `SCHEMA_VERSION` bump; migration note; `sweep.py` (the developer's core module)
   reports the time of minimum clearance alongside the clearance.
@@ -56,6 +69,13 @@ today's behaviour, so the change is visible when it lands.
 
 ## Evidence
 
-- `tests/unit/test_drive_end_to_end.py`: the alert is critical from t = 0.2 s with boxes
-  and with masks; the rear bumper reads 0.215 m with `ttc_s = None`.
-- Operations log, 2026-10-01.
+- **Before:** `tests/unit/test_drive_end_to_end.py`: critical from t = 0.2 s with boxes and
+  with masks; the rear bumper reads 0.215 m with `ttc_s = None`.
+- **After** (`test_a_near_miss_far_ahead_no_longer_grades_critical_adr_0010`):
+  - t = 0.2 s is `caution` (the bumper's closest approach is 2.2 s away);
+  - `warning` from 0.6 s;
+  - `critical` from 1.6 s, when the real corner contact is 0.75 s away (the raw level
+    crosses at 1.4 s, plus the 2-frame escalation);
+  - attribution still names the rear-right corner, with the lead time above 1.5 s.
+- `tests/unit/test_alerts.py`: the near-miss ladder by `t_closest_s` (None / 2.5 / 1.5 /
+  0.5 / 3.5 s) and release through the time deadband.

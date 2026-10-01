@@ -161,6 +161,8 @@ def test_default_surface_is_unchanged():
     assert CFG.get("surface", "voxel_faces") == "voxel_faces"
 
 
+# The collapsed slab below has zero volume, and trimesh divides by it for a centre of mass.
+@pytest.mark.filterwarnings("ignore:invalid value encountered in divide:RuntimeWarning")
 def test_inset_mesh_is_half_a_voxel_inside_on_every_side():
     occ = np.zeros((5, 4, 3), dtype=bool)
     occ[1:4, 1:3, 1:2] = True  # a 3 x 2 x 1 block of 0.1 m voxels

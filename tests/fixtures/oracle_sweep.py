@@ -40,6 +40,7 @@ class RefResult:
     min_distance_m: float
     ttc_s: float | None
     curvature: float
+    t_closest_s: float | None = None  # ADR 0010: time of the minimum clearance
 
 
 def ref_box(name: str, lo, hi, obstacle_id: int | None = None) -> RefFootprint:
@@ -55,18 +56,19 @@ def _pair(comp, obst, fan: PathFan, k: int, m_c: float, m_o: float, dt: float) -
     kappa = float(fan.curvatures[k])
     horizon = float(fan.t_s[-1])
     ts = np.append(np.arange(0.0, horizon, dt), horizon)
-    ttc, d_min = None, math.inf
+    ttc, d_min, t_min = None, math.inf, 0.0
     for t in ts:
         x, y, h = (float(v) for v in constant_curvature_pose(kappa, fan.speed_mps * t))
         c, s = math.cos(h), math.sin(h)
         g = affinity.affine_transform(P, [c, -s, s, c, x, y]).distance(obs)
-        d_min = min(d_min, g)
+        if g < d_min:  # strict: the earliest time of the minimum
+            d_min, t_min = g, float(t)
         if g <= 0.0:
             ttc = float(t)
             break
     if ttc is not None:
-        d_min = 0.0
-    return RefResult(comp.name, obst.obstacle_id, d_min, ttc, kappa)
+        d_min, t_min = 0.0, ttc
+    return RefResult(comp.name, obst.obstacle_id, d_min, ttc, kappa, t_min)
 
 
 def ref_sweep_components(
