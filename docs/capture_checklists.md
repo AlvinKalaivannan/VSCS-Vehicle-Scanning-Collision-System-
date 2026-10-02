@@ -102,9 +102,10 @@ with the **vehicle stationary**, or public footage, or CARLA.
 | HDR | Off | Per-frame tone changes confuse matching |
 | Grid / overlays | Off | Nothing burned into the pixels |
 
-Stabilisation is the one to check carefully. On many phones it cannot be disabled, in
-which case **record it in the devlog** — it becomes a known limitation, and if
-reconstruction quality is poor it is the first suspect.
+Stabilisation is the one to check carefully. On many phones the stock app hides or
+forbids turning it off. Before accepting it, work through the fixes in open question 2
+(CLAUDE.md §0 `limits_policy: exhaust-first`); only if they all fail does it become a
+recorded limit.
 
 ---
 
@@ -456,8 +457,23 @@ the lot is a wasted day.
 ### 2. Can stabilisation actually be turned off?
 
 If EIS cannot be disabled, it warps frames individually and the calibration no longer
-describes the images. Worth ten minutes to check now. If it cannot be turned off, record
-that as a known limitation and expect it to be the first suspect if reconstruction is poor.
+describes the images. Under `limits_policy: exhaust-first` (CLAUDE.md §0), try each fix in
+order, and measure each one with the moving-board check (Step 3 above):
+
+- [ ] **The stock app's own setting.** It is often named "video stabilisation", "steady"
+      or "super steady", sometimes per resolution or frame rate.
+- [ ] **A different video mode.** Some phones apply EIS only at certain resolution/fps
+      combinations. Try the scan mode (4K30) and the lot mode (1080p60) separately.
+- [ ] **A manual-control camera app.** Many expose stabilisation, focus lock and exposure
+      lock directly. It must also suit the IMU setup from question 1. Check the app's
+      licence only if it would ship with VSCS; an app used to record does not.
+- [ ] **For the van scan only: stills instead of video.** Photo mode is usually not
+      per-frame warped, and SfM works from overlapping photos. It costs walking time, not
+      accuracy. This does not help the lot runs, which need timestamps.
+
+Only if every option fails is it a recorded limit, case (c) of the policy. The devlog
+then states what was tried, the measured still-vs-moving error, and that it is the first
+suspect if reconstruction is poor.
 
 ---
 
