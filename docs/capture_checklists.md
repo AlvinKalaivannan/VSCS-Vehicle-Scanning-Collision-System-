@@ -4,6 +4,10 @@
 a desk, then again on site. Print it or keep it open on a second device — not on the
 phone that is recording.
 
+**Fill-in card for the day:** open `docs/capture_day_card.html` in a browser and print it
+(3 A4 pages: scan-day measurements and markers, lot setup, and one row per pass for the
+hub marks). It follows this checklist; the checklist explains the why.
+
 Capture days are the one irreversible part of this project. Reconstruction, segmentation
 and every risk number are downstream of footage that can only be re-shot by getting the
 van out again, and §6 puts all real-world capture in **October, before snow**. A wasted

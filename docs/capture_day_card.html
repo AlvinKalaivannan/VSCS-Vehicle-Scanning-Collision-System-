@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VSCS Capture Card</title>
+<style>
+  :root { --ink: #111; --muted: #555; --line: #888; --soft: #f1f1f1; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px; background: #fff; color: var(--ink);
+         font: 11pt/1.35 system-ui, -apple-system, "Segoe UI", Arial, sans-serif; }
+  .page { max-width: 190mm; margin: 0 auto 24px; }
+  h1 { font-size: 15pt; margin: 0 0 2px; }
+  h2 { font-size: 12pt; margin: 14px 0 6px; padding-bottom: 2px; border-bottom: 2px solid var(--ink); }
+  .sub { color: var(--muted); font-size: 9pt; margin-bottom: 8px; }
+  table { width: 100%; border-collapse: collapse; margin: 4px 0 8px; }
+  th, td { border: 1px solid var(--line); padding: 4px 5px; text-align: left; vertical-align: top; }
+  th { background: var(--soft); font-size: 9pt; }
+  td.blank { height: 22px; }
+  .small { font-size: 8.5pt; color: var(--muted); }
+  .box { border: 2px solid var(--ink); padding: 6px 8px; margin: 6px 0; }
+  .warn { border-color: #b00; }
+  ul.check { list-style: none; padding-left: 0; margin: 4px 0; }
+  ul.check li { padding-left: 1.4em; text-indent: -1.4em; margin: 2px 0; }
+  ul.check li::before { content: "\2610\00a0\00a0"; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .noprint { background: #fff8d6; border: 1px solid #d9c46a; padding: 6px 8px; margin-bottom: 10px; }
+  @media (max-width: 600px) { .two { grid-template-columns: 1fr; } }
+  @media print {
+    body { padding: 0; font-size: 10pt; }
+    .page { break-after: page; max-width: none; margin: 0; }
+    .page:last-child { break-after: auto; }
+    .noprint { display: none; }
+    @page { size: A4; margin: 12mm; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="noprint">Print this page (Ctrl+P). Three pages: scan day, lot day, and passes. Write in
+  metres to the centimetre (e.g. 5.12). Source: <code>docs/capture_checklists.md</code>, ADR 0012.</div>
+
+  <h1>VSCS capture card: scan day (P1-T2)</h1>
+  <div class="sub">Date ________ &nbsp; Weather (overcast?) ________ &nbsp; Driver ________ &nbsp; Camera operator ________ (not the driver)</div>
+
+  <div class="box warn"><b>Safety:</b> engine off or in park for every measurement · nobody beside or behind a moving vehicle ·
+  stop on rain, ice or poor light · never handle the camera while the vehicle moves.</div>
+
+  <h2>1. Measure the van first (every reading twice; redo if they differ by more than 1 cm)</h2>
+  <table>
+    <tr><th style="width:38%">Dimension</th><th>Reading 1 (m)</th><th>Reading 2 (m)</th><th>Δ ≤ 1 cm?</th></tr>
+    <tr><td>Length (front bumper to rear bumper)</td><td class="blank"></td><td></td><td></td></tr>
+    <tr><td>Width, <b>excluding</b> mirrors</td><td class="blank"></td><td></td><td></td></tr>
+    <tr><td>Width, mirror to mirror</td><td class="blank"></td><td></td><td></td></tr>
+    <tr><td>Height (ground to roof; roof rack? Y / N)</td><td class="blank"></td><td></td><td></td></tr>
+    <tr><td>Wheelbase (front axle centre to rear axle centre)</td><td class="blank"></td><td></td><td></td></tr>
+    <tr><td>Rear overhang (rear axle centre to rear bumper)</td><td class="blank"></td><td></td><td></td></tr>
+    <tr><td>Front overhang (front axle centre to front bumper)</td><td class="blank"></td><td></td><td></td></tr>
+    <tr><td><b>Rear track</b> (left rear hub centre to right rear hub centre)</td><td class="blank"></td><td></td><td></td></tr>
+    <tr><td>Rear door outward throw (body to door skin, fully open)</td><td class="blank"></td><td></td><td></td></tr>
+  </table>
+  <div class="small">These go into <code>measurements.yaml</code> (length, width, height, wheelbase) and <code>recon.yaml</code>
+  (<code>rear_overhang_m</code>). The rear track and wheelbase go into the lot day's <code>gt.yaml</code>.</div>
+
+  <h2>2. Markers</h2>
+  <table>
+    <tr><th>Printed black square, measured with a ruler (m)</th><td class="blank" style="width:30%"></td>
+        <th>Written into <code>recon.yaml</code>?</th><td style="width:12%"></td></tr>
+  </table>
+  <table>
+    <tr><th>ID</th><th>Where (rough; 1.5–2.5 m out, propped at 45°, facing the walk path)</th><th>Seen face-on from the loop?</th></tr>
+    <tr><td>0</td><td class="blank"></td><td></td></tr>
+    <tr><td>1</td><td class="blank"></td><td></td></tr>
+    <tr><td>2</td><td class="blank"></td><td></td></tr>
+    <tr><td>3</td><td>At the front bumper, facing forward (tells the software which end is the front)</td><td></td></tr>
+  </table>
+
+  <h2>3. Recording</h2>
+  <div class="two">
+    <ul class="check">
+      <li>Focus locked · exposure locked · main lens · no zoom</li>
+      <li>Stabilisation off (or the fix from checklist question 2)</li>
+      <li>HDR off · 4K30 for the scan</li>
+      <li>Shake or clap at the start and end of each clip</li>
+    </ul>
+    <ul class="check">
+      <li>Loop 1 · Loop 2 · Loop 3 (three heights)</li>
+      <li>Doors <b>closed</b> scan</li>
+      <li>Doors <b>open</b> scan (sliding door, rear doors)</li>
+      <li>Second vehicle walk-round (P1-T8; no markers)</li>
+    </ul>
+  </div>
+  <table>
+    <tr><th>Clip / file</th><th>What (loop, height, doors)</th><th>Notes</th></tr>
+    <tr><td class="blank"></td><td></td><td></td></tr>
+    <tr><td class="blank"></td><td></td><td></td></tr>
+    <tr><td class="blank"></td><td></td><td></td></tr>
+    <tr><td class="blank"></td><td></td><td></td></tr>
+  </table>
+</div>
+
+<div class="page">
+  <h1>VSCS capture card: lot day setup (P1-T3)</h1>
+  <div class="sub">Date ________ &nbsp; Lot / permission ________ &nbsp; Driver ________ &nbsp; Measurer ________</div>
+
+  <div class="box warn"><b>Safety:</b> walking speed only (&lt; 5 km/h) · empty lot · soft obstacles only (cones, boxes, foam or PVC pole) ·
+  measure only with the van stopped, in park, engine off or handbrake on · nobody beside or behind the moving van.</div>
+
+  <h2>1. Origin and frame</h2>
+  <table>
+    <tr><th style="width:30%">Chalk origin (what and where)</th><td class="blank"></td></tr>
+    <tr><th>+x direction (toward what)</th><td class="blank"></td></tr>
+    <tr><th>+y direction</th><td>90° to the <b>left</b> of +x (right-handed, z up)</td></tr>
+  </table>
+
+  <h2>2. Camera mount (once; do not touch it again this session)</h2>
+  <div class="small">In the van's own frame: x forward, y left, z up, measured from the ground point under the rear-axle centre
+  (the midpoint of the two rear hub marks). Behind the axle means negative x.</div>
+  <table>
+    <tr><th></th><th>x (m)</th><th>y (m)</th><th>z (m)</th></tr>
+    <tr><td>Camera lens centre</td><td class="blank"></td><td></td><td></td></tr>
+    <tr><td>Look-at point (a cone dead-centre in the live view, on the ground)</td><td class="blank"></td><td></td><td>0.00</td></tr>
+  </table>
+  <div class="small">Goes into <code>capture.yaml mount</code> (<code>position_veh_m</code>, <code>look_at_veh_m</code>, <code>measured: true</code>).</div>
+
+  <h2>3. Obstacles (tape each from the origin; chalk each footprint)</h2>
+  <table>
+    <tr><th>ID</th><th>Kind (pole / cone / box / curb)</th><th>x (m)</th><th>y (m)</th><th>Size (m)</th><th>Moved? When?</th></tr>
+    <tr><td class="blank">pole_1</td><td>pole</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">curb_1</td><td>curb</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">box_1</td><td>box</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">cone_1</td><td>cone</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">cone_2</td><td>cone</td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank"></td><td></td><td></td><td></td><td></td><td></td></tr>
+  </table>
+
+  <h2>4. Recording and hub marks, every pass</h2>
+  <ul class="check">
+    <li>1080p60 · focus and exposure locked · IMU logger running · shake or clap at the start and end of each recording</li>
+    <li>Doors and mirrors: all closed (say so) · stop the van before touching the phone</li>
+    <li><b>Before moving and after stopping:</b> plumb from the centres of the <b>rear-left</b>, <b>rear-right</b> and <b>front-left</b> hubs; chalk; tape x and y</li>
+    <li>Read each tape <b>twice</b> · <b>left = the van's own left</b> (driver's seat, facing forward)</li>
+    <li>Rear marks should be one rear track apart (±3 cm); if not, measure again</li>
+  </ul>
+
+  <h2>5. Pass plan (aim for 12–15)</h2>
+  <div class="small">Straight toward the pole · straight toward the boxes · left curve past an obstacle · right curve past an obstacle ·
+  parallel to the kerb · a pass where the <b>mirror</b> is nearest · a pass where a <b>wheel</b> is nearest · one or two very slow and
+  one or two a little faster (&lt; 5 km/h) · <b>one control pass with nothing nearby</b>.</div>
+
+  <h2>6. After the passes, and the same day</h2>
+  <ul class="check">
+    <li>Re-measure two obstacles; record any that moved and which passes they affect</li>
+    <li>Play back two clips</li>
+    <li>Copy (not move) → <code>scripts/ingest.py --kind lot</code> → three copies, each verified after copying</li>
+    <li>Type up <code>gt.yaml</code> (ADR 0012 format, including <code>wheelbase_m</code>) into the raw folder</li>
+    <li>Devlog today: dimensions, marker layout, mount, doors, surprises</li>
+  </ul>
+</div>
+
+<div class="page">
+  <h1>VSCS capture card: passes</h1>
+  <div class="sub">One row per pass. Marks in metres from the chalk origin (x, y). S = straight, C = curve.
+  "Nearest" = the component and obstacle this pass is designed to bring together (if any).</div>
+  <table>
+    <tr>
+      <th rowspan="2" style="width:5%">#</th><th rowspan="2" style="width:11%">Clip</th><th rowspan="2" style="width:5%">S / C</th>
+      <th rowspan="2" style="width:13%">Nearest (component / obstacle)</th>
+      <th colspan="3">START marks (x, y)</th><th colspan="3">END marks (x, y)</th>
+    </tr>
+    <tr><th>Rear L</th><th>Rear R</th><th>Front L</th><th>Rear L</th><th>Rear R</th><th>Front L</th></tr>
+    <tr><td class="blank">1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">3</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">4</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">5</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">6</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">7</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">8</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">9</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">10</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">11</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">12</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">13</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">14</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td class="blank">15</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  </table>
+  <div class="small">Quick check on the spot: the distance between the Rear L and Rear R marks should equal the rear track (±3 cm).
+  <code>score_perception.py</code> refuses a pose whose front-left mark is not one wheelbase ahead, so a misread is caught,
+  but only re-measuring on the day can fix it.</div>
+  <h2>Notes</h2>
+  <table><tr><td style="height:120px"></td></tr></table>
+</div>
+
+</body>
+</html>
