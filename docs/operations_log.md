@@ -237,3 +237,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-12 21:15 | decision | developer: subject vehicle is a 2025 Toyota RAV4 (replaces the van); 17-component vocabulary approved incl. front corners
 - 2026-10-12 21:15 | write | ADR 0015 (accepted), ADR 0004 superseded; seg/severity/model/risk configs; checklist + capture card; CLAUDE.md §1 note + P2-T7; fixture door renamed front_door_right; 860 passed
 - 2026-10-12 21:15 | merge | p1-rav4-subject-vehicle -> main (local only)
+- 2026-10-12 21:19 | push | main -> origin (5 commits: RAV4 switch ADR 0015, capture card, checklist stabilisation) on the developer's instruction; checks clean
