@@ -78,7 +78,7 @@ def test_a_taller_bump_reaches_the_underbody():
 def test_high_components_are_not_checked_and_an_empty_map_is_clear():
     res, _ = _reverse((np.zeros((0, 2)), np.zeros(0)))
     assert "right_mirror" not in res and "left_mirror" not in res  # min_z 1.40 m > 0.60 m
-    assert "sliding_door_right" in res  # its lower edge is at 0.50 m: a bollard could reach it
+    assert "front_door_right" in res  # its lower edge is at 0.50 m: a bollard could reach it
     assert all(r.ttc_s is None and math.isinf(r.min_clearance_m) for r in res.values())
 
 

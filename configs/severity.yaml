@@ -5,6 +5,9 @@ schema_version: 1
 
 # =============================================================================
 # APPROVED by the developer on 2026-09-24 (task P2-T1), as proposed.
+# RE-APPROVED 2026-10-11 for the 2025 RAV4 (ADR 0015): shared parts keep their weights;
+# front corners take the rear corners' 1.5; every door and the liftgate take the van
+# doors' 2.5 (large panels, hinge and latch damage possible).
 #
 # These weights decide WHICH COMPONENT a warning names, so they are worth arguing
 # about: a likely cheap wheel scuff must not outrank a less likely but costly
@@ -13,7 +16,7 @@ schema_version: 1
 # Component names here must stay in step with configs/seg.yaml - enforced by
 # tests/unit/test_config.py::test_severity_covers_exactly_the_approved_vocabulary.
 # =============================================================================
-status: "APPROVED_2026-09-24"
+status: "APPROVED_2026-10-11_RAV4"
 
 # Scale anchor: 1.0 = a scuff needing a panel repaint. Higher = worse.
 default: 1.0
@@ -21,13 +24,17 @@ default: 1.0
 components:
   front_bumper: 1.2
   rear_bumper: 1.2
-  rear_left_bumper_corner: 1.5    # corners take the impact and are awkward to repair
+  front_left_bumper_corner: 1.5   # corners take the impact and are awkward to repair
+  front_right_bumper_corner: 1.5
+  rear_left_bumper_corner: 1.5
   rear_right_bumper_corner: 1.5
   left_mirror: 2.0                # cheap part, but protrudes and breaks outright
   right_mirror: 2.0
-  sliding_door_right: 2.5         # large panel, mechanism damage possible
-  rear_door_left: 2.5             # split from rear_doors 2026-09-29, same weight
+  front_door_left: 2.5            # large panel, hinge and latch damage possible
+  front_door_right: 2.5
+  rear_door_left: 2.5
   rear_door_right: 2.5
+  liftgate: 2.5
   wheel_front_left: 0.6           # kerbing a tyre/rim is common and cheap
   wheel_front_right: 0.6
   wheel_rear_left: 0.6

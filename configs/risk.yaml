@@ -36,11 +36,13 @@ sweep:
   # sliding_door_right is a VARIANT SELECTOR ("closed" / "open"), not a displacement:
   # the door is two scanned collision models rather than a joint (ADR 0004). The rest
   # are real revolute hinges, in radians.
-  default_variants:
-    sliding_door_right: "closed"
+  default_variants: {}     # none on the RAV4 (ADR 0015)
   default_joint_states:
+    front_door_left: 0.0
+    front_door_right: 0.0
     rear_door_left: 0.0
     rear_door_right: 0.0
+    liftgate: 0.0
     left_mirror: 0.0
     right_mirror: 0.0
 

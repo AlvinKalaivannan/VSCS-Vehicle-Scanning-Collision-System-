@@ -49,31 +49,45 @@ urdf:
 # (R-15).
 #
 # Consequence for the offline pipeline: P2-T6 and P2-T8 run once per variant.
-variants:
-  status: "AWAITING_P1_T2_SCAN"
-  sliding_door_right:
-    closed: null      # path to the closed-door collision model, set at P2-T8
-    open: null        # path to the open-door collision model, set at P2-T8
-    # Measure on capture day and record here: body skin to door skin at full open,
-    # which is the number that justifies ADR 0004.
-    measured_outward_throw_m: null
+# Scanned door variants (ADR 0004) were for the van's sliding door. The 2025 RAV4 (ADR
+# 0015) has only hinged doors, so every opening is a joint below and no variants exist.
+variants: {}
 
 joints:
   # Genuine hinges only. Axes are set manually in v0.1 (R-15); auto-detection from
   # open/closed scans is a stretch goal. Values below are structural placeholders -
-  # measured on the real van at P2-T7 and committed with the scan they came from.
-  # The sliding door is deliberately absent: see `variants` above and ADR 0004.
+  # measured on the real vehicle (2025 RAV4, ADR 0015) at P2-T7 and committed with the
+  # scan they came from. Signs follow the right-hand rule about +z / +y in veh.
   status: "PLACEHOLDER_MEASURE_AT_P2_T7"
-  rear_door_left:
+  # Side doors hinge at their FRONT edge about a vertical axis. Opening swings the rear
+  # edge outward: +y for left doors (negative angle about +z), -y for right doors.
+  front_door_left:
+    type: "revolute"
+    axis: [0.0, 0.0, 1.0]
+    limit_lower: -1.20    # ~70 deg, placeholder until measured
+    limit_upper: 0.0
+  front_door_right:
     type: "revolute"
     axis: [0.0, 0.0, 1.0]
     limit_lower: 0.0
-    limit_upper: 2.44     # ~140 deg
+    limit_upper: 1.20
+  rear_door_left:
+    type: "revolute"
+    axis: [0.0, 0.0, 1.0]
+    limit_lower: -1.20
+    limit_upper: 0.0
   rear_door_right:
     type: "revolute"
     axis: [0.0, 0.0, 1.0]
-    limit_lower: -2.44
-    limit_upper: 0.0
+    limit_lower: 0.0
+    limit_upper: 1.20
+  # The liftgate hinges along its TOP edge about the y axis; opening lifts its bottom
+  # edge up and backward (-x), a positive angle about +y.
+  liftgate:
+    type: "revolute"
+    axis: [0.0, 1.0, 0.0]
+    limit_lower: 0.0
+    limit_upper: 1.40     # ~80 deg, placeholder until measured
   left_mirror:
     type: "revolute"
     axis: [0.0, 0.0, 1.0]

@@ -13,7 +13,7 @@ What it gets wrong, by construction (shown by the fixture tests):
 
 * **It invents clearance loss.** Its sides run along the furthest-protruding parts (the
   mirrors), so an obstacle level with a flat body panel is reported closer than it is.
-  On the fixture, a pole 0.40 m from the sliding door is 0.15 m from the box.
+  On the fixture, a pole 0.40 m from the right front door is 0.15 m from the box.
 * **It cannot attribute.** Every alert names "the vehicle", so component attribution
   accuracy is not defined for it. Report "n/a", never 0 or 1.
 

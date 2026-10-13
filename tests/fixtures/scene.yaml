@@ -69,10 +69,10 @@ components:
     bounds: [2.65, 0.80, 0.00, 3.35, 1.00, 0.70]
     severity: 0.6
     display_name: "front left wheel"
-  sliding_door_right:
+  front_door_right:
     bounds: [1.00, -1.00, 0.50, 2.60, -0.95, 1.90]
     severity: 2.5
-    display_name: "sliding door"
+    display_name: "front right door"
   underbody:
     # min_z = 0.25 m: the clearance figure the kerb case is checked against (P4-T6).
     # Spans y in [-0.78, 0.78], stopping short of the wheels at |y| = 0.80 so no two

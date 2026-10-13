@@ -83,7 +83,15 @@ def test_unmeasured_hinges_are_listed_not_invented():
     cfg = load_config("model")
     specs, unmeasured = joint_specs_from_config(cfg["joints"], cfg["urdf"]["base_link"])
     assert specs == {}
-    assert set(unmeasured) == {"rear_door_left", "rear_door_right", "left_mirror", "right_mirror"}
+    assert set(unmeasured) == {
+        "front_door_left",
+        "front_door_right",
+        "rear_door_left",
+        "rear_door_right",
+        "liftgate",
+        "left_mirror",
+        "right_mirror",
+    }
 
 
 def test_config_joints_are_built_once_measured():

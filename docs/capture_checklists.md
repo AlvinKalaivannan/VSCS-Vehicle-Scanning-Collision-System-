@@ -1,5 +1,8 @@
 # VSCS capture checklists
 
+> **Subject vehicle: a 2025 Toyota RAV4** (ADR 0015, 2026-10-11). It replaced the van. Where
+> this checklist says "van", read "the RAV4". The door section below is updated for it.
+
 **Task P1-T1.** Acceptance criterion: *the developer has reviewed this.* Read it once at
 a desk, then again on site. Print it or keep it open on a second device — not on the
 phone that is recording.
@@ -210,7 +213,7 @@ blur and rolling-shutter skew at once (R-03).
       mid-loop.
 - [ ] Keep the van filling most of the frame. Overlap generously between consecutive
       views; an SfM pipeline would rather have too many frames than a gap.
-- [ ] **Slow down and take extra passes at the parts that matter most**: both rear bumper
+- [ ] **Slow down and take extra passes at the parts that matter most**: all four bumper
       corners, both mirrors, the four wheels. These are the components the whole project
       is about, and thin or protruding parts are the hardest to reconstruct.
 - [ ] Windows and glass will reconstruct badly. Expected (R-01), not a failure. Do not
@@ -218,22 +221,18 @@ blur and rolling-shutter skew at once (R-03).
 
 ### Recording — doors and mirrors open
 
-Needed for the joints at P2-T7, and — for the sliding door — for the **second collision
-model** (ADR 0004).
+Needed for the joints at P2-T7. Every RAV4 opening is a hinge (ADR 0015): four side doors
+on vertical hinges at their front edge, and the liftgate on a hinge along its top edge.
+The open passes are what let P2-T7 find each hinge axis.
 
-> **The sliding-door-open pass is load-bearing, not a quick extra.** The door runs on a
-> curved track, so it is not modelled as a joint. Instead there are two separately scanned
-> collision models, closed and open, and the one used per run is whichever you wrote down.
-> That means the door-open pass has to be **good enough to reconstruct on its own** — same
-> care, same overlap, same three heights as the main loops. A sloppy pass here means no
-> door-open model at all.
+- [ ] Each **side door** fully open (one at a time is fine): a slow pass along that side,
+      including the hinge area at the door's front edge.
+- [ ] **Liftgate** fully open: one slow pass at the rear, including the top hinge line.
+- [ ] **Measure each opening** with a tape, as a check on the hinge fits:
+  - each door: body skin to the door's rear edge at full open;
+  - the liftgate: ground to its lower edge at full open.
 
-- [ ] Sliding door fully open: a **full-quality** slow pass along that side, not a sweep.
-- [ ] **Measure the door's outward throw** with a tape: body skin to door skin at full
-      open, versus closed. One minute, and it is the measurement that justifies ADR 0004.
-      Write it into the devlog and into `configs/model.yaml`
-      (`variants.sliding_door_right.measured_outward_throw_m`).
-- [ ] Rear doors fully open: one slow pass at the rear.
+  Write these into the devlog.
 - [ ] Mirrors folded: one short pass of each.
 - [ ] **Record, for each, which parts are open, in the devlog.** Joint states are entered
       by hand per run in v0.1 (R-15); if nobody wrote down what was open, the clip is

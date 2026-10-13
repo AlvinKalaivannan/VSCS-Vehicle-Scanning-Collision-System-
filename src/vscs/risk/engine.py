@@ -7,7 +7,7 @@ and applies the one rule none of them can apply alone.
 The reachable horizon (ADR 0005)
 --------------------------------
 Each component is swept independently, so on its own the sweep will happily report that
-the sliding door reaches a pole at 2.37 s - even though the rear corner strikes that same
+the right front door reaches a pole at 2.37 s - even though the rear corner strikes that same
 pole at 0.37 s and the van cannot pass through it. Left in, that phantom contact both
 inflates the risk and, because the door's severity (2.5) beats the corner's (1.5), makes the
 frame name the **door** as the worst component. Component attribution is the metric P3-T6

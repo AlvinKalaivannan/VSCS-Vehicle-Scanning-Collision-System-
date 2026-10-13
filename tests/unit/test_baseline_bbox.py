@@ -43,10 +43,10 @@ def test_behind_the_corner_both_models_agree_on_the_known_half_metre():
 
 
 def test_beside_the_body_the_box_invents_clearance_loss():
-    """A pole 0.4 m off the sliding door: the box's side runs along the mirror tips."""
+    """A pole 0.4 m off the right front door: the box's side runs along the mirror tips."""
     pole = Point(1.8, -1.4)
     fp = single_box_footprint(_footprints(), BASE["name"])
-    door = _footprints()["sliding_door_right"][0]
+    door = _footprints()["front_door_right"][0]
     assert door.distance(pole) == pytest.approx(0.40)
     assert fp.polygon.distance(pole) == pytest.approx(0.15)
 
@@ -75,7 +75,7 @@ def _assess(components, severity_cfg):
 
 
 def test_same_engine_baseline_reports_less_clearance_and_a_harsher_alert():
-    """Stationary van, pole beside the sliding door, the SAME engine and sweep.
+    """Stationary van, pole beside the right front door, the SAME engine and sweep.
 
     The only difference is geometry, so the clearance gap is exactly the mirror's 0.25 m
     protrusion, and the baseline names 'the vehicle' rather than a component.
@@ -88,6 +88,6 @@ def test_same_engine_baseline_reports_less_clearance_and_a_harsher_alert():
     d_base = min(c.min_distance_m for c in base.per_component)
     assert d_vscs - d_base == pytest.approx(0.25, abs=1e-6)
     near = min(vscs.per_component, key=lambda c: c.min_distance_m)
-    assert near.component == "sliding_door_right"
+    assert near.component == "front_door_right"
     assert [c.component for c in base.per_component] == [BASE["name"]]
     assert RANK[base.alert_level] >= RANK[vscs.alert_level]

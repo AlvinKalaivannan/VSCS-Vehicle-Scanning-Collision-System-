@@ -1,10 +1,18 @@
-# VSCS Status — updated 2026-10-01
+# VSCS Status — updated 2026-10-12
 mode: pair            # pair | build
-phase: P1 (capture prep); Phase 2 plumbing built early on the fixture (developer's go-ahead)
-current_task: autonomous /goal session; Wave 2 done on the fixture; streaming scaffolding next (unmerged branch). October captures remain the critical path
+phase: P1 (capture prep). Subject vehicle is now a **2025 Toyota RAV4** (ADR 0015)
+current_task: Stage 1 capture prep (IMU setup, calibration, pre-flight); your drafts (sweep first)
 health: ON TRACK
 
 ## Done since last update
+
+- **2026-10-12: subject vehicle switched to a 2025 RAV4** (ADR 0015; ADR 0004 superseded).
+  - New 17-component vocabulary and severities, re-approved (adds front corners, four side
+    doors and a liftgate; removes the sliding door).
+  - Hinge placeholders for the doors and liftgate.
+  - Checklist and capture card updated.
+  - The fixture's door is renamed `front_door_right`.
+  - P1-T8's second vehicle can now be the van.
 
 - **External datasets (ADR 0006):**
   - Licence-derived use guard and a fetcher (`scripts/fetch_dataset.py`).

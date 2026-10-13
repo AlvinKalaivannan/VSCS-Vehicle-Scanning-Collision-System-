@@ -60,7 +60,7 @@ def test_components_are_coloured_by_their_own_alert_at_the_right_pixels():
     img = D.render_frame(_footprints(), _frame(0, "critical", 0.5), CFG, COLOURS, RISK)
     corner = SCENE.component("rear_right_bumper_corner").center
     assert _pixel(img, corner[0], corner[1]) == tuple(COLOURS["critical"][:3])
-    door = SCENE.component("sliding_door_right").center  # not in the frame's risks: "none"
+    door = SCENE.component("front_door_right").center  # not in the frame's risks: "none"
     assert _pixel(img, door[0], door[1]) == tuple(COLOURS["none"][:3])
     # Left side at y = 0.9: beside the underbody (|y| <= 0.78), no door there: background.
     assert _pixel(img, 1.5, 0.9) == tuple(CFG["background"])
