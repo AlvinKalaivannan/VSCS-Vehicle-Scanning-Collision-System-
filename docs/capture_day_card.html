@@ -41,13 +41,13 @@
   <div class="noprint">Print this page (Ctrl+P). Three pages: scan day, lot day, and passes. Write in
   metres to the centimetre (e.g. 5.12). Source: <code>docs/capture_checklists.md</code>, ADR 0012.</div>
 
-  <h1>VSCS capture card: scan day (P1-T2)</h1>
+  <h1>VSCS capture card: scan day (P1-T2) · 2025 RAV4</h1>
   <div class="sub">Date ________ &nbsp; Weather (overcast?) ________ &nbsp; Driver ________ &nbsp; Camera operator ________ (not the driver)</div>
 
   <div class="box warn"><b>Safety:</b> engine off or in park for every measurement · nobody beside or behind a moving vehicle ·
   stop on rain, ice or poor light · never handle the camera while the vehicle moves.</div>
 
-  <h2>1. Measure the van first (every reading twice; redo if they differ by more than 1 cm)</h2>
+  <h2>1. Measure the vehicle first (every reading twice; redo if they differ by more than 1 cm)</h2>
   <table>
     <tr><th style="width:38%">Dimension</th><th>Reading 1 (m)</th><th>Reading 2 (m)</th><th>Δ ≤ 1 cm?</th></tr>
     <tr><td>Length (front bumper to rear bumper)</td><td class="blank"></td><td></td><td></td></tr>
@@ -58,7 +58,9 @@
     <tr><td>Rear overhang (rear axle centre to rear bumper)</td><td class="blank"></td><td></td><td></td></tr>
     <tr><td>Front overhang (front axle centre to front bumper)</td><td class="blank"></td><td></td><td></td></tr>
     <tr><td><b>Rear track</b> (left rear hub centre to right rear hub centre)</td><td class="blank"></td><td></td><td></td></tr>
-    <tr><td>Rear door outward throw (body to door skin, fully open)</td><td class="blank"></td><td></td><td></td></tr>
+    <tr><td>Front door opening, L / R (body to door rear edge, fully open)</td><td class="blank"></td><td></td><td></td></tr>
+    <tr><td>Rear door opening, L / R (body to door rear edge, fully open)</td><td class="blank"></td><td></td><td></td></tr>
+    <tr><td>Liftgate open height (ground to lower edge, fully open)</td><td class="blank"></td><td></td><td></td></tr>
   </table>
   <div class="small">These go into <code>measurements.yaml</code> (length, width, height, wheelbase) and <code>recon.yaml</code>
   (<code>rear_overhang_m</code>). The rear track and wheelbase go into the lot day's <code>gt.yaml</code>.</div>
@@ -87,7 +89,7 @@
     <ul class="check">
       <li>Loop 1 · Loop 2 · Loop 3 (three heights)</li>
       <li>Doors <b>closed</b> scan</li>
-      <li>Doors <b>open</b> scan (sliding door, rear doors)</li>
+      <li>Doors <b>open</b> scan (each side door, liftgate) · mirrors folded</li>
       <li>Second vehicle walk-round (P1-T8; no markers)</li>
     </ul>
   </div>
@@ -105,7 +107,7 @@
   <div class="sub">Date ________ &nbsp; Lot / permission ________ &nbsp; Driver ________ &nbsp; Measurer ________</div>
 
   <div class="box warn"><b>Safety:</b> walking speed only (&lt; 5 km/h) · empty lot · soft obstacles only (cones, boxes, foam or PVC pole) ·
-  measure only with the van stopped, in park, engine off or handbrake on · nobody beside or behind the moving van.</div>
+  measure only with the vehicle stopped, in park, engine off or handbrake on · nobody beside or behind the moving vehicle.</div>
 
   <h2>1. Origin and frame</h2>
   <table>
@@ -115,7 +117,7 @@
   </table>
 
   <h2>2. Camera mount (once; do not touch it again this session)</h2>
-  <div class="small">In the van's own frame: x forward, y left, z up, measured from the ground point under the rear-axle centre
+  <div class="small">In the vehicle's own frame: x forward, y left, z up, measured from the ground point under the rear-axle centre
   (the midpoint of the two rear hub marks). Behind the axle means negative x.</div>
   <table>
     <tr><th></th><th>x (m)</th><th>y (m)</th><th>z (m)</th></tr>
@@ -138,9 +140,9 @@
   <h2>4. Recording and hub marks, every pass</h2>
   <ul class="check">
     <li>1080p60 · focus and exposure locked · IMU logger running · shake or clap at the start and end of each recording</li>
-    <li>Doors and mirrors: all closed (say so) · stop the van before touching the phone</li>
+    <li>Doors and mirrors: all closed (say so) · stop the vehicle before touching the phone</li>
     <li><b>Before moving and after stopping:</b> plumb from the centres of the <b>rear-left</b>, <b>rear-right</b> and <b>front-left</b> hubs; chalk; tape x and y</li>
-    <li>Read each tape <b>twice</b> · <b>left = the van's own left</b> (driver's seat, facing forward)</li>
+    <li>Read each tape <b>twice</b> · <b>left = the vehicle's own left</b> (driver's seat, facing forward)</li>
     <li>Rear marks should be one rear track apart (±3 cm); if not, measure again</li>
   </ul>
 

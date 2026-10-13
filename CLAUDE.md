@@ -73,6 +73,9 @@ VSCS is a software-only, advisory computer-vision system that:
 5. Establishes its value through controlled comparison against a **single-bounding-box baseline**.
 6. Includes **one trained model**: a vehicle-part segmenter ("student") fine-tuned on pseudo-labels produced by the scan pipeline's Grounding DINO + SAM 2 + 3D fusion ("teacher"). The risk engine stays pure geometry and is never learned.
 
+**Subject vehicle (ADR 0015, 2026-10-11): a 2025 Toyota RAV4**, which replaced the van. "Van"
+elsewhere in this file and in older docs means the subject vehicle.
+
 ### Hard boundaries
 
 - **Advisory only.** VSCS never controls steering, throttle, or brakes. No code in this repo may send commands to a vehicle.
@@ -310,7 +313,7 @@ A phase is complete only when every task's acceptance criterion is met and `docs
 | P2-T4 | Hand-label ground-truth subset of 3D points (CloudCompare or similar) | ≥ 2,000 labeled points across all components |
 | P2-T5 | Cleanup (clustering, stray-label removal) | IoU improves or stays equal vs P2-T3; logged |
 | P2-T6 | Convex decomposition (CoACD) per component | Each component's hull volume within ±15% of its point-cloud-derived volume |
-| P2-T7 | Joints for sliding door, rear doors, mirrors (manual axis first) | Rerun shows door swinging correctly through its range |
+| P2-T7 | Joints for the four side doors, the liftgate and the mirrors (manual axis first; ADR 0015) | Rerun shows door swinging correctly through its range |
 | P2-T8 | URDF + `components.yaml` export | Loads in a URDF viewer and in `risk/`; fixture test for loading passes |
 
 ### December — examination period. No planned work. Emergency data backups only.

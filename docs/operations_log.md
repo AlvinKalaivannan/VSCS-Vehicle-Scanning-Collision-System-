@@ -234,3 +234,5 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-01 13:14 | push | p1-t6-scale, p2-t3-fusion, p3-t4-sweep, docs-streaming-merge, p6-stream-scaffold -> origin (developer approved; checked: no trailers/data/secrets, single author). backup/pre-trailer-strip NOT pushed
 - 2026-10-01 20:44 | write | capture_checklists.md: stabilisation question rewritten to limits_policy (four fixes to try and measure before accepting EIS as a limit)
 - 2026-10-01 20:47 | write | docs/capture_day_card.html (printable 3-page capture card: scan measurements incl. rear track, markers, lot origin/mount/obstacles, per-pass 3 hub marks + shape + nearest), linked from the checklist; docs/private/sweep_walkthrough.md (gitignored)
+- 2026-10-12 21:15 | decision | developer: subject vehicle is a 2025 Toyota RAV4 (replaces the van); 17-component vocabulary approved incl. front corners
+- 2026-10-12 21:15 | write | ADR 0015 (accepted), ADR 0004 superseded; seg/severity/model/risk configs; checklist + capture card; CLAUDE.md §1 note + P2-T7; fixture door renamed front_door_right; 860 passed

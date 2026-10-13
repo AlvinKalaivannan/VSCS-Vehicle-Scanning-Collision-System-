@@ -52,10 +52,7 @@ def test_build_exports_a_model_that_reloads_and_gives_the_pole_distance(labelled
     assert res.passed and len(res.decomposed) == len(NAMES)
     # Shipped config: no hinge measured yet, so every joint is reported, none invented.
     assert set(res.unmeasured_joints) == {
-        "rear_door_left",
-        "rear_door_right",
-        "left_mirror",
-        "right_mirror",
+        k for k, v in MODEL_CFG["joints"].items() if isinstance(v, dict)
     }
     model = load_component_model(tmp_path)
     fp = plan_footprints(load_parts(tmp_path, model))

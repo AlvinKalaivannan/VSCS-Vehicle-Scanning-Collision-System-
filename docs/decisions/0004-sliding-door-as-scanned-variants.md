@@ -1,7 +1,7 @@
 # ADR 0004 - Model the sliding door as two scanned variants, not a joint
 
 - **Date:** 2026-09-24
-- **Status:** accepted
+- **Status:** superseded by ADR 0015 (the 2025 RAV4 has no sliding door), 2026-10-11
 - **Task:** P2-T7 (decided early, because it changes what P1-T2 must capture)
 - **Deciders:** developer, Claude
 

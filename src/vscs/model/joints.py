@@ -20,8 +20,9 @@ So a point ``p_child`` fixed to the part sits in the parent (``veh``) frame at::
 At ``q = 0``, ``M = I``, which gives ``p_child = inv(T_parent_joint) @ p_veh(0)``: the
 scanned points re-expressed relative to the hinge. That is what the URDF stores.
 
-The sliding door is not here: it runs on a curved track and is two scanned variants
-instead (ADR 0004).
+The subject vehicle (a 2025 RAV4, ADR 0015) has only hinged openings: four side doors
+about vertical axes and a top-hinged liftgate about the y axis. The van's sliding door,
+which ran on a curved track and needed scanned variants instead (ADR 0004), is gone.
 """
 
 from __future__ import annotations

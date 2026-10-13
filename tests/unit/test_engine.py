@@ -77,9 +77,9 @@ def test_without_truncation_the_wrong_component_is_named(components, pole):
     severity then makes it the 'worst' component."""
     fan = path_fan_from_config(-1.0, RISK)
     full = ref_sweep_components(components, [pole], fan, fan.index_of_curvature(0.0), RISK)
-    assert full["sliding_door_right"].ttc_s == pytest.approx(2.37, abs=TOL)
+    assert full["front_door_right"].ttc_s == pytest.approx(2.37, abs=TOL)
     risks = component_risks(full.values(), KINDS, -1.0, SEV, RISK)
-    assert risks[0].component == "sliding_door_right"
+    assert risks[0].component == "front_door_right"
 
 
 def test_truncation_removes_unreachable_contacts(components, pole):

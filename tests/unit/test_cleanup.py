@@ -65,9 +65,9 @@ def test_salt_noise_is_repaired(cloud):
 
 
 def test_a_bleed_patch_is_returned_to_its_surface(cloud):
-    """R-05: a 4 cm blob of 'right_mirror' painted onto the middle of the sliding door."""
+    """R-05: a 4 cm blob of 'right_mirror' painted onto the middle of the right front door."""
     pts, truth = cloud
-    door, mirror = NAMES.index("sliding_door_right"), NAMES.index("right_mirror")
+    door, mirror = NAMES.index("front_door_right"), NAMES.index("right_mirror")
     centre = np.array([1.8, -1.0, 1.2])  # door's outer face, far from the mirror
     patch = (truth == door) & (np.linalg.norm(pts - centre, axis=1) < 0.04)
     assert 5 <= patch.sum() < CFG["remove_clusters_smaller_than"]

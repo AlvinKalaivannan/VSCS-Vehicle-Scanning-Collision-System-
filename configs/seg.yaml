@@ -23,8 +23,15 @@ schema_version: 1
 # `rear_door_right` (now 14 components). Each rear door swings on its own hinge
 # (model.yaml joints), and a URDF joint moves exactly one link, so one component could
 # not carry two hinges. Made before P2-T3 has run on real data, so nothing is invalidated.
+#
+# RE-APPROVED by the developer on 2026-10-11 for the new subject vehicle, a 2025 Toyota
+# RAV4 (ADR 0015): 17 components. The van's sliding door and cargo doors are gone; the
+# RAV4 has four hinged side doors and a top-hinged liftgate. FRONT CORNERS ARE NOW SPLIT
+# too (reversing the earlier asymmetry): an SUV is parked nose-in as often as reversed,
+# and the corners are where parking damage concentrates. Still before any real P2-T3
+# run, so nothing is invalidated. The van notes above are kept as history.
 # =============================================================================
-vocabulary_status: "APPROVED_2026-09-24_AMENDED_2026-09-29"
+vocabulary_status: "APPROVED_2026-10-11_RAV4"
 
 # Stage-wide seed for every random process in seg/ (e.g. sampling the 20 frames for the
 # P2-T2 visual check). Fusion and cleanup are deterministic and do not use it.
@@ -33,21 +40,25 @@ seed: 20260924
 components:
   # machine_name: text prompt fed to the open-vocabulary detector
   # Left/right follow the veh frame (+y = left, §4.1), NOT the image: seen from the front,
-  # the van's left parts appear on the image's right. So a detector's left/right text is
+  # the vehicle's left parts appear on the image's right. So a detector's left/right text is
   # a hint only; the side is settled in 3D by the sign of y.
-  # Prompts name the PART only, never "... of a van": Grounding DINO then grounds the
-  # vehicle word and returns the whole van as the top box (verified on real car photos
+  # Prompts name the PART only, never "... of a car": Grounding DINO then grounds the
+  # vehicle word and returns the whole vehicle as the top box (verified on real car photos
   # 2026-09-29: "side mirror of a car" -> whole car, 0.64). detector.ignore_labels also
   # drops such boxes.
   front_bumper: "front bumper"
   rear_bumper: "rear bumper"
+  front_left_bumper_corner: "left corner of the front bumper"
+  front_right_bumper_corner: "right corner of the front bumper"
   rear_left_bumper_corner: "left corner of the rear bumper"
   rear_right_bumper_corner: "right corner of the rear bumper"
   left_mirror: "left side mirror"
   right_mirror: "right side mirror"
-  sliding_door_right: "sliding side door"
-  rear_door_left: "left rear cargo door"
-  rear_door_right: "right rear cargo door"
+  front_door_left: "front left side door"
+  front_door_right: "front right side door"
+  rear_door_left: "rear left side door"
+  rear_door_right: "rear right side door"
+  liftgate: "rear liftgate"
   wheel_front_left: "front left wheel and tyre"
   wheel_front_right: "front right wheel and tyre"
   wheel_rear_left: "rear left wheel and tyre"
