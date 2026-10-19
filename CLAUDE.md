@@ -1,5 +1,7 @@
 # CLAUDE.md — VSCS (Vehicle Scanning Collision System)
 
+Learning mode: DEEP
+
 This file governs how Claude works in this repository. Read it fully at the start of every session. When this file conflicts with a one-off instruction from the developer, the developer's instruction wins for that session, but flag the conflict and record it in the devlog.
 
 ---

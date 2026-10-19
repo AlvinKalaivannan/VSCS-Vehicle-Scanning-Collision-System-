@@ -243,3 +243,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-19 01:16 | merge | repo-rulesets-ci -> main (local only)
 - 2026-10-19 01:21 | push | main -> origin (ruleset file, CI workflow, Pillow pin, ADR 0016); first CI run 39203764039 on dfba324: success
 - 2026-10-19 01:40 | verify | ruleset 'main protection' (id 25374136) active on main: deletion + non_fast_forward (public API rules/branches/main)
+- 2026-10-19 13:43 | write | VSCS learning mode DEEP (CLAUDE.md line, LEARNING.md); ADR 0017 proposed (hybrid student pretraining, developer's choice)
