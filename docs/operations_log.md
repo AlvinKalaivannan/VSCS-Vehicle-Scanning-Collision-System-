@@ -244,3 +244,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-19 01:21 | push | main -> origin (ruleset file, CI workflow, Pillow pin, ADR 0016); first CI run 39203764039 on dfba324: success
 - 2026-10-19 01:40 | verify | ruleset 'main protection' (id 25374136) active on main: deletion + non_fast_forward (public API rules/branches/main)
 - 2026-10-19 13:43 | write | VSCS learning mode DEEP (CLAUDE.md line, LEARNING.md); ADR 0017 proposed (hybrid student pretraining, developer's choice)
+- 2026-10-19 14:11 | write | configs/datasets.yaml: 10 entries from a delegated search; Argoverse 2 + Oxford RobotCar licences verified at source (CC BY-NC-SA 4.0, eval only); 8 custom-licence leads recorded unverified (no uses granted)
