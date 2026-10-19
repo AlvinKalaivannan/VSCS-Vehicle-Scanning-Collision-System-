@@ -240,3 +240,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-12 21:19 | push | main -> origin (5 commits: RAV4 switch ADR 0015, capture card, checklist stabilisation) on the developer's instruction; checks clean
 - 2026-10-19 01:16 | decision | developer: repo rulesets = protect main + informational CI, no PR gate
 - 2026-10-19 01:16 | write | .github/rulesets/main-protection.json (no deletion, no force-push on default branch), .github/workflows/ci.yml (windows, py3.11, ruff + format check + pytest), Pillow pinned, ADR 0016
+- 2026-10-19 01:16 | merge | repo-rulesets-ci -> main (local only)
