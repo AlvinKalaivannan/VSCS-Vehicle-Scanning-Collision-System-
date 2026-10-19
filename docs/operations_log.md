@@ -242,3 +242,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-19 01:16 | write | .github/rulesets/main-protection.json (no deletion, no force-push on default branch), .github/workflows/ci.yml (windows, py3.11, ruff + format check + pytest), Pillow pinned, ADR 0016
 - 2026-10-19 01:16 | merge | repo-rulesets-ci -> main (local only)
 - 2026-10-19 01:21 | push | main -> origin (ruleset file, CI workflow, Pillow pin, ADR 0016); first CI run 39203764039 on dfba324: success
+- 2026-10-19 01:40 | verify | ruleset 'main protection' (id 25374136) active on main: deletion + non_fast_forward (public API rules/branches/main)
