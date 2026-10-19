@@ -245,3 +245,4 @@ Kinds: branch, write, test, commit, merge, install, data, deferred, note.
 - 2026-10-19 01:40 | verify | ruleset 'main protection' (id 25374136) active on main: deletion + non_fast_forward (public API rules/branches/main)
 - 2026-10-19 13:43 | write | VSCS learning mode DEEP (CLAUDE.md line, LEARNING.md); ADR 0017 proposed (hybrid student pretraining, developer's choice)
 - 2026-10-19 14:11 | write | configs/datasets.yaml: 10 entries from a delegated search; Argoverse 2 + Oxford RobotCar licences verified at source (CC BY-NC-SA 4.0, eval only); 8 custom-licence leads recorded unverified (no uses granted)
+- 2026-10-19 14:19 | write | ADR 0018 proposed (Argoverse 2 subset for R-07 recall + P4-T1 depth-by-range, eval only); licence-request drafts in docs/private (PASCAL-Part, WoodScape, PACO; developer sends)
