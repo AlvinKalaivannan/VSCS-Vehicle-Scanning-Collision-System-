@@ -601,3 +601,13 @@ python scripts/report.py                                                    # re
 Every script planned for Phases 0-5 now exists; Phase 6 adds `stream.py` and `docker compose up`.
 
 (Keep this list in sync with reality.)
+
+---
+
+## Website status (site.json)
+Whenever docs/STATUS.md changes phase, stage progress or health, update site.json
+at the repo root in the same commit. Stages are Scan, Segment, Track, Score (do not
+rename). Each status is {label, state}; state is one of active, partial, waiting,
+done. Labels stay short and plain (under 40 characters), e.g. "Capture prep",
+"Tested on fixture", "Built, awaiting capture", "Working on real data", "Complete".
+currentStage is the zero-based index of the stage being worked on.
