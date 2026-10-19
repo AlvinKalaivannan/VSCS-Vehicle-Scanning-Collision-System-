@@ -151,3 +151,175 @@ datasets:
     adopted: false
     covers: [part_vocabulary]
     notes: "No licence stated, which legally means no permission. Ask the authors or skip."
+
+  # --- Added 2026-10-19 from a delegated dataset search. The two non-commercial licences
+  # below (Argoverse 2, Oxford RobotCar) were verified at source by Claude the same day.
+  # Every "custom" entry is recorded as the search reported it, NOT independently
+  # verified: license_status unverified, so allowed_uses grants nothing until checked.
+
+  argoverse2_sensor:
+    name: "Argoverse 2 Sensor Dataset (1,000 logs, 30-class 3D cuboids, 7 ring + 2 stereo cams)"
+    url: "https://argoverse.org/av2.html"
+    license: CC-BY-NC-SA-4.0
+    license_url: "https://www.argoverse.org/about.html"
+    license_status: clear
+    provenance: documented
+    verified: 2026-10-19
+    adopted: false
+    covers: [rear_obstacles, thin_obstacles]
+    notes: >-
+      Verified at source 2026-10-19: data CC BY-NC-SA 4.0 ("non-commercial use only"),
+      code MIT, attribution "(c) 2021 Argo AI, LLC". Own capture by Argo AI in 6 US cities.
+      No car-part classes. Useful classes: BOLLARD, CONSTRUCTION_CONE, CONSTRUCTION_BARREL,
+      SIGN, with amodal 3D cuboids plus lidar, so distances can be computed. Rear cameras
+      ring_rear_left/right are roof-mounted at ~1.43 m, so not low-mounted. Objects are
+      annotated only within 5 m of the drivable area. Splits 700/150/150. Faces and
+      plates blurred (reported). ~1 TB. Evaluation only.
+
+  oxford_robotcar:
+    name: "Oxford RobotCar (~1,000 km, 6 cameras incl. rear fisheye, lidar, GPS/INS)"
+    url: "https://robotcar-dataset.robots.ox.ac.uk/"
+    license: CC-BY-NC-SA-4.0
+    license_url: "https://robotcar-dataset.robots.ox.ac.uk/"
+    license_status: clear
+    provenance: documented
+    verified: 2026-10-19
+    adopted: false
+    covers: [rear_obstacles]
+    notes: >-
+      Verified at source 2026-10-19: CC BY-NC-SA 4.0, "non-commercial academic use only",
+      registration required. Own capture by the Oxford Robotics Institute on a fixed
+      route. No object labels: depth would come from projected lidar. Rear mono fisheye,
+      on-road rather than parking. Public streets; blurring not confirmed. Lead: the
+      derived Oxford Road Boundaries (kerb masks), licence not checked. Evaluation only.
+
+  pascal_part:
+    name: "PASCAL-Part (PASCAL VOC 2010, 10,103 trainval images; car has 13 part types)"
+    url: "https://cs.stanford.edu/~roozbeh/pascal-parts/pascal-parts.html"
+    license: custom
+    license_url: "https://cs.stanford.edu/~roozbeh/pascal-parts/pascal-parts.html"
+    license_status: unverified
+    provenance: documented
+    verified: 2026-10-19
+    adopted: false
+    covers: [part_vocabulary, segmenter_pretraining]
+    notes: >-
+      As reported by the search, not independently verified. Annotations have no stated
+      licence. Images are VOC 2010 from Flickr ("must respect the corresponding terms of
+      use"). Car parts: left/right mirror, door (multi, no front/rear/side label), wheel,
+      window, headlight, front/back plate, front/back/left/right/roof side. No bumper class
+      (front/back side is the nearest proxy) and no liftgate. Best match for left/right
+      mirrors, but the authors must be asked before training.
+
+  paco_lvis:
+    name: "PACO-LVIS (57,643 images, 75 object classes incl. car_(automobile), 200 part types)"
+    url: "https://github.com/facebookresearch/paco"
+    license: custom
+    license_url: "https://github.com/facebookresearch/paco/blob/main/LICENSE"
+    license_status: unverified
+    provenance: documented
+    verified: 2026-10-19
+    adopted: false
+    covers: [part_vocabulary, segmenter_pretraining]
+    notes: >-
+      As reported, not independently verified. The repo is MIT for "the Software"; no
+      explicit data licence was found. Images are COCO 2017 (Flickr Terms of Use). The
+      global part list includes bumper, door_handle, fender, headlight, hood, mirror,
+      taillight, trunk, wheel, window, windshield, wiper. Which of these apply to cars is
+      unconfirmed; no left/right or front/rear. Faces and plates visible.
+
+  open_images_v7_car_subset:
+    name: "Open Images V7 (944k train images with masks; Car, Wheel, Vehicle registration plate masks)"
+    url: "https://storage.googleapis.com/openimages/web/index.html"
+    license: custom
+    license_url: "https://storage.googleapis.com/openimages/web/factsfigures_v7.html"
+    license_status: unverified
+    provenance: documented
+    verified: 2026-10-19
+    adopted: false
+    covers: [segmenter_pretraining]
+    notes: >-
+      As reported, not independently verified. Annotations CC-BY-4.0. Images are "listed
+      as" CC-BY-2.0, with a per-image check advised. CC-BY-2.0 is not in
+      policy.permissive_licenses, a policy decision for the developer. Segmentation
+      classes: Car, Wheel, Vehicle registration plate; box-only: Tire, Door, Window,
+      Mirror, Door handle. Not part-of-car aware. No cone or bollard. Faces and plates
+      visible.
+
+  woodscape:
+    name: "WoodScape (10k fisheye images, 4 cams incl. rear, 40+ instance classes)"
+    url: "https://github.com/valeoai/WoodScape"
+    license: custom
+    license_url: "https://github.com/valeoai/WoodScape"
+    license_status: unverified
+    provenance: documented
+    verified: 2026-10-19
+    adopted: false
+    covers: [rear_obstacles, thin_obstacles]
+    notes: >-
+      As reported, not independently verified. Code MIT; the data licence is stated only
+      as "Proprietary" (a linked PDF the search could not read). Own capture by Valeo,
+      with rear-camera (RV) images; semantic classes include curbs. 2D annotations only.
+      Anonymised by a third party. Closest match to the rear/parking need: ask Valeo.
+
+  fsoco:
+    name: "FSOCO (11,572 images, 220,862 cones; boxes + instance segmentation)"
+    url: "https://fsoco.github.io/fsoco-dataset/"
+    license: custom
+    license_url: "https://github.com/fsoco/fsoco-dataset"
+    license_status: unverified
+    provenance: documented
+    verified: 2026-10-19
+    adopted: false
+    covers: [thin_obstacles]
+    notes: >-
+      As reported, not independently verified. No data licence stated; the GPL-3.0 badge
+      is the tools repo, not clearly the data. Contributed by 41 Formula Student teams.
+      Race-track cones (a domain gap from road cones). Roboflow re-uploads tagged
+      CC-BY-4.0 likely conflict with this. Contact: fsoco.dataset@gmail.com.
+
+  mvmc:
+    name: "Multi-view Marketplace Cars (576 cars, ~10 views each, masks + rough poses)"
+    url: "https://github.com/jasonyzhang/ners"
+    license: custom
+    license_url: "https://github.com/jasonyzhang/ners"
+    license_status: unverified
+    provenance: documented
+    verified: 2026-10-19
+    adopted: false
+    covers: [multiview_vehicle]
+    notes: >-
+      As reported, not independently verified. Code BSD-3; the data zip has no stated
+      licence. Images scraped from car-sale listings, so the sellers hold copyright.
+      Rough poses. Treat as unusable unless the authors clarify.
+
+  epfl_gims08:
+    name: "EPFL Multi-View Car (GIMS08; 20 cars, 360 deg every ~3-4 deg)"
+    url: "https://www.epfl.ch/labs/cvlab/data/data-pose-index-php/"
+    license: custom
+    license_url: "https://www.epfl.ch/labs/cvlab/data/data-pose-index-php/"
+    license_status: unverified
+    provenance: documented
+    verified: 2026-10-19
+    adopted: false
+    covers: [multiview_vehicle]
+    notes: >-
+      As reported, not independently verified. Terms: "free to use them for research
+      purposes"; copyright CVLab-EPFL. Tripod capture at the Geneva Motor Show 2008. No
+      masks. 175 MB, no registration. "Research purposes" isn't on the policy lists, so
+      no use until confirmed.
+
+  freiburg_car_walkarounds:
+    name: "Freiburg Stereo Ego-Motion dataset, car subset (52 walk-around car videos)"
+    url: "https://lmb.informatik.uni-freiburg.de/resources/datasets/StereoEgomotion.en.html"
+    license: custom
+    license_url: "https://lmb.informatik.uni-freiburg.de/resources/datasets/StereoEgomotion.en.html"
+    license_status: unverified
+    provenance: documented
+    verified: 2026-10-19
+    adopted: false
+    covers: [multiview_vehicle]
+    notes: >-
+      As reported, not independently verified. Terms: "provided for research purposes.
+      Any commercial use is prohibited." Walk-around stereo videos of parked cars, close
+      to the phone-scan protocol. No poses; COLMAP would be needed. Plates likely visible.
