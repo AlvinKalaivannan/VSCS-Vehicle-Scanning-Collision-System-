@@ -25,6 +25,7 @@ coacd==1.0.14               # convex decomposition, MIT (P2-T6; verified 2026-09
 
 # --- CLI ----------------------------------------------------------------------
 typer==0.27.2
+Pillow==12.3.0              # label PNGs, driver replay frames (was only pulled in by rerun-sdk)
 
 # --- dev ----------------------------------------------------------------------
 pytest==9.1.1
