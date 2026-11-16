@@ -25,7 +25,8 @@ every gate waited on real data. The developer set new constraints:
 |---|---|---|
 | Subject vehicle | The dataset's ego vehicle | A vehicle seen in third-person footage: 3D risk from one outside view is far harder, and nothing built so far would be reused |
 | Demo dataset | PandaSet (listed as CC BY 4.0) | Argoverse 2, nuScenes, KITTI: non-commercial, so project policy (`configs/datasets.yaml`) gives results but not `publish_media`. comma2k19: front camera only, so side and rear components would never be at risk |
-| Component model | Parametric template first, CC BY mesh in V1 | A scan-derived model first: needs a scan dataset with a clear licence (3DRealCar is `conflicting`) and the whole recon + fusion chain before any demo |
+| Component model | Parametric template in v0; **real component segmentation in V1** (Grounding DINO + SAM 2 + multi-view mask fusion on posed renders of a CC BY mesh, scored against exact mesh labels) replaces it | A scan-derived model first: needs a scan dataset with a clear licence (3DRealCar is `conflicting`) and the recon chain before any demo. Mesh labels alone (first draft): leaves out the core CV contribution |
+| Uncertainty | Per-component error budget by source, measured (ADR 0021) | A single confidence value or an assumed σ |
 | 3D lifting | Ground-plane contact with dataset calibration | A learned depth model: more GPU work and a weights licence before the first end-to-end run |
 | Ego-motion | Dataset poses | Visual odometry: drift would be debugged before anything is visible |
 | Detector on the hosted demo | Cached RT-DETR detections from a T4 | Live on the free CPU: 750 ms/image measured (ADR 0011), times 6 cameras. A paid GPU Space: a purchase |
@@ -34,14 +35,13 @@ every gate waited on real data. The developer set new constraints:
 
 ## Consequences
 
-- `CLAUDE.md` is rewritten (41 tasks → 22; 44 kB → 29 kB). Old task IDs
+- `CLAUDE.md` is rewritten (41 tasks → 26; 44 kB → 38 kB after the amendment below). Old task IDs
   remain valid in history; new IDs are `V0-`, `V1-`, `V2-`.
-- Parked, not deleted: `capture/`, `recon/`, `seg/`, the student segmenter, VO, occupancy,
+- Parked, not deleted: `capture/`, `recon/`, the student segmenter, VO, occupancy,
   underbody, driver replay. They stay under test.
-- Core pair-mode modules are now `risk/sweep.py`, `synth/parts.py::classify_faces` and
-  `risk/probability.py`. `recon/scale.py` and `seg/fusion3d.py` are parked with their
-  branches.
-- A 7-day draft timebox is added for core modules, with a teach-back before merge.
+- Claude writes every module. Core modules (`risk/sweep.py`, `core/*`,
+  `classify_faces`, `seg/fusion3d.py`, `risk/probability.py`) merge only after the
+  developer's `/teach-back`. `recon/scale.py` stays parked with its branch.
 - The "single monocular instrument" boundary becomes "cameras are the only perception
   input"; ego-motion from dataset poses is a stated exception.
 - ADR 0018 (Argoverse 2 subset) is reused as the V1 cross-dataset test. ADR 0017 and
@@ -49,6 +49,24 @@ every gate waited on real data. The developer set new constraints:
 - The risk register is re-seeded with `D-` IDs at V0-T1.
 - Unmerged work this plan depends on: `p6-stream-scaffold` (stream package),
   `p3-t4-sweep` (sweep contract and tests), `p4-multivehicle-data` (`synth/parts.py`).
+
+## Amendment, 2026-11-16 (same day, before merge; directed by the developer)
+
+1. Error budgeting is the central method and replaces any standalone confidence
+   (ADR 0021). v0 gains the lifting error curve and a per-component budget in the demo.
+2. The Argoverse 2 test is kept because Overstride's 3D lifter degraded 1.84× cross-lab
+   (developer's figure); it reports the budget shift per source, not only accuracy.
+3. Component segmentation is un-parked as V1-T7 and replaces the template.
+4. Sim-to-real with CARLA is a V2-T3 option; CARLA leaves the parked list.
+5. Tracker and budget are built as a domain-neutral core (ADR 0021). Overstride is not
+   refactored.
+6. The 7-day draft timebox is dropped. Claude writes `sweep.py`, `classify_faces` and
+   `probability.py`; the developer does a teach-back on each before merge. Claude
+   extended the same gate to `core/*` and `seg/fusion3d.py`; the developer can narrow it.
+
+Effect on scope and dates: v0 grows from 12 to 14 tasks and fetches 13 scenes instead of
+3; v0 ship moves 2027-01-10 → 2027-01-24; V1 grows from 7 to 9 tasks and ends mid-March
+instead of end of February; V2 runs into April.
 
 ## Evidence
 
