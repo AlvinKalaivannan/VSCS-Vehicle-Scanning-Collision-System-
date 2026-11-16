@@ -1,111 +1,45 @@
-# VSCS Status — updated 2026-10-12
+# VSCS Status — updated 2026-11-16
 mode: pair            # pair | build
-phase: P1 (capture prep). Subject vehicle is now a **2025 Toyota RAV4** (ADR 0015)
-current_task: Stage 1 capture prep (IMU setup, calibration, pre-flight); your drafts (sweep first)
-health: ON TRACK
+phase: V0-A (offline end-to-end on one scene). Plan changed to demo-first on existing datasets (ADR 0020, proposed)
+current_task: V0-T1 (housekeeping) and V0-T2 (PandaSet licence and access: developer)
+health: BLOCKED
 
 ## Done since last update
 
-- **2026-10-12: subject vehicle switched to a 2025 RAV4** (ADR 0015; ADR 0004 superseded).
-  - New 17-component vocabulary and severities, re-approved (adds front corners, four side
-    doors and a liftgate; removes the sliding door).
-  - Hinge placeholders for the doors and liftgate.
-  - Checklist and capture card updated.
-  - The fixture's door is renamed `front_door_right`.
-  - P1-T8's second vehicle can now be the van.
-
-- **External datasets (ADR 0006):**
-  - Licence-derived use guard and a fetcher (`scripts/fetch_dataset.py`).
-  - Both Roboflow car-parts sets downloaded to `data/external/`:
-    - 21-class: train and report numbers, but no public images.
-    - 19-class: private only; it looks like a re-upload of DSMLR's unlicensed data.
-- **P2-T3:** contract, target tests and exact fixture renderer on branch `p2-t3-fusion`
-  for your draft. The IoU metric is on `main`.
-- **P2-T5** cleanup: done on the fixture.
-- **P2-T6** decomposition: CoACD, pinned and MIT-licensed; done on the fixture.
-- **P2-T7** joint kinematics: done on the fixture.
-- **P2-T8** URDF export and load: done on the fixture, with `scripts/export_model.py`.
-- **P2-T2** masks stage (Colab; streamed Grounding DINO + SAM 2): done on the fixture,
-  with `scripts/seg.py` and `notebooks/colab/20_seg.ipynb`.
-- **2026-10-01 (autonomous, logged in `docs/operations_log.md`):**
-  - P3-T1 Rerun dev view, P3-T2 perception v0, P4-T3 occupancy.
-  - P5-T2 risk metrics, P5-T1 single-box baseline.
-  - P4-T4 tracking, P4-T6 underbody, P5-T4 driver replay.
-  - Perception glue with mask-based ground contact.
-  - An end-to-end fixture drive.
-  - The RT-DETR detector (ADR 0011).
-  - Ground visual odometry + gyro fusion (P4-T2).
-  - The CLIs `perceive`, `risk` (with `--baseline`), `evaluate` (test split once, R-09)
-    and `benchmark`.
-  - The Phase 0 report draft.
-  - **Every script planned for Phases 0–5 now exists.**
-  - `docs/runbook.md`: every command from capture day to evaluation, in order.
-  - **The offline chain now has no missing commands:**
-    - `scripts/scale.py` (P1-T6): writes `sfm_to_veh.json`;
-    - `scripts/fuse.py` (P2-T3/T5): writes `cleaned.npz` for `export_model.py`.
-
-    Both wrap your drafts and stop with exit 3 until those exist. The dense stage now
-    writes the undistorted cameras as text, and `20_seg.ipynb` masks the undistorted
-    images, which fusion needs pixel-aligned.
-  - All on the fixture, and all merged locally.
-- **ADR 0008 / proposed ADR 0009** (streaming merge) are on branch `docs-streaming-merge`,
-  **not merged**, awaiting your OK.
-- None of these is *accepted*: every §6 gate needs the real van scan.
+- **2026-11-16: `CLAUDE.md` rewritten as a demo-first build spec** (ADR 0020, proposed, on
+  branch `spec-demo-first`). The own-vehicle scan and lot-drive plan is parked; the MVP
+  runs on PandaSet and ships as a hosted web demo. Task IDs are now `V0-`, `V1-`, `V2-`.
+- Carried over, all built and tested on the fixture only: tracking, ground-contact
+  perception, risk aggregation and alerts, single-box baseline, Rerun view, evaluation
+  and benchmark CLIs, the RT-DETR adapter (ADR 0011).
+- Since 2026-10-12, on branches: dataset registry leads and ADR 0018 (merged);
+  ADR 0019 and synthetic part renders (`p4-multivehicle-data`, unmerged).
 
 ## Verified metrics (link to metrics/results.jsonl entries)
 
 **None.** `metrics/results.jsonl` is empty; nothing has been measured on real data.
 
-Session evidence (tests, not metrics): `main` **860 passed, 1 skipped**; ruff clean; coverage 94.6% at last measurement (common/ and risk/ above the 80% target).
-
 ## Blockers — decisions and work only you can do
 
-1. ~~Rear doors~~ **decided 2026-09-29: split into `rear_door_left` / `rear_door_right`**
-   (14 components; seg.yaml and severity.yaml amended, both 2.5).
-2. **Voxel size:** the collision solid runs ~1 cm large per side at 2 cm voxels. It errs
-   on the safe side. 1 cm voxels halve it at ~8× compute.
-3. **Your drafts:** `seg/fusion3d.py` (`p2-t3-fusion`), `risk/sweep.py` (`p3-t4-sweep`),
-   `recon/scale.py` (`p1-t6-scale`).
-4. **Unchanged:**
-   - Rate R-17 to R-19.
-   - Push OK, after you verify (`docs/operations_log.md` lists everything done autonomously).
-   - Approve ADR 0009 (zones) and merge `docs-streaming-merge`; decide the NC media policy and LGPL ffmpeg.
-   - **Decided 2026-10-01:**
-     - ADR 0012 accepted; the capture checklist now has the rear track (scan day) and the
-       per-pass hub-mark poses (lot day).
-     - Missing COLMAP depth means "cannot tell": no vote. `fuse_inputs` writes NaN, and the
-       `fusion3d` contract on `p2-t3-fusion` says so, with a target test.
-     - `body_select` approved.
-     - Wheelbase is checked from the segmented wheels (`check_wheelbase.py`, ADR 0013), or
-       the gate is narrowed if that proves less accurate. Decide on the first real scan.
-     - **ADR 0010 accepted and implemented:** schema 2, `ComponentRisk.t_closest_s`. On the
-       fixture drive, critical now comes at 1.6 s (contact 0.75 s away), not at 0.2 s.
-       Your `sweep.py` contract reports `t_closest_s` (3 new target tests).
-     - **Limits addressed:**
-       - P4-T1 depth error by range bucket now has a script that produces it;
-       - P4-T2 drift is gated on straight passes only;
-       - a third (front-left) hub mark catches swaps and across-misreads;
-       - the half-voxel inset prototype (`model.yaml decompose.surface`).
-     - `limits_policy: exhaust-first` added to CLAUDE.md §0.
-   - **Collision surface decided** (you asked for the most accurate): `voxel_centres` at
-     2 cm (ADR 0014). Mean side error 1.13 → 0.20 cm, volume error 33% → 7.5%, same time.
-     1 cm voxels need points ≤ 3 mm apart; re-check that on the real dense cloud.
-   - Review `p6-stream-scaffold` (streaming replay, queues, metrics, pipeline): unmerged.
-   - Measure the camera mount on lot day (`configs/capture.yaml mount`); `perceive.py` refuses until then.
-   - Sign the Phase 0 report when P0-T5..T7 are done (`docs/phase_reports/phase-0.md`).
-   - The Phase 0 captures: P0-T7 calibration, the pre-flight check, P0-T6 (a family car
-     is the recommended warm-up).
-   - The October captures, including P1-T8.
+1. **Accept or amend ADR 0020** by merging `spec-demo-first`.
+2. **PandaSet licence and download** (CLAUDE.md §11, rows 1–2). Mirrors say CC BY 4.0;
+   Scale's legal page names separate terms. Nothing can be fetched or shown until this
+   is read at source. If it fails, the fallback is comma2k19 (front camera only).
+3. **`risk/sweep.py` draft** (V0-T5, branch `p3-t4-sweep`). The 7-day timebox starts when
+   you start the task.
+4. Review and merge `p6-stream-scaffold` (V0-T1).
+5. Chrysler Pacifica dimensions from a spec sheet (V0-T4).
 
 ## Open risks triggered (IDs from RISKS.md)
 
-None triggered.
+None triggered. `docs/RISKS.md` still holds the old `R-` register; it is re-seeded from
+CLAUDE.md §8 in V0-T1.
 
 ## Next 3 tasks
 
-1. **Me:** more plumbing and tests that need no data or decisions; keep branches current.
-2. **You:** verify the autonomous work; the three drafts; the Phase 0 captures.
-3. **October:** van scan, lot day, second vehicle.
+1. **You:** V0-T2 licence check; ADR 0020 decision.
+2. **Me:** V0-T1 housekeeping, then V0-T4 (template component model), which needs no data.
+3. **You, with me:** V0-T5 `sweep.py`.
 
 ## GPU usage this month (approx compute units)
 

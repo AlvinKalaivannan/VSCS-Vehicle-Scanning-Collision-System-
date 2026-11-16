@@ -1,10 +1,10 @@
 {
   "status": { "label": "Building", "state": "active" },
-  "currentStage": 0,
+  "currentStage": 3,
   "stages": [
-    { "name": "Scan", "status": { "label": "Capture prep", "state": "active" } },
+    { "name": "Scan", "status": { "label": "Template model planned", "state": "waiting" } },
     { "name": "Segment", "status": { "label": "Tested on fixture", "state": "partial" } },
-    { "name": "Track", "status": { "label": "Built, awaiting capture", "state": "waiting" } },
+    { "name": "Track", "status": { "label": "Built, awaiting dataset", "state": "waiting" } },
     { "name": "Score", "status": { "label": "In progress", "state": "active" } }
   ]
 }
