@@ -51,9 +51,16 @@ code; nothing core merges until the developer has done a `/teach-back` on it.**
   - `synth/parts.py::classify_faces`: mesh faces → components (V1-T6).
   - `seg/fusion3d.py`: multi-view mask fusion (V1-T7).
   - `risk/probability.py`: `p_contact = Φ(-d/σ)` from the budget (V1-T8).
-- **Teach-back gate.** A teach-back that exposes a gap is logged in `LEARNING.md` and
-  repeated on the gap only. Later tasks may build on an unmerged core branch; the
-  backlog of un-taught branches never exceeds two (D-13).
+- **Teach-back gate.** Later tasks may build on an unmerged core branch; the backlog of
+  un-taught branches never exceeds two (D-13).
+- **Teach-back format (token cap, set by the developer 2026-11-16):**
+  - It runs in a **fresh, short session**, never in the build session.
+  - The developer explains the module in **≤ 150 words**.
+  - Claude replies with **pass or fail plus up to 3 gaps, one line each**. No
+    re-explaining the module, and no re-reading files already in context.
+  - **At most 2 rounds.** If it still fails, Claude names the one thing to read and the
+    teach-back is retried next session.
+  - A fail's gaps go in `LEARNING.md`; a pass is recorded in STATUS and the branch merges.
 - **Plumbing** (adapters, I/O, CLI, configs, web app, Docker, tests, viz): written and
   merged directly.
 - Linear algebra and statistics (projections, rigid transforms, frames, variances) are

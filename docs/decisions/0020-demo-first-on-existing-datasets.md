@@ -68,6 +68,10 @@ Effect on scope and dates: v0 grows from 12 to 14 tasks and fetches 13 scenes in
 3; v0 ship moves 2027-01-10 → 2027-01-24; V1 grows from 7 to 9 tasks and ends mid-March
 instead of end of February; V2 runs into April.
 
+**Approved by the developer, 2026-11-16:** the v0 date of 2027-01-24; posed renders as
+the V1-T7 segmentation input; a lower-bound budget in v0; the teach-back gate extended
+to `core/*` and `seg/fusion3d.py`, with a token cap on its format (CLAUDE.md §0).
+
 ## Evidence
 
 - Licence and access findings of 2026-11-16 are web-search level, not read at source:
